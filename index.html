@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Edenorte Mao - Gestión de Dietas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; margin: 0; -webkit-tap-highlight-color: transparent; }
+        .rounded-eden { border-radius: 1.5rem; }
+        .shadow-eden { box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.1); }
+        .tab-active { color: #1e3a8a; border-bottom: 4px solid #1e3a8a; opacity: 1; }
+        .hidden { display: none; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            #print-section { display: block !important; background: white !important; }
+            body { background: white; }
+        }
+
+        #print-section { display: none; padding: 20px; background: white; min-height: 100vh; }
+        .print-card { border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 8px; page-break-inside: avoid; }
+    </style>
+</head>
+<body>
+
+    <div id="print-section" class="bg-white">
+        <div style="text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px;">
+            <h1 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: 900; font-style: italic;">EDENORTE DOMINICANA</h1>
+            <p style="font-size: 10px; font-weight: bold; color: #666; margin: 5px 0;">REPORTE DE DIETAS - SECTOR MAO</p>
+        </div>
+        <div id="print-meta" style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;"></div>
+        <div id="print-list"></div>
+        <div id="print-total-box" style="background: #1e3a8a; color: white; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: right;"></div>
+        
+        <div class="no-print mt-10">
+            <button onclick="returnToApp()" class="w-full bg-blue-900 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">Regresar al Historial</button>
+        </div>
+    </div>
+
+    <div id="login-screen" class="no-print min-h-screen bg-blue-900 flex items-center justify-center p-6 text-center">
+        <div class="bg-white p-10 rounded-eden w-full max-w-sm shadow-eden">
+            <h1 class="text-4xl font-black text-blue-900 italic mb-1 tracking-tighter">EDENORTE</h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Reporte de Dietas - Mao</p>
+            <input id="login-user-code" type="text" placeholder="ID EMPLEADO" class="w-full bg-slate-50 p-4 rounded-2xl mb-4 font-bold text-center border outline-none uppercase">
+            <input id="login-pass" type="password" placeholder="CONTRASEÑA" class="w-full bg-slate-50 p-4 rounded-2xl mb-6 font-bold text-center border outline-none">
+            <button onclick="handleLogin()" class="w-full bg-blue-900 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-lg active:scale-95">Entrar</button>
+        </div>
+    </div>
+
+    <div id="app-screen" class="no-print hidden min-h-screen pb-20">
+        <header class="bg-blue-900 text-white p-5 sticky top-0 z-50 flex justify-between items-center shadow-lg">
+            <div>
+                <h1 class="text-xl font-black italic leading-none">EDENORTE</h1>
+                <p id="logged-user-display" class="text-[8px] font-bold opacity-70 mt-1 uppercase"></p>
+            </div>
+            <button onclick="logout()" class="bg-blue-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Salir</button>
+        </header>
+
+        <nav class="flex bg-white border-b sticky top-[68px] z-40 shadow-sm">
+            <button id="btn-reg" onclick="showTab('registro')" class="flex-1 py-4 font-black text-[10px] tracking-widest tab-active uppercase">Registro</button>
+            <button id="btn-hist" onclick="showTab('historial')" class="flex-1 py-4 font-black text-[10px] tracking-widest text-slate-300 uppercase">Historial Semanal</button>
+        </nav>
+
+        <main class="p-4 max-w-lg mx-auto">
+            <div id="tab-registro" class="space-y-6">
+                <section class="bg-white p-6 rounded-eden shadow-eden border border-slate-100 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <input id="f-fecha" type="date" class="font-bold text-blue-900 outline-none bg-transparent">
+                        <span id="edit-indicator" class="hidden text-[8px] font-black bg-orange-100 text-orange-600 px-2 py-1 rounded uppercase">Editando Registro</span>
+                    </div>
+                    <input id="f-lugar" type="text" placeholder="LUGAR" class="w-full text-lg font-black border-b-2 pb-2 outline-none uppercase focus:border-blue-900">
+                    <textarea id="f-trabajo" placeholder="Tipo de Trabajo..." class="w-full font-bold h-24 outline-none resize-none bg-slate-50 p-4 rounded-2xl border-none uppercase"></textarea>
+                </section>
+
+                <section class="bg-white p-6 rounded-eden shadow-eden border border-slate-100">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 text-center">Horarios</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-2 rounded-xl border text-center">
+                            <label class="text-[7px] font-black text-slate-400 block mb-1">SALIDA MAO</label>
+                            <input id="h-sal-mao" type="time" value="07:00" onchange="updateCalculos()" class="text-xl font-black bg-transparent outline-none w-full text-center">
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border text-center">
+                            <label class="text-[7px] font-black text-slate-400 block mb-1">LLEGADA LUGAR</label>
+                            <input id="h-lle-lug" type="time" value="08:00" class="text-xl font-black bg-transparent outline-none w-full text-center">
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border text-center">
+                            <label class="text-[7px] font-black text-slate-400 block mb-1">SALIDA LUGAR</label>
+                            <input id="h-sal-lug" type="time" value="17:00" class="text-xl font-black bg-transparent outline-none w-full text-center">
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border text-center">
+                            <label class="text-[7px] font-black text-slate-400 block mb-1">REGRESO MAO</label>
+                            <input id="h-lle-mao" type="time" value="18:00" onchange="updateCalculos()" class="text-xl font-black bg-transparent outline-none w-full text-center">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white p-6 rounded-eden shadow-eden border border-slate-100 space-y-3">
+                    <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Personal en el Registro</p>
+                    <div id="equipo-list" class="space-y-2"></div>
+                    
+                    <div class="pt-4 border-t mt-4 flex gap-2">
+                        <input id="new-name" type="text" placeholder="APOYO" class="flex-1 bg-slate-50 p-3 rounded-xl text-[10px] font-bold uppercase border outline-none">
+                        <input id="new-code" type="text" placeholder="CÓD" class="w-20 bg-slate-50 p-3 rounded-xl text-[10px] font-bold uppercase border outline-none">
+                        <button onclick="addExtraMember()" class="bg-blue-900 text-white px-4 rounded-xl font-black shadow-md">+</button>
+                    </div>
+                </section>
+
+                <div class="bg-blue-900 p-8 rounded-eden text-white shadow-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-[9px] font-black opacity-60 mb-1 uppercase">Total Dieta</p>
+                        <h2 id="display-total" class="text-3xl font-black">RD$ 0</h2>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button id="btn-save" onclick="saveRecord()" class="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg">Guardar</button>
+                        <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden bg-red-500 text-white px-8 py-2 rounded-xl font-black uppercase text-[8px]">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-historial" class="hidden space-y-6">
+                <div class="flex justify-between items-center px-2">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Semanas Registradas</h3>
+                    <button onclick="closeWeek()" class="bg-blue-900 text-white px-3 py-2 rounded-lg font-black text-[9px] uppercase">+ Nueva Semana</button>
+                </div>
+                <div id="semanas-container" class="space-y-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDn8quxTMOIk53OL6xE10jnjlmrls5TBk0",
+            authDomain: "reporte-de-dieta-edenorte.firebaseapp.com",
+            projectId: "reporte-de-dieta-edenorte",
+            storageBucket: "reporte-de-dieta-edenorte.firebasestorage.app",
+            messagingSenderId: "361080132958",
+            appId: "1:361080132958:web:06c04804cd9a03054a6bcf"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Variables Globales vinculadas a window
+        window.currentUser = "";
+        window.editingId = null;
+        const equipoBase = [
+            { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true },
+            { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true },
+            { name: 'JOSE ALFREDO GRITZEWSKY', code: '19579', active: true }
+        ];
+        window.equipo = JSON.parse(JSON.stringify(equipoBase));
+        window.registros = [];
+        window.currentWeek = 1;
+
+        const syncData = () => {
+            onSnapshot(doc(db, "config", "global"), (snap) => {
+                if (snap.exists()) {
+                    window.currentWeek = snap.data().week;
+                    updateHeader();
+                } else {
+                    setDoc(doc(db, "config", "global"), { week: 1 });
+                }
+            });
+
+            const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
+            onSnapshot(q, (snapshot) => {
+                window.registros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderHistorial();
+            });
+        };
+
+        window.handleLogin = () => {
+            const code = document.getElementById('login-user-code').value.trim().toUpperCase();
+            const pass = document.getElementById('login-pass').value.trim();
+            if (pass === 'Edenorte2025' && code !== "") {
+                window.currentUser = code;
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                updateHeader();
+                syncData();
+            } else { alert("Clave de acceso incorrecta."); }
+        };
+
+        window.updateHeader = () => {
+            document.getElementById('logged-user-display').innerText = `Usuario: ${window.currentUser} | Semana Activa: ${window.currentWeek}`;
+        };
+
+        window.logout = () => { if(confirm("¿Deseas salir?")) location.reload(); };
+
+        window.showTab = (tab) => {
+            document.getElementById('tab-registro').classList.toggle('hidden', tab !== 'registro');
+            document.getElementById('tab-historial').classList.toggle('hidden', tab !== 'historial');
+            document.getElementById('btn-reg').className = `flex-1 py-4 font-black text-[10px] tracking-widest ${tab === 'registro' ? 'tab-active' : 'text-slate-300'}`;
+            document.getElementById('btn-hist').className = `flex-1 py-4 font-black text-[10px] tracking-widest ${tab === 'historial' ? 'tab-active' : 'text-slate-300'}`;
+        };
+
+        window.renderEquipo = () => {
+            const list = document.getElementById('equipo-list');
+            list.innerHTML = '';
+            window.equipo.forEach((m, i) => {
+                const item = document.createElement('div');
+                item.className = `flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${m.active ? 'border-blue-900 bg-blue-50 text-blue-900 shadow-sm' : 'border-slate-100 opacity-40 text-slate-400'}`;
+                item.onclick = () => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
+                item.innerHTML = `<div class="flex flex-col"><span class="font-black text-[11px] uppercase">${m.name}</span><span class="text-[8px] font-bold opacity-70">${m.code}</span></div><div class="w-5 h-5 rounded-full border-2 ${m.active ? 'bg-blue-900 border-blue-900' : 'border-slate-200'}"></div>`;
+                list.appendChild(item);
+            });
+        };
+
+        window.addExtraMember = () => {
+            const name = document.getElementById('new-name').value.toUpperCase().trim();
+            const code = document.getElementById('new-code').value.trim();
+            if (name && code) {
+                if(window.equipo.some(e => e.code === code)) return alert("Código ya existe.");
+                window.equipo.push({ name, code, active: true });
+                document.getElementById('new-name').value = ''; 
+                document.getElementById('new-code').value = '';
+                renderEquipo(); updateCalculos();
+            }
+        };
+
+        window.updateCalculos = () => {
+            const salH = parseInt(document.getElementById('h-sal-mao').value.split(':')[0]) || 0;
+            const lleH = parseInt(document.getElementById('h-lle-mao').value.split(':')[0]) || 0;
+            let ind = 350;
+            if (salH <= 7) ind += 200;
+            if (lleH >= 20) ind += 200;
+            const total = ind * window.equipo.filter(m => m.active).length;
+            document.getElementById('display-total').innerText = `RD$ ${total.toLocaleString()}`;
+            return total;
+        };
+
+        window.saveRecord = async () => {
+            const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
+            const tra = document.getElementById('f-trabajo').value.toUpperCase().trim();
+            if(!lug || !tra) return alert("Completa los datos del trabajo.");
+
+            const record = {
+                semana: window.currentWeek,
+                fecha: document.getElementById('f-fecha').value,
+                lugar: lug,
+                trabajo: tra,
+                horas: { 
+                    sm: document.getElementById('h-sal-mao').value, 
+                    ll: document.getElementById('h-lle-lug').value,
+                    sl: document.getElementById('h-sal-lug').value,
+                    rm: document.getElementById('h-lle-mao').value 
+                },
+                total: updateCalculos(),
+                personal: window.equipo.filter(m => m.active).map(m => ({ name: m.name.toUpperCase(), code: m.code })),
+                autor: window.currentUser.toUpperCase()
+            };
+
+            try {
+                if (window.editingId) {
+                    await updateDoc(doc(db, "registros", window.editingId), record);
+                } else {
+                    await addDoc(collection(db, "registros"), record);
+                }
+                cancelEdit();
+                showTab('historial');
+            } catch (e) { alert("Error al guardar."); }
+        };
+
+        window.renderHistorial = () => {
+            const container = document.getElementById('semanas-container');
+            container.innerHTML = '';
+            const grupos = {};
+            window.registros.forEach(r => {
+                if(!grupos[r.semana]) grupos[r.semana] = [];
+                grupos[r.semana].push(r);
+            });
+
+            Object.keys(grupos).sort((a,b) => b-a).forEach(s => {
+                const regs = grupos[s];
+                const totalS = regs.reduce((sum, r) => sum + r.total, 0);
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-eden shadow-eden border border-slate-100 overflow-hidden";
+                div.innerHTML = `
+                    <div class="bg-blue-900 p-5 text-white flex justify-between items-center">
+                        <div>
+                            <h3 class="font-black text-xs uppercase">Semana ${s} ${s == window.currentWeek ? '<span class="ml-2 text-[7px] bg-green-500 px-1 rounded">ACTUAL</span>' : ''}</h3>
+                            <p class="text-[14px] font-black">RD$ ${totalS.toLocaleString()}</p>
+                        </div>
+                        <button onclick="generatePrintable(${s})" class="bg-white text-blue-900 px-4 py-2 rounded-xl font-black text-[9px] uppercase shadow-md">Imprimir</button>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        ${regs.map(r => `
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <span class="text-[8px] font-black text-blue-900 bg-blue-50 px-2 py-1 rounded">${r.fecha}</span>
+                                        <h4 class="text-[10px] font-black uppercase mt-2">${r.lugar}</h4>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-blue-900">RD$ ${r.total.toLocaleString()}</span>
+                                </div>
+                                <p class="text-[8px] text-slate-400 mb-1">"${r.trabajo}"</p>
+                                <p class="text-[6px] font-bold text-slate-300 uppercase mb-3">POR: ${r.autor}</p>
+                                <div class="flex justify-end gap-3">
+                                    <button onclick="editRecord('${r.id}')" class="text-blue-600 font-black text-[9px] uppercase">Editar</button>
+                                    <button onclick="deleteRecord('${r.id}')" class="text-red-500 font-black text-[9px] uppercase">Borrar</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        };
+
+        window.editRecord = (id) => {
+            const r = window.registros.find(x => x.id === id);
+            if (!r) return;
+            window.editingId = r.id;
+            document.getElementById('f-fecha').value = r.fecha;
+            document.getElementById('f-lugar').value = r.lugar;
+            document.getElementById('f-trabajo').value = r.trabajo;
+            document.getElementById('h-sal-mao').value = r.horas.sm;
+            document.getElementById('h-lle-lug').value = r.horas.ll;
+            document.getElementById('h-sal-lug').value = r.horas.sl;
+            document.getElementById('h-lle-mao').value = r.horas.rm;
+            
+            const codes = r.personal.map(p => p.code);
+            window.equipo = JSON.parse(JSON.stringify(equipoBase));
+            r.personal.forEach(p => { if(!window.equipo.some(e => e.code === p.code)) window.equipo.push({...p, active: true}); });
+            window.equipo.forEach(e => e.active = codes.includes(e.code));
+            document.getElementById('edit-indicator').classList.remove('hidden');
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            document.getElementById('btn-save').innerText = "Actualizar";
+            renderEquipo(); updateCalculos(); showTab('registro');
+        };
+
+        window.cancelEdit = () => {
+            window.editingId = null;
+            document.getElementById('f-lugar').value = ''; 
+            document.getElementById('f-trabajo').value = '';
+            document.getElementById('edit-indicator').classList.add('hidden');
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            document.getElementById('btn-save').innerText = "Guardar";
+            window.equipo = JSON.parse(JSON.stringify(equipoBase));
+            renderEquipo(); updateCalculos();
+        };
+
+        window.deleteRecord = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "registros", id)); };
+
+        // SOLUCIÓN AL ERROR DE CERRAR SEMANA
+        window.closeWeek = async () => {
+            const nextW = window.currentWeek + 1;
+            if(confirm("¿Iniciar Semana " + nextW + "?")) {
+                try {
+                    const confRef = doc(db, "config", "global");
+                    const confSnap = await getDoc(confRef);
+                    
+                    if (confSnap.exists()) {
+                        await updateDoc(confRef, { week: nextW });
+                    } else {
+                        await setDoc(confRef, { week: nextW });
+                    }
+                    alert("Nueva semana iniciada.");
+                } catch (e) {
+                    console.error(e);
+                    alert("Error al cambiar semana.");
+                }
+            }
+        };
+
+        window.generatePrintable = (num) => {
+            const data = window.registros.filter(r => r.semana == num);
+            const meta = document.getElementById('print-meta');
+            const list = document.getElementById('print-list');
+            const totalBox = document.getElementById('print-total-box');
+            meta.innerHTML = `<span>ID: ${window.currentUser}</span><span>SEMANA: ${num}</span><span>FECHA: ${new Date().toLocaleDateString()}</span>`;
+            list.innerHTML = '';
+            let gt = 0;
+            data.sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).forEach(r => {
+                gt += r.total;
+                list.innerHTML += `
+                    <div class="print-card">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
+                            <span>${r.fecha}</span><span>RD$ ${r.total.toLocaleString()}</span>
+                        </div>
+                        <div style="font-size:10px; color:#1e3a8a; font-weight:900; text-transform:uppercase;">${r.lugar}</div>
+                        <div style="font-size:8px; font-style:italic;">Tarea: ${r.trabajo}</div>
+                        <div style="font-size:7px; color:#888; text-transform:uppercase;">PERSONAL: ${r.personal.map(p => p.name).join(' / ')}</div>
+                    </div>`;
+            });
+            totalBox.innerHTML = `<span>TOTAL SEMANA ${num}</span><h2 style="font-size:24px; font-weight:900;">RD$ ${gt.toLocaleString()}</h2>`;
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('print-section').style.display = 'block';
+            setTimeout(() => window.print(), 300);
+        };
+
+        window.returnToApp = () => {
+            document.getElementById('print-section').style.display = 'none';
+            document.getElementById('app-screen').classList.remove('hidden');
+        };
+
+        // Inicialización
+        document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+        renderEquipo();
+    </script>
+</body>
+</html>
