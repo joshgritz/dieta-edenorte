@@ -15,17 +15,16 @@
         
         @media print {
             .no-print { display: none !important; }
-            #print-section { display: block !important; background: white !important; }
+            #print-section { display: block !important; }
             body { background: white; }
         }
-
         #print-section { display: none; padding: 20px; background: white; min-height: 100vh; }
-        .print-card { border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 8px; page-break-inside: avoid; }
+        .print-card { border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 8px; page-break-inside: avoid; border-left: 6px solid #1e3a8a; }
     </style>
 </head>
 <body>
 
-    <div id="print-section" class="bg-white">
+    <div id="print-section">
         <div style="text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px;">
             <h1 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: 900; font-style: italic;">EDENORTE DOMINICANA</h1>
             <p style="font-size: 10px; font-weight: bold; color: #666; margin: 5px 0;">REPORTE DE DIETAS - SECTOR MAO</p>
@@ -33,83 +32,84 @@
         <div id="print-meta" style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;"></div>
         <div id="print-list"></div>
         <div id="print-total-box" style="background: #1e3a8a; color: white; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: right;"></div>
-        
-        <div class="no-print mt-10">
-            <button onclick="returnToApp()" class="w-full bg-blue-900 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">Regresar al Historial</button>
-        </div>
+        <div class="no-print mt-10"><button onclick="returnToApp()" class="w-full bg-blue-900 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">Regresar al Historial</button></div>
     </div>
 
     <div id="login-screen" class="no-print min-h-screen bg-blue-900 flex items-center justify-center p-6 text-center">
         <div class="bg-white p-10 rounded-eden w-full max-w-sm shadow-eden">
-            <h1 class="text-4xl font-black text-blue-900 italic mb-1 tracking-tighter">EDENORTE</h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Reporte de Dietas - Mao</p>
+            <h1 class="text-4xl font-black text-blue-900 italic mb-1">EDENORTE</h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Gestión de Dietas</p>
             <input id="login-user-code" type="text" placeholder="ID EMPLEADO" class="w-full bg-slate-50 p-4 rounded-2xl mb-4 font-bold text-center border outline-none uppercase">
             <input id="login-pass" type="password" placeholder="CONTRASEÑA" class="w-full bg-slate-50 p-4 rounded-2xl mb-6 font-bold text-center border outline-none">
-            <button onclick="handleLogin()" class="w-full bg-blue-900 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-lg active:scale-95">Entrar</button>
+            <button onclick="handleLogin()" class="w-full bg-blue-900 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-lg">Entrar</button>
         </div>
     </div>
 
     <div id="app-screen" class="no-print hidden min-h-screen pb-20">
-        <header class="bg-blue-900 text-white p-5 sticky top-0 z-50 flex justify-between items-center shadow-lg">
+        <header class="bg-blue-900 text-white p-5 flex justify-between items-center shadow-lg">
             <div>
-                <h1 class="text-xl font-black italic leading-none">EDENORTE</h1>
-                <p id="logged-user-display" class="text-[8px] font-bold opacity-70 mt-1 uppercase"></p>
+                <h1 class="text-xl font-black italic">EDENORTE</h1>
+                <p id="logged-user-display" class="text-[8px] font-bold opacity-70 uppercase"></p>
             </div>
             <button onclick="logout()" class="bg-blue-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Salir</button>
         </header>
 
-        <nav class="flex bg-white border-b sticky top-[68px] z-40 shadow-sm">
-            <button id="btn-reg" onclick="showTab('registro')" class="flex-1 py-4 font-black text-[10px] tracking-widest tab-active uppercase">Registro</button>
-            <button id="btn-hist" onclick="showTab('historial')" class="flex-1 py-4 font-black text-[10px] tracking-widest text-slate-300 uppercase">Historial Semanal</button>
+        <nav class="flex bg-white border-b sticky top-0 z-40 shadow-sm">
+            <button id="btn-reg" onclick="showTab('registro')" class="flex-1 py-4 font-black text-[10px] tab-active uppercase">Registro</button>
+            <button id="btn-hist" onclick="showTab('historial')" class="flex-1 py-4 font-black text-[10px] text-slate-300 uppercase">Historial Semanal</button>
         </nav>
 
         <main class="p-4 max-w-lg mx-auto">
             <div id="tab-registro" class="space-y-6">
+                <div class="bg-blue-50 p-3 rounded-2xl border border-blue-100 flex justify-between items-center">
+                    <span class="text-[10px] font-black text-blue-900 uppercase italic">Guardando en:</span>
+                    <span id="target-week-badge" class="bg-blue-900 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase">Semana 1</span>
+                </div>
+
                 <section class="bg-white p-6 rounded-eden shadow-eden border border-slate-100 space-y-4">
                     <div class="flex justify-between items-center">
                         <input id="f-fecha" type="date" class="font-bold text-blue-900 outline-none bg-transparent">
-                        <span id="edit-indicator" class="hidden text-[8px] font-black bg-orange-100 text-orange-600 px-2 py-1 rounded uppercase">Editando Registro</span>
+                        <span id="edit-indicator" class="hidden text-[8px] font-black bg-orange-100 text-orange-600 px-2 py-1 rounded">EDITANDO</span>
                     </div>
-                    <input id="f-lugar" type="text" placeholder="LUGAR" class="w-full text-lg font-black border-b-2 pb-2 outline-none uppercase focus:border-blue-900">
-                    <textarea id="f-trabajo" placeholder="Tipo de Trabajo..." class="w-full font-bold h-24 outline-none resize-none bg-slate-50 p-4 rounded-2xl border-none uppercase"></textarea>
+                    <input id="f-lugar" type="text" placeholder="LUGAR DEL TRABAJO" class="w-full text-lg font-black border-b-2 pb-2 outline-none uppercase focus:border-blue-900">
+                    <textarea id="f-trabajo" placeholder="DESCRIPCIÓN DEL TRABAJO..." class="w-full font-bold h-20 outline-none resize-none bg-slate-50 p-4 rounded-2xl border-none uppercase"></textarea>
                 </section>
 
                 <section class="bg-white p-6 rounded-eden shadow-eden border border-slate-100">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 text-center">Horarios</p>
+                    <p class="text-[9px] font-black text-slate-400 uppercase mb-4 text-center tracking-widest">Horarios de la Jornada</p>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-slate-50 p-2 rounded-xl border text-center">
-                            <label class="text-[7px] font-black text-slate-400 block mb-1">SALIDA MAO</label>
+                            <label class="text-[7px] font-black text-slate-400 block mb-1 uppercase">Salida Mao</label>
                             <input id="h-sal-mao" type="time" value="07:00" onchange="updateCalculos()" class="text-xl font-black bg-transparent outline-none w-full text-center">
                         </div>
                         <div class="bg-slate-50 p-2 rounded-xl border text-center">
-                            <label class="text-[7px] font-black text-slate-400 block mb-1">LLEGADA LUGAR</label>
+                            <label class="text-[7px] font-black text-slate-400 block mb-1 uppercase">Llegada Lugar</label>
                             <input id="h-lle-lug" type="time" value="08:00" class="text-xl font-black bg-transparent outline-none w-full text-center">
                         </div>
                         <div class="bg-slate-50 p-2 rounded-xl border text-center">
-                            <label class="text-[7px] font-black text-slate-400 block mb-1">SALIDA LUGAR</label>
+                            <label class="text-[7px] font-black text-slate-400 block mb-1 uppercase">Salida Lugar</label>
                             <input id="h-sal-lug" type="time" value="17:00" class="text-xl font-black bg-transparent outline-none w-full text-center">
                         </div>
                         <div class="bg-slate-50 p-2 rounded-xl border text-center">
-                            <label class="text-[7px] font-black text-slate-400 block mb-1">REGRESO MAO</label>
+                            <label class="text-[7px] font-black text-slate-400 block mb-1 uppercase">Regreso Mao</label>
                             <input id="h-lle-mao" type="time" value="18:00" onchange="updateCalculos()" class="text-xl font-black bg-transparent outline-none w-full text-center">
                         </div>
                     </div>
                 </section>
 
                 <section class="bg-white p-6 rounded-eden shadow-eden border border-slate-100 space-y-3">
-                    <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Personal en el Registro</p>
-                    <div id="equipo-list" class="space-y-2"></div>
-                    
+                    <p class="text-[9px] font-black text-slate-400 uppercase mb-2">Personal y Vehículo (Ficha)</p>
+                    <div id="equipo-list" class="space-y-3"></div>
                     <div class="pt-4 border-t mt-4 flex gap-2">
-                        <input id="new-name" type="text" placeholder="APOYO" class="flex-1 bg-slate-50 p-3 rounded-xl text-[10px] font-bold uppercase border outline-none">
-                        <input id="new-code" type="text" placeholder="CÓD" class="w-20 bg-slate-50 p-3 rounded-xl text-[10px] font-bold uppercase border outline-none">
+                        <input id="new-name" type="text" placeholder="NOMBRE APOYO" class="flex-1 bg-slate-50 p-3 rounded-xl text-[10px] font-bold uppercase border outline-none">
+                        <input id="new-code" type="text" placeholder="CÓD" class="w-16 bg-slate-50 p-3 rounded-xl text-[10px] font-bold uppercase border outline-none">
                         <button onclick="addExtraMember()" class="bg-blue-900 text-white px-4 rounded-xl font-black shadow-md">+</button>
                     </div>
                 </section>
 
                 <div class="bg-blue-900 p-8 rounded-eden text-white shadow-xl flex justify-between items-center">
                     <div>
-                        <p class="text-[9px] font-black opacity-60 mb-1 uppercase">Total Dieta</p>
+                        <p class="text-[9px] font-black opacity-60 mb-1">TOTAL</p>
                         <h2 id="display-total" class="text-3xl font-black">RD$ 0</h2>
                     </div>
                     <div class="flex flex-col gap-2">
@@ -119,10 +119,17 @@
                 </div>
             </div>
 
-            <div id="tab-historial" class="hidden space-y-6">
-                <div class="flex justify-between items-center px-2">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Semanas Registradas</h3>
-                    <button onclick="closeWeek()" class="bg-blue-900 text-white px-3 py-2 rounded-lg font-black text-[9px] uppercase">+ Nueva Semana</button>
+            <div id="tab-historial" class="hidden space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center justify-between border">
+                    <button onclick="changeViewWeek(-1)" class="p-2 font-black text-blue-900 text-xl">◀</button>
+                    <div class="text-center">
+                        <span class="text-[8px] font-black text-slate-400 block uppercase">Semana</span>
+                        <span id="view-week-display" class="font-black text-blue-900 text-2xl">1</span>
+                    </div>
+                    <button onclick="changeViewWeek(1)" class="p-2 font-black text-blue-900 text-xl">▶</button>
+                </div>
+                <div class="flex justify-center">
+                    <button onclick="closeWeekManual()" class="bg-orange-500 text-white px-6 py-2 rounded-xl font-black text-[9px] uppercase shadow-md">Iniciar Nueva Semana (Miércoles)</button>
                 </div>
                 <div id="semanas-container" class="space-y-6"></div>
             </div>
@@ -131,7 +138,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDn8quxTMOIk53OL6xE10jnjlmrls5TBk0",
@@ -145,28 +152,28 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Variables Globales vinculadas a window
         window.currentUser = "";
         window.editingId = null;
+        window.currentWeek = 1; // Semana global en BD
+        window.viewingWeek = 1; // Semana que el usuario está viendo en pantalla
+        
         const equipoBase = [
-            { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true },
-            { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true },
-            { name: 'JOSE ALFREDO GRITZEWSKY', code: '19579', active: true }
+            { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true, ficha: '7344' },
+            { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true, ficha: '7344' },
+            { name: 'JOSE ALFREDO GRITZEWSKY', code: '19579', active: true, ficha: '7344' }
         ];
         window.equipo = JSON.parse(JSON.stringify(equipoBase));
         window.registros = [];
-        window.currentWeek = 1;
 
         const syncData = () => {
             onSnapshot(doc(db, "config", "global"), (snap) => {
                 if (snap.exists()) {
                     window.currentWeek = snap.data().week;
+                    // Al iniciar, mostramos la semana actual de la BD
+                    window.viewingWeek = window.currentWeek;
                     updateHeader();
-                } else {
-                    setDoc(doc(db, "config", "global"), { week: 1 });
                 }
             });
-
             const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
             onSnapshot(q, (snapshot) => {
                 window.registros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -176,27 +183,25 @@
 
         window.handleLogin = () => {
             const code = document.getElementById('login-user-code').value.trim().toUpperCase();
-            const pass = document.getElementById('login-pass').value.trim();
-            if (pass === 'Edenorte2025' && code !== "") {
+            if (document.getElementById('login-pass').value === 'Edenorte2025' && code !== "") {
                 window.currentUser = code;
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
-                updateHeader();
                 syncData();
-            } else { alert("Clave de acceso incorrecta."); }
+            } else { alert("Clave Incorrecta"); }
         };
 
         window.updateHeader = () => {
-            document.getElementById('logged-user-display').innerText = `Usuario: ${window.currentUser} | Semana Activa: ${window.currentWeek}`;
+            document.getElementById('logged-user-display').innerText = `ID: ${window.currentUser} | SEMANA GLOBAL: ${window.currentWeek}`;
+            document.getElementById('view-week-display').innerText = window.viewingWeek;
+            document.getElementById('target-week-badge').innerText = `Semana ${window.viewingWeek}`;
         };
 
-        window.logout = () => { if(confirm("¿Deseas salir?")) location.reload(); };
-
-        window.showTab = (tab) => {
-            document.getElementById('tab-registro').classList.toggle('hidden', tab !== 'registro');
-            document.getElementById('tab-historial').classList.toggle('hidden', tab !== 'historial');
-            document.getElementById('btn-reg').className = `flex-1 py-4 font-black text-[10px] tracking-widest ${tab === 'registro' ? 'tab-active' : 'text-slate-300'}`;
-            document.getElementById('btn-hist').className = `flex-1 py-4 font-black text-[10px] tracking-widest ${tab === 'historial' ? 'tab-active' : 'text-slate-300'}`;
+        window.changeViewWeek = (val) => {
+            window.viewingWeek += val;
+            if(window.viewingWeek < 1) window.viewingWeek = 1;
+            updateHeader();
+            renderHistorial();
         };
 
         window.renderEquipo = () => {
@@ -204,21 +209,33 @@
             list.innerHTML = '';
             window.equipo.forEach((m, i) => {
                 const item = document.createElement('div');
-                item.className = `flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${m.active ? 'border-blue-900 bg-blue-50 text-blue-900 shadow-sm' : 'border-slate-100 opacity-40 text-slate-400'}`;
-                item.onclick = () => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
-                item.innerHTML = `<div class="flex flex-col"><span class="font-black text-[11px] uppercase">${m.name}</span><span class="text-[8px] font-bold opacity-70">${m.code}</span></div><div class="w-5 h-5 rounded-full border-2 ${m.active ? 'bg-blue-900 border-blue-900' : 'border-slate-200'}"></div>`;
+                item.className = `p-4 rounded-2xl border-2 transition-all ${m.active ? 'border-blue-900 bg-blue-50' : 'border-slate-100 opacity-40'}`;
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div onclick="toggleActive(${i})" class="cursor-pointer">
+                            <p class="font-black text-[11px] text-blue-900 uppercase">${m.name}</p>
+                            <p class="text-[8px] font-bold opacity-70">${m.code}</p>
+                        </div>
+                        <div onclick="toggleActive(${i})" class="w-5 h-5 rounded-full border-2 ${m.active ? 'bg-blue-900' : ''}"></div>
+                    </div>
+                    <div class="${m.active ? '' : 'hidden'} flex items-center gap-2 mt-1">
+                        <span class="text-[8px] font-black text-slate-400">FICHA:</span>
+                        <input type="text" value="${m.ficha}" onchange="updateFicha(${i}, this.value)" class="bg-white border rounded px-2 py-1 text-[10px] font-black w-20 outline-none focus:border-blue-900">
+                    </div>
+                `;
                 list.appendChild(item);
             });
         };
+
+        window.toggleActive = (i) => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
+        window.updateFicha = (i, val) => { window.equipo[i].ficha = val.toUpperCase(); };
 
         window.addExtraMember = () => {
             const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
             if (name && code) {
-                if(window.equipo.some(e => e.code === code)) return alert("Código ya existe.");
-                window.equipo.push({ name, code, active: true });
-                document.getElementById('new-name').value = ''; 
-                document.getElementById('new-code').value = '';
+                window.equipo.push({ name, code, active: true, ficha: '7344' });
+                document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
                 renderEquipo(); updateCalculos();
             }
         };
@@ -236,86 +253,80 @@
 
         window.saveRecord = async () => {
             const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
-            const tra = document.getElementById('f-trabajo').value.toUpperCase().trim();
-            if(!lug || !tra) return alert("Completa los datos del trabajo.");
-
+            if(!lug) return alert("LUGAR OBLIGATORIO");
+            
             const record = {
-                semana: window.currentWeek,
+                // Aquí está la clave: guarda en la semana que estás viendo actualmente
+                semana: window.viewingWeek, 
                 fecha: document.getElementById('f-fecha').value,
                 lugar: lug,
-                trabajo: tra,
+                trabajo: document.getElementById('f-trabajo').value.toUpperCase(),
                 horas: { 
                     sm: document.getElementById('h-sal-mao').value, 
-                    ll: document.getElementById('h-lle-lug').value,
-                    sl: document.getElementById('h-sal-lug').value,
+                    ll: document.getElementById('h-lle-lug').value, 
+                    sl: document.getElementById('h-sal-lug').value, 
                     rm: document.getElementById('h-lle-mao').value 
                 },
                 total: updateCalculos(),
-                personal: window.equipo.filter(m => m.active).map(m => ({ name: m.name.toUpperCase(), code: m.code })),
-                autor: window.currentUser.toUpperCase()
+                personal: window.equipo.filter(m => m.active).map(m => ({ name: m.name, code: m.code, ficha: m.ficha })),
+                autor: window.currentUser
             };
-
-            try {
-                if (window.editingId) {
-                    await updateDoc(doc(db, "registros", window.editingId), record);
-                } else {
-                    await addDoc(collection(db, "registros"), record);
-                }
-                cancelEdit();
-                showTab('historial');
-            } catch (e) { alert("Error al guardar."); }
+            
+            if (window.editingId) await updateDoc(doc(db, "registros", window.editingId), record);
+            else await addDoc(collection(db, "registros"), record);
+            
+            cancelEdit();
+            showTab('historial');
         };
 
         window.renderHistorial = () => {
             const container = document.getElementById('semanas-container');
             container.innerHTML = '';
-            const grupos = {};
-            window.registros.forEach(r => {
-                if(!grupos[r.semana]) grupos[r.semana] = [];
-                grupos[r.semana].push(r);
-            });
-
-            Object.keys(grupos).sort((a,b) => b-a).forEach(s => {
-                const regs = grupos[s];
-                const totalS = regs.reduce((sum, r) => sum + r.total, 0);
-                const div = document.createElement('div');
-                div.className = "bg-white rounded-eden shadow-eden border border-slate-100 overflow-hidden";
-                div.innerHTML = `
-                    <div class="bg-blue-900 p-5 text-white flex justify-between items-center">
-                        <div>
-                            <h3 class="font-black text-xs uppercase">Semana ${s} ${s == window.currentWeek ? '<span class="ml-2 text-[7px] bg-green-500 px-1 rounded">ACTUAL</span>' : ''}</h3>
-                            <p class="text-[14px] font-black">RD$ ${totalS.toLocaleString()}</p>
+            const filtered = window.registros.filter(r => r.semana == window.viewingWeek);
+            
+            if(filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-20 bg-white rounded-eden border border-dashed border-slate-300">
+                        <p class="text-slate-400 font-bold text-sm">La Semana ${window.viewingWeek} está vacía</p>
+                        <button onclick="showTab('registro')" class="mt-4 text-blue-900 font-black text-xs uppercase underline">Añadir registros a esta semana</button>
+                    </div>`;
+                return;
+            }
+            
+            filtered.forEach(r => {
+                const item = document.createElement('div');
+                item.className = "bg-white p-4 rounded-eden shadow-eden border border-slate-100 mb-3";
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] font-black text-blue-900 bg-blue-100 px-2 py-1 rounded">${r.fecha}</span>
+                        <div class="flex gap-3">
+                            <button onclick="editRecord('${r.id}')" class="text-blue-500 font-black text-[9px]">EDITAR</button>
+                            <button onclick="deleteRecord('${r.id}')" class="text-red-500 font-black text-[9px]">BORRAR</button>
                         </div>
-                        <button onclick="generatePrintable(${s})" class="bg-white text-blue-900 px-4 py-2 rounded-xl font-black text-[9px] uppercase shadow-md">Imprimir</button>
                     </div>
-                    <div class="divide-y divide-slate-100">
-                        ${regs.map(r => `
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <span class="text-[8px] font-black text-blue-900 bg-blue-50 px-2 py-1 rounded">${r.fecha}</span>
-                                        <h4 class="text-[10px] font-black uppercase mt-2">${r.lugar}</h4>
-                                    </div>
-                                    <span class="text-[11px] font-bold text-blue-900">RD$ ${r.total.toLocaleString()}</span>
-                                </div>
-                                <p class="text-[8px] text-slate-400 mb-1">"${r.trabajo}"</p>
-                                <p class="text-[6px] font-bold text-slate-300 uppercase mb-3">POR: ${r.autor}</p>
-                                <div class="flex justify-end gap-3">
-                                    <button onclick="editRecord('${r.id}')" class="text-blue-600 font-black text-[9px] uppercase">Editar</button>
-                                    <button onclick="deleteRecord('${r.id}')" class="text-red-500 font-black text-[9px] uppercase">Borrar</button>
-                                </div>
-                            </div>
-                        `).join('')}
+                    <h4 class="text-[11px] font-black uppercase text-slate-800">${r.lugar}</h4>
+                    <p class="text-[8px] text-slate-500 mt-1 uppercase">Trabajo: ${r.trabajo}</p>
+                    <div class="mt-2 border-t pt-2 flex flex-wrap gap-2">
+                        ${r.personal.map(p => `<span class="text-[7px] bg-slate-100 px-2 py-1 rounded font-bold">${p.name} (${p.ficha})</span>`).join('')}
                     </div>
                 `;
-                container.appendChild(div);
+                container.appendChild(item);
             });
+
+            const btnP = document.createElement('button');
+            btnP.className = "w-full bg-blue-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg mt-4";
+            btnP.innerText = `Imprimir Reporte Semana ${window.viewingWeek}`;
+            btnP.onclick = () => generatePrintable(window.viewingWeek);
+            container.appendChild(btnP);
         };
 
         window.editRecord = (id) => {
             const r = window.registros.find(x => x.id === id);
-            if (!r) return;
             window.editingId = r.id;
+            // Al editar, forzamos que la semana destino sea la del registro original
+            window.viewingWeek = r.semana;
+            updateHeader();
+            
             document.getElementById('f-fecha').value = r.fecha;
             document.getElementById('f-lugar').value = r.lugar;
             document.getElementById('f-trabajo').value = r.trabajo;
@@ -324,82 +335,82 @@
             document.getElementById('h-sal-lug').value = r.horas.sl;
             document.getElementById('h-lle-mao').value = r.horas.rm;
             
-            const codes = r.personal.map(p => p.code);
             window.equipo = JSON.parse(JSON.stringify(equipoBase));
-            r.personal.forEach(p => { if(!window.equipo.some(e => e.code === p.code)) window.equipo.push({...p, active: true}); });
-            window.equipo.forEach(e => e.active = codes.includes(e.code));
+            r.personal.forEach(p => {
+                let found = window.equipo.find(e => e.code === p.code);
+                if(found) { found.active = true; found.ficha = p.ficha; }
+                else { window.equipo.push({ ...p, active: true }); }
+            });
+            window.equipo.forEach(e => { if(!r.personal.some(p => p.code === e.code)) e.active = false; });
+            
             document.getElementById('edit-indicator').classList.remove('hidden');
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            document.getElementById('btn-save').innerText = "Actualizar";
+            document.getElementById('btn-save').innerText = "ACTUALIZAR";
             renderEquipo(); updateCalculos(); showTab('registro');
         };
 
+        window.deleteRecord = async (id) => { if(confirm("¿Eliminar registro?")) await deleteDoc(doc(db, "registros", id)); };
+
         window.cancelEdit = () => {
             window.editingId = null;
-            document.getElementById('f-lugar').value = ''; 
-            document.getElementById('f-trabajo').value = '';
+            document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
             document.getElementById('edit-indicator').classList.add('hidden');
             document.getElementById('btn-cancel-edit').classList.add('hidden');
-            document.getElementById('btn-save').innerText = "Guardar";
+            document.getElementById('btn-save').innerText = "GUARDAR";
             window.equipo = JSON.parse(JSON.stringify(equipoBase));
             renderEquipo(); updateCalculos();
         };
 
-        window.deleteRecord = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "registros", id)); };
-
-        // SOLUCIÓN AL ERROR DE CERRAR SEMANA
-        window.closeWeek = async () => {
-            const nextW = window.currentWeek + 1;
-            if(confirm("¿Iniciar Semana " + nextW + "?")) {
-                try {
-                    const confRef = doc(db, "config", "global");
-                    const confSnap = await getDoc(confRef);
-                    
-                    if (confSnap.exists()) {
-                        await updateDoc(confRef, { week: nextW });
-                    } else {
-                        await setDoc(confRef, { week: nextW });
-                    }
-                    alert("Nueva semana iniciada.");
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al cambiar semana.");
-                }
+        window.closeWeekManual = async () => {
+            if(confirm("¿Iniciar una nueva semana de reportes?")) {
+                const next = window.currentWeek + 1;
+                await setDoc(doc(db, "config", "global"), { week: next });
             }
         };
 
         window.generatePrintable = (num) => {
             const data = window.registros.filter(r => r.semana == num);
-            const meta = document.getElementById('print-meta');
             const list = document.getElementById('print-list');
-            const totalBox = document.getElementById('print-total-box');
-            meta.innerHTML = `<span>ID: ${window.currentUser}</span><span>SEMANA: ${num}</span><span>FECHA: ${new Date().toLocaleDateString()}</span>`;
+            document.getElementById('print-meta').innerHTML = `<span>ID: ${window.currentUser}</span><span>SEMANA: ${num}</span><span>FECHA REPORTE: ${new Date().toLocaleDateString()}</span>`;
             list.innerHTML = '';
             let gt = 0;
             data.sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).forEach(r => {
                 gt += r.total;
                 list.innerHTML += `
                     <div class="print-card">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
-                            <span>${r.fecha}</span><span>RD$ ${r.total.toLocaleString()}</span>
+                        <div style="display:flex; justify-content:space-between; font-weight:900; font-size:10px; margin-bottom:5px;">
+                            <span>FECHA: ${r.fecha}</span><span style="color:#1e3a8a">RD$ ${r.total.toLocaleString()}</span>
                         </div>
-                        <div style="font-size:10px; color:#1e3a8a; font-weight:900; text-transform:uppercase;">${r.lugar}</div>
-                        <div style="font-size:8px; font-style:italic;">Tarea: ${r.trabajo}</div>
-                        <div style="font-size:7px; color:#888; text-transform:uppercase;">PERSONAL: ${r.personal.map(p => p.name).join(' / ')}</div>
+                        <div style="font-size:12px; font-weight:900; color:#1e3a8a; text-transform:uppercase;">${r.lugar}</div>
+                        
+                        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:5px; margin:8px 0; background:#f1f5f9; padding:6px; border-radius:5px; font-size:7px; text-align:center; font-weight:bold;">
+                            <div>S. MAO<br>${r.horas.sm}</div>
+                            <div>LL. LUGAR<br>${r.horas.ll}</div>
+                            <div>S. LUGAR<br>${r.horas.sl}</div>
+                            <div>R. MAO<br>${r.horas.rm}</div>
+                        </div>
+
+                        <div style="font-size:8px; margin-bottom:5px;"><strong>TRABAJO:</strong> ${r.trabajo}</div>
+                        <div style="font-size:8px; border-top:1px dashed #ccc; padding-top:5px;">
+                            <strong>EQUIPO:</strong> ${r.personal.map(p => `${p.name} (Ficha: ${p.ficha})`).join(' / ')}
+                        </div>
                     </div>`;
             });
-            totalBox.innerHTML = `<span>TOTAL SEMANA ${num}</span><h2 style="font-size:24px; font-weight:900;">RD$ ${gt.toLocaleString()}</h2>`;
+            document.getElementById('print-total-box').innerHTML = `TOTAL SEMANA ${num} <h2 style="font-size:22px; font-weight:900;">RD$ ${gt.toLocaleString()}</h2>`;
             document.getElementById('app-screen').classList.add('hidden');
             document.getElementById('print-section').style.display = 'block';
-            setTimeout(() => window.print(), 300);
+            setTimeout(() => window.print(), 500);
         };
 
-        window.returnToApp = () => {
-            document.getElementById('print-section').style.display = 'none';
-            document.getElementById('app-screen').classList.remove('hidden');
+        window.returnToApp = () => { document.getElementById('print-section').style.display = 'none'; document.getElementById('app-screen').classList.remove('hidden'); };
+        window.logout = () => location.reload();
+        window.showTab = (tab) => {
+            document.getElementById('tab-registro').classList.toggle('hidden', tab !== 'registro');
+            document.getElementById('tab-historial').classList.toggle('hidden', tab !== 'historial');
+            document.getElementById('btn-reg').className = `flex-1 py-4 font-black text-[10px] ${tab === 'registro' ? 'tab-active' : 'text-slate-300'}`;
+            document.getElementById('btn-hist').className = `flex-1 py-4 font-black text-[10px] ${tab === 'historial' ? 'tab-active' : 'text-slate-300'}`;
         };
 
-        // Inicialización
         document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
         renderEquipo();
     </script>
