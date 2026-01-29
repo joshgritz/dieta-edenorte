@@ -15,6 +15,10 @@
         @media print { .no-print { display: none !important; } #print-section { display: block !important; } body { background: white; } }
         #print-section { display: none; padding: 20px; background: white; min-height: 100vh; }
         .print-card { border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 8px; page-break-inside: avoid; border-left: 6px solid #1e3a8a; }
+        
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .accordion-open .accordion-content { max-height: 2000px; padding-bottom: 1rem; }
+        .accordion-open .arrow-icon { transform: rotate(180deg); }
     </style>
 </head>
 <body>
@@ -27,7 +31,7 @@
         <div id="print-meta" style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;"></div>
         <div id="print-list"></div>
         <div id="print-total-box" style="background: #1e3a8a; color: white; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: right;"></div>
-        <div class="no-print mt-10"><button onclick="returnToApp()" class="w-full bg-blue-900 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">Regresar al Historial</button></div>
+        <div class="no-print mt-10"><button onclick="returnToApp()" class="w-full bg-blue-900 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">Regresar</button></div>
     </div>
 
     <div id="login-screen" class="no-print min-h-screen bg-blue-900 flex items-center justify-center p-6 text-center">
@@ -52,6 +56,7 @@
         <nav class="flex bg-white border-b sticky top-0 z-40 shadow-sm">
             <button id="btn-reg" onclick="showTab('registro')" class="flex-1 py-4 font-black text-[10px] tab-active uppercase">Registro</button>
             <button id="btn-hist" onclick="showTab('historial')" class="flex-1 py-4 font-black text-[10px] text-slate-300 uppercase">Historial Semanal</button>
+            <button id="btn-act" onclick="showTab('activos')" class="flex-1 py-4 font-black text-[10px] text-slate-300 uppercase">Activos</button>
         </nav>
 
         <main class="p-4 max-w-lg mx-auto">
@@ -105,7 +110,7 @@
                 <div class="bg-blue-900 p-8 rounded-eden text-white shadow-xl flex justify-between items-center">
                     <div>
                         <p class="text-[9px] font-black opacity-60 mb-1">VALOR TOTAL</p>
-                        <h2 id="display-total" class="text-3xl font-black">RD$ 0</h2>
+                        <h2 id="display-total" class="text-3xl font-black italic">RD$ 0</h2>
                     </div>
                     <div class="flex flex-col gap-2">
                         <button id="btn-save" onclick="saveRecord()" class="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg">Guardar</button>
@@ -125,12 +130,27 @@
                 </div>
                 <div id="semanas-container" class="space-y-6"></div>
             </div>
+
+            <div id="tab-activos" class="hidden space-y-6">
+                <div class="bg-white p-8 rounded-[2rem] shadow-eden border border-slate-50 text-center">
+                    <p class="text-[10px] font-black text-blue-900 uppercase mb-4 tracking-[0.2em]">FILTRO MENSUAL</p>
+                    <select id="month-filter" onchange="renderActivos()" class="w-full bg-slate-50 p-5 rounded-2xl font-black text-blue-900 border-2 border-slate-100 outline-none uppercase text-xs text-center appearance-none">
+                        <option value="ALL">HISTÓRICO TOTAL</option>
+                        <option value="0">ENERO</option><option value="1">FEBRERO</option><option value="2">MARZO</option><option value="3">ABRIL</option><option value="4">MAYO</option><option value="5">JUNIO</option><option value="6">JULIO</option><option value="7">AGOSTO</option><option value="8">SEPTIEMBRE</option><option value="9">OCTUBRE</option><option value="10">NOVIEMBRE</option><option value="11">DICIEMBRE</option>
+                    </select>
+                </div>
+                <div class="bg-blue-900 p-10 rounded-[2.5rem] text-white shadow-2xl text-center">
+                    <p class="text-[10px] font-black opacity-60 mb-2 tracking-widest uppercase">ACUMULADO GENERAL</p>
+                    <h2 id="total-general-activos" class="text-5xl font-black italic">RD$ 0</h2>
+                </div>
+                <div id="activos-list" class="space-y-4"></div>
+            </div>
         </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDn8quxTMOIk53OL6xE10jnjlmrls5TBk0",
@@ -151,9 +171,9 @@
         window.registros = [];
         
         const equipoBase = [
-            { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true, ficha: '7344', isExtra: false },
-            { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true, ficha: '7344', isExtra: false },
-            { name: 'JOSE ALFREDO VENTURA', code: '19579', active: true, ficha: '7344', isExtra: false }
+            { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true, ficha: '7344', isExtra: false, vac: false },
+            { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true, ficha: '7344', isExtra: false, vac: false },
+            { name: 'JOSE ALFREDO VENTURA', code: '19579', active: true, ficha: '7344', isExtra: false, vac: false }
         ];
         window.equipo = JSON.parse(JSON.stringify(equipoBase));
 
@@ -165,34 +185,11 @@
             return `${h}:${m} ${ampm}`;
         };
 
-        // LÓGICA DE CIERRE AUTOMÁTICO (MIERCOLES NOCHE / JUEVES)
-        const checkAutoWeekClosure = async (fireWeek, lastUpdate) => {
-            const now = new Date();
-            const day = now.getDay(); // 3 = Miercoles, 4 = Jueves
-            const hour = now.getHours();
-            
-            // Si es Miércoles después de las 6:00 PM o es Jueves
-            if ((day === 3 && hour >= 18) || day === 4) {
-                const todayStr = now.toISOString().split('T')[0];
-                if (lastUpdate !== todayStr) {
-                    const newWeek = fireWeek + 1;
-                    await setDoc(doc(db, "config", "global"), { 
-                        week: newWeek, 
-                        lastAutoUpdate: todayStr 
-                    }, { merge: true });
-                    return newWeek;
-                }
-            }
-            return fireWeek;
-        };
-
         const syncData = () => {
-            onSnapshot(doc(db, "config", "global"), async (snap) => {
+            onSnapshot(doc(db, "config", "global"), (snap) => {
                 if (snap.exists()) {
-                    const data = snap.data();
-                    const weekToUse = await checkAutoWeekClosure(data.week, data.lastAutoUpdate);
-                    window.currentWeek = weekToUse;
-                    if (!window.editingId) window.viewingWeek = weekToUse;
+                    window.currentWeek = snap.data().week;
+                    if (!window.editingId) window.viewingWeek = snap.data().week;
                     updateHeader();
                 }
             });
@@ -200,6 +197,7 @@
             onSnapshot(q, (snapshot) => {
                 window.registros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderHistorial();
+                renderActivos();
             });
         };
 
@@ -225,21 +223,27 @@
             updateHeader(); renderHistorial();
         };
 
+        // CORRECCIÓN: SE AGREGÓ LA OPCIÓN DE ELIMINAR APOYO
         window.renderEquipo = () => {
             const list = document.getElementById('equipo-list');
             list.innerHTML = '';
             window.equipo.forEach((m, i) => {
                 const item = document.createElement('div');
-                item.className = `p-4 rounded-2xl border-2 transition-all ${m.active ? 'border-blue-900 bg-blue-50' : 'border-slate-100 opacity-40'}`;
+                item.className = `p-4 rounded-2xl border-2 transition-all ${m.vac ? 'bg-red-50 border-red-200 opacity-70' : (m.active ? 'border-blue-900 bg-blue-50' : 'border-slate-100 opacity-40')}`;
+                
+                // Botón de eliminar solo para miembros extras (Apoyo)
+                const deleteBtn = m.isExtra ? `<button onclick="removeExtraMember(${i})" class="text-[7px] font-black px-2 py-1 rounded bg-red-100 text-red-600 uppercase">Eliminar Apoyo</button>` : '';
+
                 item.innerHTML = `
                     <div class="flex items-center justify-between mb-2">
-                        <div onclick="toggleActive(${i})" class="cursor-pointer">
-                            <p class="font-black text-[11px] text-blue-900 uppercase">${m.name}</p>
+                        <div onclick="${!m.vac ? `toggleActive(${i})` : ''}" class="cursor-pointer">
+                            <p class="font-black text-[11px] text-blue-900 uppercase ${m.vac ? 'line-through' : ''}">${m.name} ${m.vac ? '(VACACIONES)' : ''}</p>
                             <p class="text-[8px] font-bold opacity-70">${m.code}</p>
                         </div>
                         <div class="flex gap-2 items-center">
-                            ${m.isExtra ? `<button onclick="removeMember(${i})" class="text-red-500 font-bold text-xs">ELIMINAR</button>` : ''}
-                            <div onclick="toggleActive(${i})" class="w-5 h-5 rounded-full border-2 ${m.active ? 'bg-blue-900' : ''}"></div>
+                            ${deleteBtn}
+                            <button onclick="toggleVac(${i})" class="text-[7px] font-black px-2 py-1 rounded bg-white border border-red-300 text-red-600 uppercase">Vacaciones</button>
+                            <div onclick="${!m.vac ? `toggleActive(${i})` : ''}" class="w-5 h-5 rounded-full border-2 ${m.active ? 'bg-blue-900' : ''}"></div>
                         </div>
                     </div>
                     <div class="${m.active ? '' : 'hidden'} flex items-center gap-2 mt-1">
@@ -251,14 +255,28 @@
             });
         };
 
+        window.removeExtraMember = (i) => {
+            if(confirm("¿Eliminar este apoyo?")) {
+                window.equipo.splice(i, 1);
+                renderEquipo();
+                updateCalculos();
+            }
+        };
+
+        window.toggleVac = (i) => {
+            window.equipo[i].vac = !window.equipo[i].vac;
+            if(window.equipo[i].vac) window.equipo[i].active = false;
+            renderEquipo(); updateCalculos();
+        };
+
         window.toggleActive = (i) => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
-        window.removeMember = (i) => { window.equipo.splice(i, 1); renderEquipo(); updateCalculos(); };
         window.updateFicha = (i, val) => { window.equipo[i].ficha = val.toUpperCase(); };
+        
         window.addExtraMember = () => {
             const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
             if (name && code) {
-                window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true });
+                window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
                 document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
                 renderEquipo(); updateCalculos();
             }
@@ -300,10 +318,6 @@
             const container = document.getElementById('semanas-container');
             container.innerHTML = '';
             const filtered = window.registros.filter(r => r.semana == window.viewingWeek);
-            if(filtered.length === 0) {
-                container.innerHTML = `<p class="text-center py-10 text-slate-400 font-bold uppercase text-[10px]">Semana sin registros</p>`;
-                return;
-            }
             filtered.forEach(r => {
                 const item = document.createElement('div');
                 item.className = "bg-white p-4 rounded-eden shadow-eden border border-slate-100 mb-3";
@@ -324,11 +338,75 @@
                 `;
                 container.appendChild(item);
             });
-            const btnP = document.createElement('button');
-            btnP.className = "w-full bg-blue-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg mt-4";
-            btnP.innerText = `Imprimir Semana ${window.viewingWeek}`;
-            btnP.onclick = () => generatePrintable(window.viewingWeek);
-            container.appendChild(btnP);
+            if(filtered.length > 0) {
+                const btnP = document.createElement('button');
+                btnP.className = "w-full bg-blue-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg mt-4 no-print";
+                btnP.innerText = `Imprimir Semana ${window.viewingWeek}`;
+                btnP.onclick = () => generatePrintable(window.viewingWeek);
+                container.appendChild(btnP);
+            }
+        };
+
+        window.renderActivos = () => {
+            const list = document.getElementById('activos-list');
+            const totalGen = document.getElementById('total-general-activos');
+            const filter = document.getElementById('month-filter').value;
+            list.innerHTML = '';
+            let stats = {};
+            let globalSum = 0;
+
+            window.registros.forEach(r => {
+                const fechaObj = new Date(r.fecha + "T12:00:00");
+                const mesRegistro = fechaObj.getMonth();
+
+                if (filter === 'ALL' || mesRegistro == filter) {
+                    const almuerzo = r.desglose?.almuerzo || 350;
+                    const desayuno = r.desglose?.desayuno || 0;
+                    const cena = r.desglose?.cena || 0;
+                    const montoIndiv = almuerzo + desayuno + cena;
+
+                    r.personal.forEach(p => {
+                        if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [] };
+                        stats[p.code].total += montoIndiv;
+                        stats[p.code].dias += 1;
+                        stats[p.code].h.push({ f: r.fecha, l: r.lugar, m: montoIndiv });
+                        globalSum += montoIndiv;
+                    });
+                }
+            });
+
+            totalGen.innerText = `RD$ ${globalSum.toLocaleString()}`;
+
+            Object.entries(stats).sort((a,b) => b[1].total - a[1].total).forEach(([code, data]) => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-eden shadow-eden border-l-[10px] border-blue-900 overflow-hidden mb-4";
+                card.innerHTML = `
+                    <div onclick="this.parentElement.classList.toggle('accordion-open')" class="p-6 flex justify-between items-center cursor-pointer">
+                        <div>
+                            <h4 class="font-black text-blue-900 text-sm uppercase">${data.name}</h4>
+                            <p class="text-[9px] font-black text-slate-400 mt-1 uppercase">ID: ${code} • ${data.dias} DÍAS</p>
+                        </div>
+                        <div class="text-right flex items-center gap-4">
+                            <div>
+                                <p class="text-[7px] font-black text-slate-400 uppercase leading-none">ACUMULADO</p>
+                                <p class="font-black text-blue-900 text-2xl italic mt-1">RD$ ${data.total.toLocaleString()}</p>
+                            </div>
+                            <span class="arrow-icon text-blue-900 font-black italic transition-transform">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content bg-slate-50 border-t">
+                        <div class="p-5 space-y-2">
+                            ${data.h.map(hist => `
+                                <div class="flex justify-between items-center bg-white p-3 rounded-xl border shadow-sm">
+                                    <div><p class="text-[7px] font-black text-slate-400 uppercase">${hist.f}</p><p class="text-[10px] font-bold text-blue-900 uppercase">${hist.l}</p></div>
+                                    <p class="text-[11px] font-black text-blue-900">RD$ ${hist.m}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
         };
 
         window.generatePrintable = (num) => {
@@ -375,19 +453,25 @@
         };
 
         window.deleteRecord = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "registros", id)); };
+        
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
             document.getElementById('edit-indicator').classList.add('hidden'); document.getElementById('btn-cancel-edit').classList.add('hidden');
             document.getElementById('btn-save').innerText = "GUARDAR"; window.equipo = JSON.parse(JSON.stringify(equipoBase)); renderEquipo(); updateCalculos();
         };
+
         window.returnToApp = () => { document.getElementById('print-section').style.display = 'none'; document.getElementById('app-screen').classList.remove('hidden'); };
         window.logout = () => location.reload();
+
         window.showTab = (tab) => {
             document.getElementById('tab-registro').classList.toggle('hidden', tab !== 'registro');
             document.getElementById('tab-historial').classList.toggle('hidden', tab !== 'historial');
+            document.getElementById('tab-activos').classList.toggle('hidden', tab !== 'activos');
             document.getElementById('btn-reg').classList.toggle('tab-active', tab === 'registro');
             document.getElementById('btn-hist').classList.toggle('tab-active', tab === 'historial');
+            document.getElementById('btn-act').classList.toggle('tab-active', tab === 'activos');
             if(tab === 'historial') renderHistorial();
+            if(tab === 'activos') renderActivos();
         };
 
         document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
@@ -395,4 +479,3 @@
     </script>
 </body>
 </html>
-
