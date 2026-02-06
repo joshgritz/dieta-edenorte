@@ -64,6 +64,82 @@
         input::placeholder { color: rgba(255, 255, 255, 0.3); }
         
         .glow-text { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+
+        /* MEJORAS UI: Inputs y Contraste (Corregido para modo oscuro) */
+        input, textarea, select {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important;
+            outline: none;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+
+        /* Fix dropdown options visibility */
+        option { background-color: #1e293b; color: white; }
+
+        /* TOAST NOTIFICATIONS */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: white; padding: 16px 24px; border-radius: 16px; font-size: 12px; font-weight: 800; box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateX(120%); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; pointer-events: auto; min-width: 250px; }
+        .toast.show { transform: translateX(0); }
+        .toast-success { border-left: 4px solid #22c55e; }
+        .toast-error { border-left: 4px solid #ef4444; }
+        .toast-warning { border-left: 4px solid #f59e0b; }
+
+        /* VALIDATION STYLES */
+        .input-error { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* SKELETON LOADER */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* LIGHT MODE */
+        body.light-mode { background: #f8fafc; color: #1e293b; }
+        body.light-mode .premium-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        body.light-mode .premium-card:hover { border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* Text Color Overrides for Light Mode */
+        body.light-mode .text-white { color: #1e293b !important; }
+        body.light-mode .text-slate-300, body.light-mode .text-slate-400, body.light-mode .text-slate-500 { color: #475569 !important; }
+        
+        /* Input Overrides */
+        body.light-mode input, body.light-mode textarea, body.light-mode select { background: #ffffff !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
+        body.light-mode input:focus, body.light-mode textarea:focus, body.light-mode select:focus { border-color: #3b82f6 !important; background: #ffffff !important; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important; }
+        body.light-mode input::placeholder, body.light-mode textarea::placeholder { color: #94a3b8 !important; }
+        body.light-mode option { background-color: #ffffff; color: #1e293b; }
+
+        /* Exceptions (Keep dark/colored elements) */
+        body.light-mode .bg-gradient-to-br { box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3); }
+        body.light-mode .bg-gradient-to-br .text-white { color: white !important; }
+        body.light-mode .bg-gradient-to-br .text-blue-200 { color: #bfdbfe !important; }
+        body.light-mode .bg-white\/5 { background: #f1f5f9 !important; }
+        body.light-mode .border-white\/5, body.light-mode .border-white\/10, body.light-mode .border-white\/20 { border-color: #e2e8f0 !important; }
+        body.light-mode header { background: rgba(255,255,255,0.8) !important; border-bottom: 1px solid #e2e8f0; }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.6); }
+
+        /* ANIMATIONS */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -79,13 +155,17 @@
         <button onclick="returnToApp()" class="no-print w-full mt-6 bg-slate-900 text-white py-4 rounded-xl font-bold uppercase">Regresar</button>
     </div>
 
+    <button onclick="toggleTheme()" id="theme-btn" class="no-print fixed bottom-6 left-6 w-12 h-12 bg-white text-slate-900 rounded-full shadow-2xl flex items-center justify-center z-50 transition-transform hover:scale-110 border-2 border-slate-200 text-xl cursor-pointer">☀️</button>
+
+    <div id="toast-container" class="toast-container"></div>
+
     <div id="login-screen" class="no-print min-h-screen flex items-center justify-center p-6">
         <div class="premium-card p-10 w-full max-w-sm text-center shadow-2xl">
             <h1 class="text-5xl font-black text-blue-500 italic mb-2 glow-text">EDENORTE</h1>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-10">Systems Mao Sector</p>
             <div class="space-y-4">
-                <input id="login-user-code" type="text" placeholder="ID EMPLEADO" class="w-full p-4 rounded-2xl font-bold text-center outline-none uppercase">
-                <input id="login-pass" type="password" placeholder="CONTRASEÑA" class="w-full p-4 rounded-2xl font-bold text-center outline-none">
+                <input id="login-user-code" type="text" placeholder="CORREO / ID" class="w-full p-4 rounded-2xl font-bold text-center outline-none uppercase" onkeypress="if(event.key === 'Enter') handleLogin()">
+                <input id="login-pass" type="password" placeholder="CONTRASEÑA" class="w-full p-4 rounded-2xl font-bold text-center outline-none" onkeypress="if(event.key === 'Enter') handleLogin()">
                 <button onclick="handleLogin()" class="w-full btn-gradient text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm">Autenticar</button>
             </div>
         </div>
@@ -170,7 +250,10 @@
                     <button onclick="changeViewWeek(-1)" class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full font-black text-blue-500">◀</button>
                     <div class="text-center">
                         <span class="text-[9px] font-bold text-slate-500 block uppercase italic">Visualizando Semana</span>
-                        <span id="view-week-display" class="font-black text-3xl text-white italic">1</span>
+                        <div class="flex items-center gap-2 justify-center">
+                            <select id="year-selector" class="text-sm font-black bg-transparent border border-white/5 px-3 py-2 rounded-lg"></select>
+                            <span id="view-week-display" class="font-black text-3xl text-white italic">1</span>
+                        </div>
                     </div>
                     <button onclick="changeViewWeek(1)" class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full font-black text-blue-500">▶</button>
                 </div>
@@ -196,6 +279,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -209,13 +293,26 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         window.currentUser = "";
         window.editingId = null;
         window.currentWeek = 1;
         window.viewingWeek = 1;
+        window.currentYear = new Date().getFullYear();
+        window.viewingYear = new Date().getFullYear();
         window.registros = [];
+        window.loadingData = false;
         
+        // SECURITY: Prevent XSS attacks
+        const escapeHTML = (str) => {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+                }[tag]));
+        };
+
         const equipoBase = [
             { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true, ficha: '7344', isExtra: false, vac: false },
             { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true, ficha: '7344', isExtra: false, vac: false },
@@ -231,31 +328,101 @@
             return `${h}:${m} ${ampm}`;
         };
 
+        // ISO-week helpers - Perfectas para cálculo automático 1-53/54 semanas
+        function getISOWeek(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return weekNo;
+        }
+
+        function getISOYear(date) {
+            const d = new Date(date);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            return d.getFullYear();
+        }
+
+        // Compatibilidad: alias para funciones antiguas
+        function getWeekNumber(date) { return getISOWeek(date); }
+        function getYearOfWeek(date) { return getISOYear(date); }
+
+        // Detectar año actual automáticamente del selector
+        function detectCurrentYear() {
+            const añoSelect = document.getElementById('year-selector');
+            if (añoSelect && añoSelect.value) {
+                return parseInt(añoSelect.value);
+            }
+            return new Date().getFullYear();
+        }
+
         const syncData = () => {
+            window.loadingData = true;
+            renderHistorial();
+
             onSnapshot(doc(db, "config", "global"), (snap) => {
                 if (snap.exists()) {
-                    window.currentWeek = snap.data().week;
-                    if (!window.editingId) window.viewingWeek = snap.data().week;
-                    updateHeader();
+                    window.currentWeek = snap.data().week || getWeekNumber(new Date());
+                    window.currentYear = snap.data().year || getYearOfWeek(new Date());
+                } else {
+                    window.currentWeek = getWeekNumber(new Date());
+                    window.currentYear = getYearOfWeek(new Date());
                 }
+                if (!window.editingId) {
+                    window.viewingWeek = window.currentWeek;
+                    window.viewingYear = window.currentYear;
+                }
+                updateHeader();
             });
             const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
             onSnapshot(q, (snapshot) => {
                 window.registros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                // Ensure in-memory records have ISO week/year fields for consistent filtering
+                window.registros.forEach(r => {
+                    try {
+                        if (!r.semana) r.semana = getWeekNumber(r.fecha);
+                        if (!r.año) r.año = getYearOfWeek(r.fecha);
+                    } catch(e) { }
+                });
+                populateYearSelector();
+                window.loadingData = false;
                 renderHistorial();
                 renderActivos();
             });
         };
 
-        window.handleLogin = () => {
-            const code = document.getElementById('login-user-code').value.trim().toUpperCase();
-            if (document.getElementById('login-pass').value === 'Edenorte2025' && code !== "") {
-                window.currentUser = code;
+        // AUTHENTICATION SYSTEM
+        window.handleLogin = async () => {
+            const input = document.getElementById('login-user-code').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            if (!input || !pass) return showToast("Ingrese sus credenciales", "warning");
+
+            // Si no tiene @, asumimos que es un ID y agregamos un dominio ficticio o real
+            const email = input.includes('@') ? input : `${input}@edenorte.com`;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // La redirección se maneja en onAuthStateChanged
+            } catch (error) {
+                console.error(error);
+                showToast("Error de acceso: Verifique usuario y contraseña", "error");
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.currentUser = user.email.split('@')[0].toUpperCase();
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 syncData();
-            } else { alert("Acceso Denegado"); }
-        };
+            } else {
+                window.currentUser = "";
+                document.getElementById('app-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('login-pass').value = '';
+            }
+        });
 
         window.updateHeader = () => {
             document.getElementById('logged-user-display').innerText = `Agente Operativo: ${window.currentUser}`;
@@ -280,8 +447,8 @@
                 item.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div onclick="${!m.vac ? `toggleActive(${i})` : ''}" class="cursor-pointer">
-                            <p class="font-bold text-[12px] text-white uppercase ${m.vac ? 'line-through opacity-50' : ''}">${m.name}</p>
-                            <p class="text-[9px] font-bold text-blue-400 opacity-70 tracking-widest">${m.code} ${m.vac ? '• EN VACACIONES' : ''}</p>
+                            <p class="font-bold text-[12px] text-white uppercase ${m.vac ? 'line-through opacity-50' : ''}">${escapeHTML(m.name)}</p>
+                            <p class="text-[9px] font-bold text-blue-400 opacity-70 tracking-widest">${escapeHTML(m.code)} ${m.vac ? '• EN VACACIONES' : ''}</p>
                         </div>
                         <div class="flex gap-2 items-center">
                             ${deleteBtn}
@@ -291,7 +458,7 @@
                     </div>
                     <div class="${m.active ? '' : 'hidden'} flex items-center gap-3 mt-3 pt-3 border-t border-white/5">
                         <span class="text-[9px] font-black text-slate-500">ASIGNACIÓN FICHA:</span>
-                        <input type="text" value="${m.ficha}" onchange="updateFicha(${i}, this.value)" class="bg-transparent border-none p-0 text-[11px] font-black text-blue-400 w-20 outline-none">
+                        <input type="text" value="${escapeHTML(m.ficha)}" onchange="updateFicha(${i}, this.value)" class="bg-transparent border-none p-0 text-[11px] font-black text-blue-400 w-20 outline-none">
                     </div>
                 `;
                 list.appendChild(item);
@@ -341,11 +508,27 @@
         };
 
         window.saveRecord = async () => {
+            // Validación Visual
+            const required = ['f-lugar', 'f-trabajo'];
+            let hasError = false;
+            required.forEach(id => {
+                const el = document.getElementById(id);
+                if(!el.value.trim()) {
+                    el.classList.add('input-error');
+                    el.addEventListener('input', () => el.classList.remove('input-error'), { once: true });
+                    hasError = true;
+                }
+            });
+            if(hasError) return showToast("Por favor complete los campos marcados en rojo", "error");
+
             const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
-            if(!lug) return alert("Indique el lugar del trabajo");
+            const fecha = document.getElementById('f-fecha').value;
+            const semanaCalculada = getISOWeek(fecha);
+            const añoSeleccionado = detectCurrentYear();
             const record = {
-                semana: window.viewingWeek,
-                fecha: document.getElementById('f-fecha').value,
+                semana: semanaCalculada,
+                año: añoSeleccionado,
+                fecha: fecha,
                 lugar: lug,
                 trabajo: document.getElementById('f-trabajo').value.toUpperCase(),
                 horas: { sm: document.getElementById('h-sal-mao').value, ll: document.getElementById('h-lle-lug').value, sl: document.getElementById('h-sal-lug').value, rm: document.getElementById('h-lle-mao').value },
@@ -356,13 +539,51 @@
             };
             if (window.editingId) await updateDoc(doc(db, "registros", window.editingId), record);
             else await addDoc(collection(db, "registros"), record);
-            cancelEdit(); showTab('historial');
+            // Redirigir automáticamente a la semana donde se guardó
+            window.viewingWeek = semanaCalculada;
+            window.viewingYear = añoSeleccionado;
+            updateHeader();
+            cancelEdit();
+            showTab('historial');
+            showToast("Registro guardado exitosamente", "success");
+            renderHistorial();
         };
 
         window.renderHistorial = () => {
             const container = document.getElementById('semanas-container');
             container.innerHTML = '';
-            const filtered = window.registros.filter(r => r.semana == window.viewingWeek);
+
+            if (window.loadingData) {
+                for(let i=0; i<3; i++) {
+                    container.innerHTML += `
+                        <div class="premium-card p-5 border-l-4 border-l-white/10">
+                            <div class="flex justify-between mb-4">
+                                <div class="skeleton w-24 h-6"></div>
+                                <div class="flex gap-2"><div class="skeleton w-12 h-4"></div><div class="skeleton w-12 h-4"></div></div>
+                            </div>
+                            <div class="skeleton w-3/4 h-6 mb-3"></div>
+                            <div class="skeleton w-1/2 h-4 mb-4"></div>
+                            <div class="space-y-2 border-t border-white/5 pt-4">
+                                <div class="skeleton w-full h-3"></div>
+                                <div class="skeleton w-full h-3"></div>
+                                <div class="skeleton w-full h-3"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            const filtered = window.registros.filter(r => {
+                return r.semana == window.viewingWeek && (r.año || new Date(r.fecha + "T12:00:00").getFullYear()) == window.viewingYear;
+            });
+
+            // Empty State
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 opacity-50 fade-in"><div class="text-4xl mb-2">📂</div><p class="text-xs font-bold uppercase">No hay registros en la semana ${window.viewingWeek}</p></div>`;
+                return;
+            }
+
             filtered.forEach(r => {
                 const item = document.createElement('div');
                 item.className = "premium-card p-5 border-l-4 border-l-blue-500";
@@ -382,11 +603,11 @@
                             <button onclick="deleteRecord('${r.id}')" class="text-red-400 font-bold text-[10px] uppercase">Borrar</button>
                         </div>
                     </div>
-                    <h4 class="text-sm font-black uppercase text-white mb-1 tracking-tight">${r.lugar}</h4>
+                    <h4 class="text-sm font-black uppercase text-white mb-1 tracking-tight">${escapeHTML(r.lugar)}</h4>
                     <p class="text-[10px] text-blue-300 font-bold uppercase italic mb-1">${detalleComidas.join(" + ")}</p>
                     <p class="text-[10px] text-slate-400 font-bold uppercase mb-4">Misión: ${formatAMPM(r.horas.sm)} - ${formatAMPM(r.horas.rm)}</p>
                     <div class="space-y-2 border-t border-white/5 pt-4">
-                        ${r.personal.map(p => `<p class="text-[9px] text-slate-300 font-semibold uppercase tracking-tighter">• ${p.name} <span class="text-blue-400">| RD$ ${ (d.almuerzo + d.desayuno + d.cena) }</span></p>`).join('')}
+                        ${r.personal.map(p => `<p class="text-[9px] text-slate-300 font-semibold uppercase tracking-tighter">• ${escapeHTML(p.name)} <span class="text-blue-400">| RD$ ${ (d.almuerzo + d.desayuno + d.cena) }</span></p>`).join('')}
                     </div>
                 `;
                 container.appendChild(item);
@@ -430,6 +651,11 @@
 
             totalGen.innerText = `RD$ ${globalSum.toLocaleString()}`;
 
+            if (Object.keys(stats).length === 0) {
+                list.innerHTML = `<div class="text-center py-10 opacity-50 fade-in"><p class="text-xs font-bold uppercase">No hay datos para el filtro seleccionado</p></div>`;
+                return;
+            }
+
             Object.entries(stats).sort((a,b) => b[1].total - a[1].total).forEach(([code, data]) => {
                 const card = document.createElement('div');
                 card.className = "premium-card overflow-hidden";
@@ -437,7 +663,7 @@
                     <div onclick="this.parentElement.classList.toggle('accordion-open')" class="p-6 flex justify-between items-center cursor-pointer">
                         <div>
                             <h4 class="font-black text-white text-sm uppercase">${data.name}</h4>
-                            <p class="text-[9px] font-bold text-blue-400 mt-1 uppercase tracking-widest">ID: ${code} • ${data.dias} JORNADAS</p>
+                            <p class="text-[9px] font-bold text-blue-400 mt-1 uppercase tracking-widest">ID: ${escapeHTML(code)} • ${data.dias} JORNADAS</p>
                         </div>
                         <div class="text-right flex items-center gap-5">
                             <div>
@@ -451,7 +677,7 @@
                         <div class="p-5 space-y-3">
                             ${data.h.map(hist => `
                                 <div class="flex justify-between items-center bg-slate-900/40 p-3 rounded-xl border border-white/5">
-                                    <div><p class="text-[8px] font-black text-slate-500 uppercase">${hist.f}</p><p class="text-[10px] font-bold text-white uppercase">${hist.l}</p></div>
+                                    <div><p class="text-[8px] font-black text-slate-500 uppercase">${hist.f}</p><p class="text-[10px] font-bold text-white uppercase">${escapeHTML(hist.l)}</p></div>
                                     <p class="text-[11px] font-black text-blue-400">RD$ ${hist.m}</p>
                                 </div>
                             `).join('')}
@@ -464,7 +690,7 @@
 
         // CORRECCIÓN: Reporte impreso con tabla de desglose
         window.generatePrintable = (num) => {
-            const data = window.registros.filter(r => r.semana == num);
+            const data = window.registros.filter(r => (r.semana == num) && ((r.año || new Date(r.fecha + "T12:00:00").getFullYear()) == window.viewingYear));
             const list = document.getElementById('print-list');
             document.getElementById('print-meta').innerHTML = `<span>SEMANA FISCAL: ${num}</span><span>ZONA SECTORIAL MAO</span>`;
             list.innerHTML = '';
@@ -515,7 +741,7 @@
         window.editRecord = (id) => {
             const r = window.registros.find(x => x.id === id);
             window.editingId = r.id; window.viewingWeek = r.semana; updateHeader();
-            document.getElementById('f-fecha').value = r.fecha; document.getElementById('f-lugar').value = r.lugar; document.getElementById('f-trabajo').value = r.trabajo;
+            document.getElementById('f-fecha').value = r.fecha; document.getElementById('f-lugar').value = r.lugar; document.getElementById('f-trabajo').value = r.trabajo || '';
             document.getElementById('h-sal-mao').value = r.horas.sm; document.getElementById('h-lle-lug').value = r.horas.ll; document.getElementById('h-sal-lug').value = r.horas.sl; document.getElementById('h-lle-mao').value = r.horas.rm;
             window.equipo = JSON.parse(JSON.stringify(equipoBase));
             r.personal.forEach(p => {
@@ -536,7 +762,7 @@
         };
 
         window.returnToApp = () => { document.getElementById('print-section').style.display = 'none'; document.getElementById('app-screen').classList.remove('hidden'); };
-        window.logout = () => location.reload();
+        window.logout = () => signOut(auth);
 
         window.showTab = (tab) => {
             document.getElementById('tab-registro').classList.toggle('hidden', tab !== 'registro');
@@ -545,12 +771,113 @@
             document.getElementById('btn-reg').classList.toggle('tab-active', tab === 'registro');
             document.getElementById('btn-hist').classList.toggle('tab-active', tab === 'historial');
             document.getElementById('btn-act').classList.toggle('tab-active', tab === 'activos');
+            
+            // Animation trigger
+            const activeContent = document.getElementById(`tab-${tab}`);
+            activeContent.classList.remove('fade-in');
+            void activeContent.offsetWidth; // Trigger reflow
+            activeContent.classList.add('fade-in');
+
             if(tab === 'historial') renderHistorial();
             if(tab === 'activos') renderActivos();
         };
 
+        // Populate year selector with years from registros - Sincronización automática
+        const populateYearSelector = () => {
+            const sel = document.getElementById('year-selector');
+            if(!sel) return;
+            const añosUnicos = [...new Set(window.registros.map(r => r.año || new Date(r.fecha + "T12:00:00").getFullYear()))];
+            if (añosUnicos.length === 0) {
+                const currentYear = new Date().getFullYear();
+                añosUnicos.push(currentYear, currentYear-1, currentYear-2);
+            }
+            añosUnicos.sort((a,b) => b - a);
+            sel.innerHTML = '';
+            añosUnicos.forEach(año => { const opt = document.createElement('option'); opt.value = año; opt.text = año; sel.appendChild(opt); });
+            sel.value = window.viewingYear || new Date().getFullYear();
+            
+            // EVENT LISTENER: Sincronización automática al cambiar año
+            sel.removeEventListener('change', sel._changeHandler);
+            sel._changeHandler = (e) => {
+                const nuevoAño = parseInt(e.target.value);
+                window.viewingYear = nuevoAño;
+                window.viewingWeek = 1; // Reset a semana 1 del nuevo año
+                // Actualizar fecha actual al nuevo año
+                const hoy = new Date();
+                hoy.setFullYear(nuevoAño);
+                document.getElementById('f-fecha').value = hoy.toISOString().split('T')[0];
+                updateHeader();
+                renderHistorial();
+            };
+            sel.addEventListener('change', sel._changeHandler);
+        };
+
+        // Sound System (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const playSound = (type) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.15); // C6
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(110, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        };
+
+        // Toast System
+        window.showToast = (msg, type = 'info') => {
+            playSound(type);
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : '!'}</span> ${msg}`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        };
+
+        // Theme System
+        window.toggleTheme = () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('theme-btn').innerText = isLight ? '🌙' : '☀️';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        };
+        
+        if(localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            document.getElementById('theme-btn').innerText = '🌙';
+        }
+
         document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
         renderEquipo();
+        populateYearSelector();
     </script>
 </body>
 </html>
