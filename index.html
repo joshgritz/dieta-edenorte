@@ -15,7 +15,93 @@
             min-height: 100vh;
             margin: 0; 
             -webkit-tap-highlight-color: transparent; 
+            overflow-x: hidden;
         }
+
+        /* --- MEJORAS VISUALES LOGIN (NUEVAS) --- */
+        .login-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 40;
+            background: #0f172a;
+            overflow: hidden;
+        }
+
+        /* Fondo animado sutil */
+        .bg-blobs {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 10s infinite ease-in-out;
+            border-radius: 50%;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #1e3a8a; animation-delay: 0s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #1d4ed8; animation-delay: 2s; }
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #3b82f6; animation-delay: 4s; opacity: 0.2; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Tarjeta Login Glassmorphism */
+        .login-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .input-group-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            pointer-events: none;
+            transition: color 0.3s;
+        }
+        
+        .login-input:focus ~ .input-group-icon {
+            color: #3b82f6;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.6);
+        }
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        .login-btn:active { transform: scale(0.98); }
+        .login-btn:hover::after { left: 100%; }
+
+        /* --------------------------------------- */
 
         .premium-card {
             background: rgba(255, 255, 255, 0.03);
@@ -140,9 +226,25 @@
         /* ANIMATIONS */
         .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* SPINNER */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="hidden fixed top-0 left-0 w-full bg-red-600 text-white text-center text-[10px] font-bold py-2 z-[200] uppercase tracking-widest shadow-lg">
+        ⚠️ Sin conexión a internet - Modo Offline
+    </div>
 
     <div id="print-section">
         <div style="text-align: center; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 25px;">
@@ -155,29 +257,187 @@
         <button onclick="returnToApp()" class="no-print w-full mt-6 bg-slate-900 text-white py-4 rounded-xl font-bold uppercase">Regresar</button>
     </div>
 
-    <button onclick="toggleTheme()" id="theme-btn" class="no-print fixed bottom-6 left-6 w-12 h-12 bg-white text-slate-900 rounded-full shadow-2xl flex items-center justify-center z-50 transition-transform hover:scale-110 border-2 border-slate-200 text-xl cursor-pointer">☀️</button>
-
-    <div id="toast-container" class="toast-container"></div>
-
-    <div id="login-screen" class="no-print min-h-screen flex items-center justify-center p-6">
-        <div class="premium-card p-10 w-full max-w-sm text-center shadow-2xl">
-            <h1 class="text-5xl font-black text-blue-500 italic mb-2 glow-text">EDENORTE</h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-10">Systems Mao Sector</p>
-            <div class="space-y-4">
-                <input id="login-user-code" type="text" placeholder="CORREO / ID" class="w-full p-4 rounded-2xl font-bold text-center outline-none uppercase" onkeypress="if(event.key === 'Enter') handleLogin()">
-                <input id="login-pass" type="password" placeholder="CONTRASEÑA" class="w-full p-4 rounded-2xl font-bold text-center outline-none" onkeypress="if(event.key === 'Enter') handleLogin()">
-                <button onclick="handleLogin()" class="w-full btn-gradient text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm">Autenticar</button>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
+        <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center shrink-0">
+                <h2 class="text-xl font-black text-blue-500 italic glow-text">AJUSTES DE CUENTA</h2>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nombre Completo</label>
+                    <input id="set-name" type="text" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">ID Empleado (Vinculación)</label>
+                    <input id="set-id" type="text" placeholder="Ej. 19579" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Correo Electrónico</label>
+                    <input id="set-email" type="email" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nueva Contraseña (Opcional)</label>
+                    <input id="set-pass" type="password" placeholder="Dejar en blanco para no cambiar" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Apariencia</label>
+                    <select id="set-theme" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                        <option value="dark">MODO OSCURO</option>
+                        <option value="light">MODO CLARO</option>
+                    </select>
+                </div>
+                <div class="pt-4 border-t border-white/10">
+                    <label class="text-[9px] font-black text-orange-500 uppercase block mb-1">Confirmar con Contraseña Actual</label>
+                    <input id="set-current-pass" type="password" placeholder="Requerido para guardar cambios" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-orange-500/30 text-white outline-none focus:border-orange-500">
+                </div>
+                <button onclick="saveSettings()" class="w-full btn-gradient text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mt-2">Guardar Cambios</button>
+                
+                <div class="pt-4 mt-2 border-t border-white/10">
+                    <button onclick="deleteAccount()" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-500 hover:text-white transition-all">Eliminar Cuenta Permanentemente</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Guide Modal -->
+    <div id="guide-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
+        <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                <h2 class="text-xl font-black text-blue-500 italic glow-text">MANUAL DE USUARIO</h2>
+                <button onclick="toggleGuide()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+            </div>
+            <div id="guide-content" class="p-6 overflow-y-auto space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Calendar Widget -->
+    <div id="mini-calendar" class="premium-card no-print fixed bottom-24 right-6 w-64 p-5 hidden z-50 flex flex-col gap-2 shadow-2xl border border-white/10 backdrop-blur-xl">
+        <div class="flex justify-between items-center mb-2">
+            <button onclick="changeCalendarMonth(-1)" class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">◀</button>
+            <span id="cal-month-year" class="text-xs font-black text-white uppercase tracking-widest"></span>
+            <button onclick="changeCalendarMonth(1)" class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">▶</button>
+        </div>
+        <div class="grid grid-cols-7 text-center mb-1">
+            <span class="text-[9px] font-black text-slate-500">D</span><span class="text-[9px] font-black text-slate-500">L</span><span class="text-[9px] font-black text-slate-500">M</span><span class="text-[9px] font-black text-slate-500">M</span><span class="text-[9px] font-black text-slate-500">J</span><span class="text-[9px] font-black text-slate-500">V</span><span class="text-[9px] font-black text-slate-500">S</span>
+        </div>
+        <div id="cal-days" class="grid grid-cols-7 gap-1 text-center"></div>
+        <div id="cal-note-area" class="hidden mt-2 border-t border-white/10 pt-2 animate-pulse">
+            <p id="cal-selected-date" class="text-[9px] font-black text-blue-400 uppercase mb-1 text-center"></p>
+            <textarea id="cal-note-input" placeholder="Escribe un recordatorio..." class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-[10px] text-white h-16 resize-none outline-none focus:border-blue-500 mb-1"></textarea>
+            <button onclick="saveCalendarNote()" class="w-full bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] font-bold py-1.5 rounded transition-colors uppercase">Guardar Nota</button>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons (Bottom Right) -->
+    <div class="no-print fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <div id="fab-menu" class="flex flex-col gap-3 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none">
+            <button onclick="toggleGuide()" class="w-12 h-12 bg-slate-800 text-blue-400 rounded-full shadow-2xl flex items-center justify-center border-2 border-slate-600 text-xl cursor-pointer font-black hover:scale-110 transition-transform" title="Manual de Usuario">?</button>
+            <button onclick="toggleTheme()" id="theme-btn" class="w-12 h-12 bg-white text-slate-900 rounded-full shadow-2xl flex items-center justify-center border-2 border-slate-200 text-xl cursor-pointer hover:scale-110 transition-transform" title="Cambiar Tema">☀️</button>
+            <button onclick="toggleCalendar()" class="w-12 h-12 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center border-2 border-blue-400 text-xl cursor-pointer hover:scale-110 transition-transform" title="Calendario">📅</button>
+        </div>
+        <button onclick="toggleFab()" id="fab-main-btn" class="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 border-2 border-blue-400 text-2xl cursor-pointer z-50">☰</button>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- NUEVO DISEÑO DE LOGIN -->
+    <div id="login-screen" class="no-print login-wrapper flex items-center justify-center p-6">
+        <!-- Fondo Animado -->
+        <div class="bg-blobs">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+
+        <div class="login-card premium-card p-8 w-full max-w-md relative z-10">
+            <div class="text-center mb-8">
+                <h1 id="login-title" class="text-4xl font-black text-blue-500 italic mb-1 glow-text tracking-tight">EDENORTE</h1>
+                <p id="login-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Systems Mao Sector</p>
+            </div>
+            
+            <form id="login-form" onsubmit="event.preventDefault(); handleSubmit();">
+                <div class="space-y-5">
+                    <!-- Input Nombre (Nuevo) -->
+                    <div id="name-group" class="relative hidden">
+                        <span class="input-group-icon">👤</span>
+                        <input id="register-name" type="text" placeholder="NOMBRE COMPLETO" 
+                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                            onkeypress="if(event.key === 'Enter') handleSubmit()">
+                    </div>
+
+                    <!-- Input ID (Nuevo - Solo Registro) -->
+                    <div id="id-group" class="relative hidden">
+                        <span class="input-group-icon">🆔</span>
+                        <input id="register-id" type="text" placeholder="ID EMPLEADO (Ej. 19579)" 
+                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                            oninput="checkId()" onkeypress="if(event.key === 'Enter') handleSubmit()">
+                    </div>
+
+                    <!-- Input Email con Icono -->
+                    <div class="relative">
+                        <span class="input-group-icon">✉️</span>
+                        <input id="login-user-code" type="text" placeholder="CORREO / ID" 
+                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                            onkeypress="if(event.key === 'Enter') handleSubmit()">
+                    </div>
+
+                    <!-- Input Password con Icono -->
+                    <div id="pass-group" class="relative">
+                        <span class="input-group-icon">🔒</span>
+                        <input id="login-pass" type="password" placeholder="CONTRASEÑA" 
+                            class="login-input w-full p-4 pl-12 pr-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                            onkeypress="if(event.key === 'Enter') handleSubmit()">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors z-20">
+                            👁️
+                        </button>
+                    </div>
+
+                    <!-- Remember & Forgot -->
+                    <div class="flex justify-between items-center -mt-2">
+                        <div id="remember-box" class="flex items-center gap-2">
+                            <input id="remember-me" type="checkbox" class="accent-blue-500 w-3 h-3 cursor-pointer rounded bg-slate-800 border-slate-600">
+                            <label for="remember-me" class="text-[10px] font-bold text-slate-400 uppercase cursor-pointer select-none hover:text-white transition-colors">Recordarme</label>
+                        </div>
+                        <div id="forgot-link-box">
+                            <a href="#" onclick="toggleMode('reset')" class="text-[10px] font-bold text-slate-400 hover:text-blue-400 transition-colors">¿OLVIDASTE TU CONTRASEÑA?</a>
+                        </div>
+                    </div>
+
+                    <!-- Botón Login Mejorado -->
+                    <button id="login-submit-btn" type="button" onclick="handleSubmit()" class="login-btn w-full text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg">
+                        Acceder al Sistema
+                    </button>
+                </div>
+            </form>
+
+            <div id="login-footer" class="mt-8 text-center border-t border-slate-700/50 pt-6">
+                <p class="text-xs text-slate-400 font-semibold">
+                    ¿Eres nuevo personal? 
+                    <a href="#" onclick="toggleMode('register')" class="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer">Crear Usuario</a>
+                </p>
+            </div>
+            
+            <div id="back-login-footer" class="hidden mt-8 text-center border-t border-slate-700/50 pt-6">
+                <a href="#" onclick="toggleMode('login')" class="text-xs text-slate-400 hover:text-white font-bold transition-colors cursor-pointer">← Volver al Inicio de Sesión</a>
+            </div>
+        </div>
+    </div>
+    <!-- FIN LOGIN -->
+
     <div id="app-screen" class="no-print hidden min-h-screen pb-20">
         <header class="p-6 flex justify-between items-center border-b border-white/5 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-            <div>
-                <h1 class="text-2xl font-black italic text-blue-500 glow-text">EDENORTE</h1>
-                <p id="logged-user-display" class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter"></p>
+            <div class="flex items-center gap-3">
+                <div>
+                    <h1 class="text-2xl font-black italic text-blue-500 glow-text">EDENORTE</h1>
+                    <p id="logged-user-display" class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter"></p>
+                </div>
             </div>
-            <button onclick="logout()" class="bg-red-500/10 text-red-400 px-5 py-2 rounded-full text-[10px] font-black uppercase border border-red-500/20">Salir</button>
+            <div class="flex gap-2">
+                <button onclick="openSettings()" class="bg-blue-500/10 text-blue-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-blue-500/20 hover:bg-blue-500/20 transition-colors">Ajustes</button>
+                <button onclick="logout()" class="bg-red-500/10 text-red-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-red-500/20 hover:bg-red-500/20 transition-colors">Salir</button>
+            </div>
         </header>
 
         <nav class="flex px-4 py-2 gap-2 overflow-x-auto">
@@ -194,9 +454,21 @@
                 </div>
 
                 <div class="premium-card p-6 space-y-5">
-                    <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                        <input id="f-fecha" type="date" class="font-bold text-blue-400 outline-none">
-                        <span id="edit-indicator" class="hidden text-[10px] font-black bg-orange-500 text-white px-3 py-1 rounded-full">MODO EDICIÓN</span>
+                    <div class="space-y-4 border-b border-white/5 pb-4">
+                        <div class="flex justify-between items-center">
+                            <input id="f-fecha" type="date" class="font-bold text-blue-400 outline-none bg-transparent">
+                            <span id="edit-indicator" class="hidden text-[10px] font-black bg-orange-500 text-white px-3 py-1 rounded-full">MODO EDICIÓN</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <label class="text-[8px] font-black text-slate-500 uppercase block">Semana Fiscal</label>
+                                <input id="f-semana" type="number" class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[8px] font-black text-slate-500 uppercase block">Año Fiscal</label>
+                                <input id="f-ano" type="number" class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
+                            </div>
+                        </div>
                     </div>
                     <input id="f-lugar" type="text" placeholder="LOCALIDAD / LUGAR" class="w-full text-xl font-black p-4 rounded-xl uppercase">
                     <textarea id="f-trabajo" placeholder="DETALLES DE LA LABOR..." class="w-full font-bold h-24 p-4 rounded-xl uppercase resize-none"></textarea>
@@ -279,8 +551,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile, verifyBeforeUpdateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDocs, where, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDn8quxTMOIk53OL6xE10jnjlmrls5TBk0",
@@ -296,6 +568,8 @@
         const auth = getAuth(app);
 
         window.currentUser = "";
+        window.currentUserName = "";
+        window.currentUserId = ""; // ID de empleado vinculado
         window.editingId = null;
         window.currentWeek = 1;
         window.viewingWeek = 1;
@@ -330,7 +604,12 @@
 
         // ISO-week helpers - Perfectas para cálculo automático 1-53/54 semanas
         function getISOWeek(date) {
-            const d = new Date(date);
+            let d = new Date(date);
+            // Fix: Parse string dates as local time to avoid timezone shifts
+            if (typeof date === 'string' && date.includes('-') && !date.includes('T')) {
+                const [y, m, day] = date.split('-').map(Number);
+                d = new Date(y, m - 1, day);
+            }
             d.setHours(0, 0, 0, 0);
             d.setDate(d.getDate() + 4 - (d.getDay() || 7));
             const yearStart = new Date(d.getFullYear(), 0, 1);
@@ -339,7 +618,11 @@
         }
 
         function getISOYear(date) {
-            const d = new Date(date);
+            let d = new Date(date);
+            if (typeof date === 'string' && date.includes('-') && !date.includes('T')) {
+                const [y, m, day] = date.split('-').map(Number);
+                d = new Date(y, m - 1, day);
+            }
             d.setDate(d.getDate() + 4 - (d.getDay() || 7));
             return d.getFullYear();
         }
@@ -392,32 +675,312 @@
             });
         };
 
+        // LOGIN / REGISTER / RESET LOGIC
+        window.loginMode = 'login'; // login, register, reset
+
+        window.toggleMode = (mode) => {
+            window.loginMode = mode;
+            const title = document.getElementById('login-title');
+            const sub = document.getElementById('login-subtitle');
+            const btn = document.getElementById('login-submit-btn');
+            const passGroup = document.getElementById('pass-group');
+            const forgotBox = document.getElementById('forgot-link-box');
+            const footer = document.getElementById('login-footer');
+            const backFooter = document.getElementById('back-login-footer');
+            const nameGroup = document.getElementById('name-group');
+            const idGroup = document.getElementById('id-group');
+            const rememberBox = document.getElementById('remember-box');
+
+            // Reset UI
+            passGroup.classList.remove('hidden');
+            forgotBox.classList.remove('hidden');
+            idGroup.classList.add('hidden');
+            nameGroup.classList.add('hidden');
+            rememberBox.classList.remove('hidden');
+            footer.classList.remove('hidden');
+            backFooter.classList.add('hidden');
+
+            if (mode === 'login') {
+                title.innerText = 'EDENORTE';
+                sub.innerText = 'Systems Mao Sector';
+                btn.innerText = 'Acceder al Sistema';
+            } else if (mode === 'register') {
+                title.innerText = 'REGISTRO';
+                sub.innerText = 'Nuevo Personal Operativo';
+                btn.innerText = 'Crear Cuenta';
+                idGroup.classList.remove('hidden');
+                nameGroup.classList.remove('hidden');
+                forgotBox.classList.add('hidden');
+                rememberBox.classList.add('hidden');
+                footer.classList.add('hidden');
+                backFooter.classList.remove('hidden');
+            } else if (mode === 'reset') {
+                title.innerText = 'RECUPERAR';
+                sub.innerText = 'Restablecer Contraseña';
+                btn.innerText = 'Enviar Correo';
+                passGroup.classList.add('hidden');
+                forgotBox.classList.add('hidden');
+                rememberBox.classList.add('hidden');
+                footer.classList.add('hidden');
+                backFooter.classList.remove('hidden');
+            }
+        };
+
+        window.handleSubmit = () => {
+            if (window.loginMode === 'login') handleLogin();
+            else if (window.loginMode === 'register') handleRegister();
+            else if (window.loginMode === 'reset') handleReset();
+        };
+
+        window.togglePasswordVisibility = () => {
+            const input = document.getElementById('login-pass');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        };
+
+        // Auto-fill Name Logic
+        window.checkId = () => {
+            const id = document.getElementById('register-id').value.trim();
+            const member = window.equipo.find(m => m.code === id);
+            if(member) {
+                document.getElementById('register-name').value = member.name;
+            }
+        };
+
+        // Loading Helper
+        window.toggleLoading = (isLoading) => {
+            const btn = document.getElementById('login-submit-btn');
+            if(isLoading) {
+                btn.innerHTML = '<div class="spinner"></div>';
+                btn.disabled = true;
+                btn.classList.add('opacity-70', 'cursor-not-allowed');
+            } else {
+                if (window.loginMode === 'login') btn.innerText = 'Acceder al Sistema';
+                else if (window.loginMode === 'register') btn.innerText = 'Crear Cuenta';
+                else if (window.loginMode === 'reset') btn.innerText = 'Enviar Correo';
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        };
+
+        // Offline Detection
+        window.updateOnlineStatus = () => {
+            const banner = document.getElementById('offline-banner');
+            if (navigator.onLine) banner.classList.add('hidden'); else banner.classList.remove('hidden');
+        };
+        window.addEventListener('online', updateOnlineStatus); window.addEventListener('offline', updateOnlineStatus); updateOnlineStatus();
+
         // AUTHENTICATION SYSTEM
         window.handleLogin = async () => {
+            // Check Lockout
+            const lockoutTime = localStorage.getItem('loginLockout');
+            if (lockoutTime && new Date().getTime() < parseInt(lockoutTime)) {
+                const remaining = Math.ceil((parseInt(lockoutTime) - new Date().getTime()) / 1000);
+                return showToast(`Sistema bloqueado. Intente en ${remaining}s`, "error");
+            }
+
             const input = document.getElementById('login-user-code').value.trim();
             const pass = document.getElementById('login-pass').value;
             if (!input || !pass) return showToast("Ingrese sus credenciales", "warning");
 
-            // Si no tiene @, asumimos que es un ID y agregamos un dominio ficticio o real
-            const email = input.includes('@') ? input : `${input}@edenorte.com`;
+            toggleLoading(true);
+
+            let email = input;
+
+            // Lógica inteligente: Si no es correo, buscamos el email asociado al ID
+            if (!input.includes('@')) {
+                try {
+                    const idInput = input.toUpperCase();
+                    let foundEmail = null;
+                    
+                    // 0. Intentar buscar en caché local (Bypass de seguridad)
+                    const cachedEmail = localStorage.getItem(`user_map_${idInput}`);
+                    if (cachedEmail) foundEmail = cachedEmail;
+
+                    // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
+                    if (!foundEmail) {
+                        const q = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
+                        const querySnapshot = await getDocs(q);
+                    
+                        if (!querySnapshot.empty) {
+                            foundEmail = querySnapshot.docs[0].data().email;
+                        } else {
+                            // 2. Si no, buscar por ID de documento (Registro original)
+                            const docRef = doc(db, "usuarios", idInput);
+                            const docSnap = await getDoc(docRef);
+                            if (docSnap.exists()) foundEmail = docSnap.data().email;
+                        }
+                    }
+
+                    if (foundEmail) email = foundEmail;
+                    else email = `${input}@edenorte.com`; // Fallback clásico
+                } catch (e) {
+                    console.error(e);
+                    email = `${input}@edenorte.com`; // Fallback
+                }
+            }
 
             try {
+                const remember = document.getElementById('remember-me').checked;
+                if(remember) localStorage.setItem('rememberedUser', input);
+                else localStorage.removeItem('rememberedUser');
+
                 await signInWithEmailAndPassword(auth, email, pass);
                 // La redirección se maneja en onAuthStateChanged
+                
+                // Success: Clear lockout
+                localStorage.removeItem('loginAttempts');
+                localStorage.removeItem('loginLockout');
+                toggleLoading(false);
+            } catch (error) {
+                // AUTO-ACTIVACIÓN: Si el usuario no existe pero usa la contraseña maestra, lo registramos automáticamente
+                if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && pass === 'Edenorte2025') {
+                    try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                        
+                        // Crear perfil básico en Firestore
+                        const userId = input.includes('@') ? input.split('@')[0].toUpperCase() : input.toUpperCase();
+                        await setDoc(doc(db, "usuarios", userId), {
+                            uid: userCredential.user.uid,
+                            email: email,
+                            nombre: userId, // Nombre temporal igual al ID
+                            fechaRegistro: new Date().toISOString(),
+                            rol: "usuario"
+                        });
+
+                        showToast("Cuenta activada. Configure su perfil en Ajustes.", "success");
+                        localStorage.removeItem('loginAttempts');
+                        localStorage.removeItem('loginLockout');
+                        toggleLoading(false);
+                        return; // Detener flujo de error y entrar
+                    } catch (regError) { console.error("Auto-reg failed", regError); }
+                }
+
+                console.error(error);
+                toggleLoading(false);
+                
+                // Handle Lockout Counter
+                let attempts = parseInt(localStorage.getItem('loginAttempts') || '0') + 1;
+                localStorage.setItem('loginAttempts', attempts);
+                
+                if (attempts >= 3) {
+                    const lockUntil = new Date().getTime() + 60000; // 1 minute
+                    localStorage.setItem('loginLockout', lockUntil);
+                    localStorage.removeItem('loginAttempts');
+                    showToast("Demasiados intentos fallidos. Bloqueado por 1 min.", "error");
+                } else {
+                    showToast(`Error. Si usa ID, intente entrar con su Correo primero para vincularlo.`, "error");
+                }
+            }
+        };
+        
+        window.handleRegister = async () => {
+            const name = document.getElementById('register-name').value.trim().toUpperCase();
+            const idEmpleado = document.getElementById('register-id').value.trim().toUpperCase();
+            const input = document.getElementById('login-user-code').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            
+            if (!input || !pass || !name || !idEmpleado) return showToast("Complete todos los campos", "warning");
+            if (!/^[A-ZÁÉÍÓÚÑ\s]+$/.test(name)) return showToast("El nombre solo puede contener letras", "warning");
+            if (pass.length < 6) return showToast("La contraseña debe tener al menos 6 caracteres", "warning");
+            
+            toggleLoading(true);
+
+            const email = input.includes('@') ? input : `${input}@edenorte.com`;
+            // FIX: Usar el ID explícito del formulario, no adivinarlo del correo
+            const userId = idEmpleado;
+
+            try {
+                // Verificar si el ID ya existe en Firestore antes de crear Auth
+                const docRef = doc(db, "usuarios", userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) throw new Error("Este ID de empleado ya está registrado.");
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                
+                // Guardar ID y datos básicos en colección 'usuarios'
+                await setDoc(doc(db, "usuarios", userId), {
+                    uid: userCredential.user.uid,
+                    email: email,
+                    nombre: name,
+                    employeeId: idEmpleado, // Guardar explícitamente para búsquedas futuras
+                    fechaRegistro: new Date().toISOString(),
+                    rol: "usuario"
+                });
+
+                showToast("Usuario registrado y guardado exitosamente", "success");
+                // Firebase hace login automático al crear
+                toggleLoading(false);
             } catch (error) {
                 console.error(error);
-                showToast("Error de acceso: Verifique usuario y contraseña", "error");
+                showToast("Error al registrar: " + error.message, "error");
+                toggleLoading(false);
             }
         };
 
-        onAuthStateChanged(auth, (user) => {
+        window.handleReset = async () => {
+            const input = document.getElementById('login-user-code').value.trim();
+            if (!input) return showToast("Ingrese su correo o ID", "warning");
+            const email = input.includes('@') ? input : `${input}@edenorte.com`;
+            
+            toggleLoading(true);
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showToast("Correo de recuperación enviado", "success");
+                document.getElementById('login-user-code').value = '';
+                toggleMode('login');
+                toggleLoading(false);
+            } catch (error) {
+                console.error(error);
+                showToast("Error: " + error.message, "error");
+                toggleLoading(false);
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUser = user.email.split('@')[0].toUpperCase();
+                window.currentUserName = user.displayName || window.currentUser;
+                window.currentUserId = window.currentUser; // Default
+                
+                // Intentar obtener nombre real de Firestore
+                try {
+                    const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        const data = querySnapshot.docs[0].data();
+                        window.currentUserName = data.nombre;
+                        
+                        // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
+                        if (data.employeeId) window.currentUserId = data.employeeId;
+                        else window.currentUserId = querySnapshot.docs[0].id;
+                        
+                        // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
+                        if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
+                        localStorage.setItem(`user_map_${querySnapshot.docs[0].id}`, user.email);
+
+                        if(data.tema) {
+                            if(data.tema === 'light') {
+                                document.body.classList.add('light-mode');
+                                document.getElementById('theme-btn').innerText = '🌙';
+                            } else {
+                                document.body.classList.remove('light-mode');
+                                document.getElementById('theme-btn').innerText = '☀️';
+                            }
+                            localStorage.setItem('theme', data.tema);
+                        }
+                    }
+                } catch (e) { console.log("Perfil no encontrado en DB, usando Auth"); }
+                
+                // Actualizar currentUser global para que los registros usen el ID correcto
+                window.currentUser = window.currentUserId;
+
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 syncData();
             } else {
                 window.currentUser = "";
+                window.currentUserName = "";
+                window.currentUserId = "";
                 document.getElementById('app-screen').classList.add('hidden');
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('login-pass').value = '';
@@ -425,7 +988,7 @@
         });
 
         window.updateHeader = () => {
-            document.getElementById('logged-user-display').innerText = `Agente Operativo: ${window.currentUser}`;
+            document.getElementById('logged-user-display').innerText = `Agente: ${window.currentUserName}`;
             document.getElementById('view-week-display').innerText = window.viewingWeek;
             document.getElementById('target-week-badge').innerText = window.viewingWeek;
         };
@@ -523,8 +1086,8 @@
 
             const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
             const fecha = document.getElementById('f-fecha').value;
-            const semanaCalculada = getISOWeek(fecha);
-            const añoSeleccionado = detectCurrentYear();
+            const semanaCalculada = parseInt(document.getElementById('f-semana').value) || getISOWeek(fecha);
+            const añoSeleccionado = parseInt(document.getElementById('f-ano').value) || getISOYear(fecha);
             const record = {
                 semana: semanaCalculada,
                 año: añoSeleccionado,
@@ -608,6 +1171,9 @@
                     <p class="text-[10px] text-slate-400 font-bold uppercase mb-4">Misión: ${formatAMPM(r.horas.sm)} - ${formatAMPM(r.horas.rm)}</p>
                     <div class="space-y-2 border-t border-white/5 pt-4">
                         ${r.personal.map(p => `<p class="text-[9px] text-slate-300 font-semibold uppercase tracking-tighter">• ${escapeHTML(p.name)} <span class="text-blue-400">| RD$ ${ (d.almuerzo + d.desayuno + d.cena) }</span></p>`).join('')}
+                    </div>
+                    <div class="mt-2 text-right">
+                        <span class="text-[7px] font-black text-slate-500 uppercase tracking-widest">REGISTRADO POR: ${escapeHTML(r.autor || 'SISTEMA')}</span>
                     </div>
                 `;
                 container.appendChild(item);
@@ -742,6 +1308,7 @@
             const r = window.registros.find(x => x.id === id);
             window.editingId = r.id; window.viewingWeek = r.semana; updateHeader();
             document.getElementById('f-fecha').value = r.fecha; document.getElementById('f-lugar').value = r.lugar; document.getElementById('f-trabajo').value = r.trabajo || '';
+            document.getElementById('f-semana').value = r.semana; document.getElementById('f-ano').value = r.año || getISOYear(r.fecha);
             document.getElementById('h-sal-mao').value = r.horas.sm; document.getElementById('h-lle-lug').value = r.horas.ll; document.getElementById('h-sal-lug').value = r.horas.sl; document.getElementById('h-lle-mao').value = r.horas.rm;
             window.equipo = JSON.parse(JSON.stringify(equipoBase));
             r.personal.forEach(p => {
@@ -757,6 +1324,9 @@
         
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('f-fecha').value = today;
+            document.getElementById('f-semana').value = getISOWeek(today); document.getElementById('f-ano').value = getISOYear(today);
             document.getElementById('edit-indicator').classList.add('hidden'); document.getElementById('btn-cancel-edit').classList.add('hidden');
             document.getElementById('btn-save').innerText = "Confirmar"; window.equipo = JSON.parse(JSON.stringify(equipoBase)); renderEquipo(); updateCalculos();
         };
@@ -875,7 +1445,237 @@
             document.getElementById('theme-btn').innerText = '🌙';
         }
 
-        document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+        const initDate = new Date().toISOString().split('T')[0];
+        document.getElementById('f-fecha').value = initDate;
+        document.getElementById('f-semana').value = getISOWeek(initDate);
+        document.getElementById('f-ano').value = getISOYear(initDate);
+        
+        const savedUser = localStorage.getItem('rememberedUser');
+        if(savedUser) {
+            document.getElementById('login-user-code').value = savedUser;
+            document.getElementById('remember-me').checked = true;
+        }
+
+        document.getElementById('f-fecha').addEventListener('change', (e) => {
+            if(e.target.value) {
+                document.getElementById('f-semana').value = getISOWeek(e.target.value);
+                document.getElementById('f-ano').value = getISOYear(e.target.value);
+            }
+        });
+
+        // Calendar Widget Logic
+        let calDate = new Date();
+        window.selectedCalDay = null;
+        const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+
+        window.toggleCalendar = () => {
+            const cal = document.getElementById('mini-calendar');
+            cal.classList.toggle('hidden');
+            if(!cal.classList.contains('hidden')) renderCalendar();
+        };
+
+        window.changeCalendarMonth = (d) => {
+            calDate.setMonth(calDate.getMonth() + d);
+            window.selectedCalDay = null;
+            document.getElementById('cal-note-area').classList.add('hidden');
+            renderCalendar();
+        };
+
+        window.selectCalendarDay = (day) => {
+            window.selectedCalDay = day;
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+            const dateKey = `note_${year}-${month}-${day}`;
+            
+            document.getElementById('cal-note-area').classList.remove('hidden');
+            document.getElementById('cal-note-area').classList.remove('animate-pulse');
+            document.getElementById('cal-selected-date').innerText = `${day} DE ${monthNames[month]}`;
+            document.getElementById('cal-note-input').value = localStorage.getItem(dateKey) || '';
+            renderCalendar();
+        };
+
+        window.saveCalendarNote = () => {
+            if(!window.selectedCalDay) return;
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+            const dateKey = `note_${year}-${month}-${window.selectedCalDay}`;
+            const val = document.getElementById('cal-note-input').value.trim();
+            
+            if(val) localStorage.setItem(dateKey, val);
+            else localStorage.removeItem(dateKey);
+            
+            showToast("Recordatorio actualizado", "success");
+            renderCalendar();
+        };
+
+        window.renderCalendar = () => {
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+            document.getElementById('cal-month-year').innerText = `${monthNames[month]} ${year}`;
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            let html = '';
+            for(let i=0; i<firstDay; i++) html += `<span></span>`;
+            for(let i=1; i<=daysInMonth; i++) {
+                const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                const isSelected = i === window.selectedCalDay;
+                const hasNote = localStorage.getItem(`note_${year}-${month}-${i}`);
+                
+                let classes = `relative text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all `;
+                if (isSelected) classes += 'bg-white/20 text-white ring-1 ring-white/50 ';
+                else if (isToday) classes += 'bg-blue-500 text-white shadow-lg shadow-blue-500/50 ';
+                else classes += 'text-slate-300 hover:bg-white/5 ';
+
+                html += `<div onclick="selectCalendarDay(${i})" class="${classes}">
+                            ${i}
+                            ${hasNote ? '<div class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full"></div>' : ''}
+                         </div>`;
+            }
+            document.getElementById('cal-days').innerHTML = html;
+        };
+
+        // Guide Logic
+        const guideSteps = [
+            { t: "1. PANTALLA DE REGISTRO", d: "Aquí creas las dietas diarias.<br><br>• <b>Fecha/Semana:</b> Se ajustan automáticamente, pero son editables.<br>• <b>Horarios:</b> Definen el monto. Si sales antes de las 7am aplica Desayuno. Si llegas después de las 8pm aplica Cena.<br>• <b>Equipo:</b> Toca un nombre para incluirlo. Usa '+' para extras." },
+            { t: "2. HISTORIAL Y EDICIÓN", d: "Visualiza y gestiona lo guardado.<br><br>• Usa las flechas ◀ ▶ para cambiar de semana.<br>• <b>Editar:</b> Carga los datos en el formulario para corregir.<br>• <b>Imprimir:</b> Genera el PDF oficial listo para firmar." },
+            { t: "3. WIDGET CALENDARIO", d: "Tu agenda personal integrada.<br><br>• Toca el botón 📅 flotante.<br>• Selecciona un día para guardar notas o recordatorios de viajes futuros.<br>• Los puntos naranjas indican que ese día tiene una nota." },
+            { t: "4. ESTADO DE CUENTAS", d: "En la pestaña 'ACTIVOS', puedes ver el resumen mensual de dinero generado por cada empleado. Útil para el cuadre mensual." }
+        ];
+
+        window.toggleGuide = () => {
+            const m = document.getElementById('guide-modal');
+            if(m.classList.contains('hidden')) {
+                m.classList.remove('hidden');
+                const c = document.getElementById('guide-content');
+                if(c.innerHTML.trim() === '') {
+                    c.innerHTML = guideSteps.map((s,i) => `
+                        <div class="bg-white/5 rounded-xl overflow-hidden border border-white/5">
+                            <button onclick="this.nextElementSibling.classList.toggle('hidden');" class="w-full p-4 text-left font-bold text-[11px] text-blue-300 uppercase flex justify-between hover:bg-white/5 transition-colors items-center">
+                                ${s.t} <span class="text-[10px] opacity-50">▼</span>
+                            </button>
+                            <div class="hidden p-4 pt-0 text-[10px] text-slate-300 leading-relaxed border-t border-white/5 font-medium">
+                                ${s.d}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                m.classList.add('hidden');
+            }
+        };
+
+        // FAB Menu Logic
+        window.toggleFab = () => {
+            const menu = document.getElementById('fab-menu');
+            const btn = document.getElementById('fab-main-btn');
+            menu.classList.toggle('opacity-0');
+            menu.classList.toggle('translate-y-10');
+            menu.classList.toggle('pointer-events-none');
+            btn.innerText = menu.classList.contains('opacity-0') ? '☰' : '✕';
+        };
+
+        // SETTINGS LOGIC
+        window.openSettings = () => {
+            const user = auth.currentUser;
+            if(!user) return;
+            document.getElementById('set-name').value = window.currentUserName;
+            document.getElementById('set-email').value = user.email;
+            document.getElementById('set-id').value = window.currentUserId;
+            document.getElementById('set-pass').value = '';
+            document.getElementById('set-theme').value = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            document.getElementById('set-current-pass').value = '';
+            document.getElementById('settings-modal').classList.remove('hidden');
+        };
+
+        window.closeSettings = () => {
+            document.getElementById('settings-modal').classList.add('hidden');
+        };
+
+        window.saveSettings = async () => {
+            const user = auth.currentUser;
+            const newName = document.getElementById('set-name').value.trim().toUpperCase();
+            const newEmail = document.getElementById('set-email').value.trim();
+            const newId = document.getElementById('set-id').value.trim().toUpperCase();
+            const newPass = document.getElementById('set-pass').value;
+            const newTheme = document.getElementById('set-theme').value;
+            const currentPass = document.getElementById('set-current-pass').value;
+
+            if(!currentPass) return showToast("Ingrese su contraseña actual para confirmar", "warning");
+            if (!/^[A-ZÁÉÍÓÚÑ\s]+$/.test(newName)) return showToast("El nombre solo puede contener letras", "warning");
+
+            try {
+                // Re-autenticación por seguridad
+                const credential = EmailAuthProvider.credential(user.email, currentPass);
+                await reauthenticateWithCredential(user, credential);
+
+                // Actualizar Auth
+                if(newName !== window.currentUserName) await updateProfile(user, { displayName: newName });
+                
+                let emailChanged = false;
+                if(newEmail !== user.email) {
+                    await verifyBeforeUpdateEmail(user, newEmail);
+                    emailChanged = true;
+                }
+                
+                if(newPass) await updatePassword(user, newPass);
+
+                // Actualizar Firestore (Buscar documento por UID)
+                const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    await updateDoc(querySnapshot.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
+                }
+
+                // Aplicar Tema
+                if(newTheme === 'light') {
+                    document.body.classList.add('light-mode');
+                    document.getElementById('theme-btn').innerText = '🌙';
+                } else {
+                    document.body.classList.remove('light-mode');
+                    document.getElementById('theme-btn').innerText = '☀️';
+                }
+                localStorage.setItem('theme', newTheme);
+
+                window.currentUserName = newName;
+                window.currentUserId = newId || window.currentUserId;
+                window.currentUser = window.currentUserId; // Actualizar referencia global
+                updateHeader();
+                closeSettings();
+                
+                if(emailChanged) { showToast("Verifique su nuevo correo para completar el cambio.", "success"); }
+                else showToast("Perfil actualizado correctamente", "success");
+            } catch (e) {
+                console.error(e);
+                showToast("Error: " + e.message, "error");
+            }
+        };
+
+        window.deleteAccount = async () => {
+            const pass = prompt("⚠️ ZONA DE PELIGRO ⚠️\n\nPara eliminar su cuenta permanentemente y borrar todos sus datos, escriba su contraseña:");
+            if(!pass) return;
+            
+            toggleLoading(true); // Reusar spinner si es visible, o mostrar toast
+            try {
+                const user = auth.currentUser;
+                const credential = EmailAuthProvider.credential(user.email, pass);
+                await reauthenticateWithCredential(user, credential);
+                
+                // Eliminar documento de Firestore
+                const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) await deleteDoc(querySnapshot.docs[0].ref);
+                
+                // Eliminar Auth
+                await deleteUser(user);
+                alert("Su cuenta ha sido eliminada permanentemente.");
+                location.reload();
+            } catch(e) {
+                console.error(e);
+                showToast("Error al eliminar: " + e.message, "error");
+            }
+        };
+
         renderEquipo();
         populateYearSelector();
     </script>
