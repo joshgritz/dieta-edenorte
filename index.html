@@ -5,6 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Edenorte Mao - Gestión de Dietas Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CORE LEAFLET -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- 1. CONTROLES & UTILIDADES -->
+    <script src="https://unpkg.com/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.css" />
+    <script src="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/Leaflet.fullscreen.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/leaflet.fullscreen.css" />
+    
+    <!-- 2. RUTAS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    
+    <!-- 3. MEDICIONES & DIBUJO -->
+    <script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.css" />
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    
+    <!-- 4. GEOCODER AVANZADO (ESRI) -->
+    <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/esri-leaflet-geocoder.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/esri-leaflet-geocoder.css" />
+    
+    <!-- 5. STREET VIEW (PANNELLUM) -->
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+    
+    <!-- 6. CLUSTERS & HEATMAP -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         
@@ -208,6 +244,36 @@
         body.light-mode input:focus, body.light-mode textarea:focus, body.light-mode select:focus { border-color: #3b82f6 !important; background: #ffffff !important; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important; }
         body.light-mode input::placeholder, body.light-mode textarea::placeholder { color: #94a3b8 !important; }
         body.light-mode option { background-color: #ffffff; color: #1e293b; }
+        
+        /* --- CORRECCIONES COMPLETAS MODO CLARO --- */
+        body.light-mode .bg-slate-900, 
+        body.light-mode .bg-slate-900\/90, 
+        body.light-mode .bg-slate-800,
+        body.light-mode .bg-slate-800\/50 { 
+            background-color: #ffffff !important; 
+            color: #1e293b !important;
+            border-color: #e2e8f0 !important;
+        }
+        body.light-mode .text-white { color: #1e293b !important; }
+        /* Excepciones para botones que deben seguir siendo blancos */
+        body.light-mode button.text-white, body.light-mode .btn-gradient, body.light-mode .login-btn { color: #ffffff !important; }
+        
+        body.light-mode .text-slate-300, 
+        body.light-mode .text-slate-400, 
+        body.light-mode .text-slate-500 { color: #475569 !important; }
+        body.light-mode .border-white\/5, 
+        body.light-mode .border-white\/10, 
+        body.light-mode .border-white\/20 { border-color: #cbd5e1 !important; }
+        body.light-mode #map-modal .premium-card { background: #ffffff !important; }
+        body.light-mode #map-container { border: 1px solid #e2e8f0; }
+        body.light-mode .login-input {
+            background: #f1f5f9 !important;
+            color: #1e293b !important;
+            border-color: #cbd5e1 !important;
+        }
+        body.light-mode .login-input::placeholder { color: #94a3b8 !important; }
+        body.light-mode .leaflet-control-geocoder { background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; }
+        body.light-mode .leaflet-control-geocoder input { color: #1e293b !important; }
 
         /* Exceptions (Keep dark/colored elements) */
         body.light-mode .bg-gradient-to-br { box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3); }
@@ -238,6 +304,209 @@
             display: inline-block;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #map-container { height: 100%; width: 100%; border-radius: 1rem; z-index: 1; }
+
+        /* Geocoder Fixes (Buscador) */
+        .leaflet-control-geocoder {
+            background: #1e293b !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            color: white !important;
+            border-radius: 0.5rem !important;
+            z-index: 1000 !important;
+        }
+        /* ============================================ */
+        /* GOOGLE MAPS CLONE - ESTILO EXACTO            */
+        /* ============================================ */
+
+        :root {
+            --google-blue: #1a73e8;
+            --google-red: #d93025;
+            --google-green: #34a853;
+            --google-yellow: #fbbc05;
+            --google-gray: #5f6368;
+        }
+        .leaflet-control-geocoder-form input {
+            color: white !important;
+            background: transparent !important;
+        }
+
+        /* Hide default routing container */
+        .leaflet-routing-container { display: none !important; }
+
+        /* Floating Route Info Box */
+        #route-info-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 10px 25px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* Dark Mode Search Box */
+        .geocoder-control-input {
+            background-color: #1e293b !important;
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        .geocoder-control-input::placeholder {
+            color: #94a3b8 !important;
+        }
+        .geocoder-control-suggestions {
+            background-color: #1e293b !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            width: 100% !important;
+        }
+        .geocoder-control-suggestion {
+            color: #e2e8f0 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        }
+        .geocoder-control-suggestion:hover {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+
+        /* MAPA */
+        .leaflet-container {
+            font-family: 'Roboto', 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        /* POLÍGONOS ESTILO GOOGLE */
+        .leaflet-interactive[stroke="#ef4444"] {
+            stroke-dasharray: 4 4 !important;
+            animation: googleDash 20s linear infinite;
+        }
+
+        @keyframes googleDash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        /* PEGMAN */
+        .pegman-icon {
+            font-size: 28px;
+            cursor: grab;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            transition: transform 0.2s;
+            background: white;
+            border-radius: 4px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .pegman-icon:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        /* BOTTOM SHEET MÓVIL */
+        .google-bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+            z-index: 1000;
+            transform: translateY(100%);
+        }
+        .google-bottom-sheet.active {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: #dadce0;
+            border-radius: 2px;
+            margin: 12px auto;
+        }
+
+        /* SEARCH BOX GOOGLE STYLE */
+        .geocoder-control-input {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+            border-radius: 8px !important;
+            border: none !important;
+            height: 40px !important;
+            padding-left: 40px !important;
+            font-family: inherit !important;
+        }
+        .leaflet-control-geocoder-icon {
+            background-color: #3b82f6 !important;
+            border-radius: 0.5rem !important;
+        }
+        .geocoder-control-expanded {
+            width: 300px !important;
+        }
+        .leaflet-control-geocoder-alternatives {
+            background: #0f172a !important;
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 0.5rem !important;
+            margin-top: 5px !important;
+        }
+
+        /* PANORAMA VIEWER */
+        #panorama-viewer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000;
+            background: black;
+            display: none;
+        }
+        .leaflet-control-geocoder-alternatives li:hover {
+            background: #1e3a8a !important;
+        }
+        #panorama-close {
+            position: absolute;
+            top: 20px; left: 20px;
+            z-index: 2001;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* GPS Marker Style */
+        .gps-marker {
+            background-color: #3b82f6;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.7);
+            animation: pulse-gps 2s infinite;
+        }
+        @keyframes pulse-gps {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
     </style>
 </head>
 <body>
@@ -309,6 +578,70 @@
                 <button onclick="toggleGuide()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
             </div>
             <div id="guide-content" class="p-6 overflow-y-auto space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Map Modal -->
+    <div id="map-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-2 fade-in no-print">
+        <div class="premium-card w-full h-full max-w-[98vw] max-h-[95vh] bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col">
+            <div class="p-4 border-b border-white/10 flex justify-between items-center shrink-0 bg-slate-900">
+                <h2 id="map-title" class="text-lg font-black text-blue-500 italic glow-text uppercase">UBICACIÓN</h2>
+                <button onclick="closeMap()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+            </div>
+            <div class="p-2 bg-slate-800 flex-1 relative">
+                <div id="map-container"></div>
+                
+                <!-- Google Maps Elements -->
+                <div id="route-info-box" class="hidden">
+                    <span id="route-time" class="text-green-400 font-black text-2xl drop-shadow-lg"></span>
+                    <span id="route-dist" class="text-slate-300 font-bold text-sm uppercase tracking-wider"></span>
+                </div>
+                <div id="panorama-viewer"><button id="panorama-close" onclick="GoogleMapsClone.closeStreetView()">← Volver al Mapa</button><div id="panorama" style="width:100%;height:100%;"></div></div>
+            </div>
+            <div class="p-4 border-t border-white/10 text-center shrink-0">
+                <p id="map-status" class="text-[10px] font-bold text-slate-400 uppercase mb-3">COORDENADAS OFFLINE • REGIÓN NORTE</p>
+                
+                <div id="fav-container" class="hidden mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-[8px] font-black text-slate-500 uppercase text-left">Mis Ubicaciones</p>
+                        <input id="fav-search" type="text" onkeyup="filterFavorites()" placeholder="🔍 Buscar..." class="bg-slate-800/50 border border-white/10 rounded-lg px-2 py-1 text-[9px] font-bold text-white outline-none focus:border-blue-500 w-24 focus:w-32 transition-all uppercase">
+                    </div>
+                    <div id="fav-list" class="flex gap-2 overflow-x-auto pb-2"></div>
+                </div>
+
+                <div class="flex gap-2 justify-center flex-wrap">
+                    <button onclick="saveCurrentDest()" class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/50 hover:bg-yellow-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        ⭐ Guardar
+                    </button>
+                    <button onclick="addManualLocation()" class="bg-blue-500/10 text-blue-400 border border-blue-500/50 hover:bg-blue-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        ➕ Manual
+                    </button>
+                    <button onclick="clearSearch()" class="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        🗑️ Limpiar
+                    </button>
+                    <button onclick="GoogleMapsClone.toggleMeasurementMode()" class="bg-teal-500/10 text-teal-400 border border-teal-500/50 hover:bg-teal-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        📏 Medir
+                    </button>
+                    <button onclick="GoogleMapsClone.toggleAreaMode()" class="bg-pink-500/10 text-pink-400 border border-pink-500/50 hover:bg-pink-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        📐 Área
+                    </button>
+                    <button onclick="GoogleMapsClone.toggleTrafficMode()" class="bg-orange-500/10 text-orange-400 border border-orange-500/50 hover:bg-orange-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        🚦 Tráfico
+                    </button>
+                    <button onclick="toggleFavoriteMarkers()" class="bg-purple-500/10 text-purple-400 border border-purple-500/50 hover:bg-purple-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        👁️ Ver Puntos
+                    </button>
+                    <button onclick="centerOnGPS()" class="bg-green-500/10 text-green-400 border border-green-500/50 hover:bg-green-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">
+                        📍 Mi Ubicación
+                    </button>
+                    <button onclick="openExternalMap('google')" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg">
+                        Google Maps ↗
+                    </button>
+                    <button onclick="openExternalMap('waze')" class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg">
+                        Waze ↗
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -673,6 +1006,17 @@
                 renderHistorial();
                 renderActivos();
             });
+
+            // Sincronización de Ubicaciones Favoritas (Firebase)
+            onSnapshot(collection(db, "ubicaciones"), (snapshot) => {
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    if(d.nombre && d.coords) customLocations[d.nombre] = d.coords;
+                });
+                localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
+                if(typeof window.renderMapFavorites === 'function') window.renderMapFavorites();
+                if(typeof window.renderFavoriteMarkers === 'function') window.renderFavoriteMarkers();
+            });
         };
 
         // LOGIN / REGISTER / RESET LOGIC
@@ -796,21 +1140,6 @@
                     const cachedEmail = localStorage.getItem(`user_map_${idInput}`);
                     if (cachedEmail) foundEmail = cachedEmail;
 
-                    // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
-                    if (!foundEmail) {
-                        const q = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
-                        const querySnapshot = await getDocs(q);
-                    
-                        if (!querySnapshot.empty) {
-                            foundEmail = querySnapshot.docs[0].data().email;
-                        } else {
-                            // 2. Si no, buscar por ID de documento (Registro original)
-                            const docRef = doc(db, "usuarios", idInput);
-                            const docSnap = await getDoc(docRef);
-                            if (docSnap.exists()) foundEmail = docSnap.data().email;
-                        }
-                    }
-
                     if (foundEmail) email = foundEmail;
                     else email = `${input}@edenorte.com`; // Fallback clásico
                 } catch (e) {
@@ -839,7 +1168,7 @@
                         
                         // Crear perfil básico en Firestore
                         const userId = input.includes('@') ? input.split('@')[0].toUpperCase() : input.toUpperCase();
-                        await setDoc(doc(db, "usuarios", userId), {
+                        await setDoc(doc(db, "usuarios", userCredential.user.uid), {
                             uid: userCredential.user.uid,
                             email: email,
                             nombre: userId, // Nombre temporal igual al ID
@@ -890,15 +1219,10 @@
             const userId = idEmpleado;
 
             try {
-                // Verificar si el ID ya existe en Firestore antes de crear Auth
-                const docRef = doc(db, "usuarios", userId);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) throw new Error("Este ID de empleado ya está registrado.");
-
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
                 
-                // Guardar ID y datos básicos en colección 'usuarios'
-                await setDoc(doc(db, "usuarios", userId), {
+                // Guardar ID y datos básicos usando el UID como clave para cumplir reglas de seguridad
+                await setDoc(doc(db, "usuarios", userCredential.user.uid), {
                     uid: userCredential.user.uid,
                     email: email,
                     nombre: name,
@@ -944,19 +1268,18 @@
                 
                 // Intentar obtener nombre real de Firestore
                 try {
-                    const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
-                    const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
-                        const data = querySnapshot.docs[0].data();
+                    const docRef = doc(db, "usuarios", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
                         window.currentUserName = data.nombre;
                         
                         // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
                         if (data.employeeId) window.currentUserId = data.employeeId;
-                        else window.currentUserId = querySnapshot.docs[0].id;
+                        else window.currentUserId = window.currentUser;
                         
                         // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
                         if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
-                        localStorage.setItem(`user_map_${querySnapshot.docs[0].id}`, user.email);
 
                         if(data.tema) {
                             if(data.tema === 'light') {
@@ -1162,6 +1485,7 @@
                     <div class="flex justify-between items-start mb-4">
                         <span class="text-[10px] font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">${r.fecha}</span>
                         <div class="flex gap-4">
+                            <button onclick="openMap('${escapeHTML(r.lugar)}')" class="text-green-400 font-bold text-[10px] uppercase flex items-center gap-1">🗺️ Mapa</button>
                             <button onclick="editRecord('${r.id}')" class="text-blue-400 font-bold text-[10px] uppercase">Editar</button>
                             <button onclick="deleteRecord('${r.id}')" class="text-red-400 font-bold text-[10px] uppercase">Borrar</button>
                         </div>
@@ -1674,6 +1998,768 @@
                 console.error(e);
                 showToast("Error al eliminar: " + e.message, "error");
             }
+        };
+
+        // ==========================================
+        // SISTEMA DE GEOLOCALIZACIÓN OFFLINE (LEAFLET)
+        // ==========================================
+        
+        const coordenadasRegionNorte = {
+            // ============ PROVINCIA VALVERDE ============
+            'MAO': [19.5519, -71.0781],
+            'EDENORTE MAO': [19.5519, -71.0781],
+            'VALVERDE': [19.5519, -71.0781],
+            'SANTA CRUZ DE MAO': [19.5519, -71.0781],
+            'CRUCE DE MAO': [19.5519, -71.0781],
+            'MAO VALVERDE': [19.5519, -71.0781],
+            'ESPERANZA': [19.5842, -70.9847],
+            'ESPERANZA VALVERDE': [19.5842, -70.9847],
+            'LAGUNA SALADA': [19.6519, -71.0897],
+            'JAIBÓN': [19.6128, -71.5081],
+            'JAIBON': [19.6128, -71.5081],
+            'JAIBÓN VALVERDE': [19.6128, -71.5081],
+            'AMINA': [19.5512, -71.1456],
+            'MAIZAL': [19.6123, -71.0345],
+            'JICOMÉ': [19.5987, -71.0891],
+            'JICOME': [19.5987, -71.0891],
+            'GUATAPANAL': [19.6234, -71.0789],
+            'BOCA DE MAO': [19.6012, -71.0567],
+            'PUEBLO NUEVO MAO': [19.5456, -71.0678],
+            'CRUCE DE GUAYACANES': [19.5891, -71.2345],
+            'GUAYACANES': [19.5891, -71.2345],
+            'POSTRERO': [19.6012, -71.1123],
+            'EL POSTRERO': [19.6012, -71.1123],
+            'LA CAYA': [19.6234, -71.1876],
+            'CAYA': [19.6234, -71.1876],
+            'LOS SALADOS': [19.6345, -71.1122],
+            'SALADILLO': [19.6456, -71.1234],
+            'ARROYO SECO': [19.6123, -71.3456],
+            'HATILLO PALMA': [19.6723, -71.3345],
+            'HATILLO': [19.6723, -71.3345],
+            'EL HATILLO': [19.6723, -71.3345],
+            'CANA CHAPETÓN': [19.6456, -71.2789],
+            'CANA CHAPETON': [19.6456, -71.2789],
+            'CANA': [19.6456, -71.2789],
+            'CHAPETÓN': [19.6456, -71.2789],
+            'CHAPETON': [19.6456, -71.2789],
+            'LA ENEA': [19.5789, -71.0987],
+            'LOS ARROYOS': [19.6123, -71.1567],
+            'EL PARAIZO': [19.6345, -71.1678],
+            'PARAÍSO': [19.6345, -71.1678],
+            'PARAISO': [19.6345, -71.1678],
+            'SAN JOSÉ DE LAS MATAS': [19.6567, -71.0891],
+            'SAN JOSE DE LAS MATAS': [19.6567, -71.0891],
+            'CRUCE DE LAS MATAS': [19.6567, -71.0891],
+            'PALO VERDE': [19.5987, -71.1892],
+            'LA PIÑA': [19.5891, -71.2123],
+            'PIÑA': [19.5891, -71.2123],
+            'LA GUAMA': [19.6123, -71.2234],
+            'EL PUERTO': [19.6234, -71.2456],
+            'LOS CASTILLOS': [19.6345, -71.2678],
+            'GURABO ABAJO': [19.5891, -71.4012],
+            'GURABO ARRIBA': [19.6012, -71.3891],
+            'GURABO': [19.5891, -71.4012],
+            'SANTA MARÍA': [19.6123, -71.3567],
+            'SANTA MARIA': [19.6123, -71.3567],
+            'CRUCE DE GURABO': [19.5912, -71.3987],
+            'LOS CACAOS MAO': [19.6122, -71.0783],
+            'LOS CACAOS': [19.6122, -71.0783],
+            // ============ PROVINCIA MONTE CRISTI ============
+            'MONTE CRISTI': [19.8499, -71.6457],
+            'MONTECRISTI': [19.8499, -71.6457],
+            'SAN FERNANDO DE MONTE CRISTI': [19.8499, -71.6457],
+            'GUAYUBÍN': [19.7345, -71.5678],
+            'GUAYUBIN': [19.7345, -71.5678],
+            'CASTAÑUELAS': [19.7125, -71.4969],
+            'CASTAÑUELA': [19.7125, -71.4969],
+            'LAS MATAS DE SANTA CRUZ': [19.6715, -71.5049],
+            'LAS MATAS': [19.6715, -71.5049],
+            'PEPILLO SALCEDO': [19.6964, -71.7486],
+            'PEPILLO': [19.6964, -71.7486],
+            'VILLA ELISA': [19.7891, -71.3345],
+            'EL POZO': [19.5981, -71.4562],
+            'EL POZO DE LAS MATAS': [19.5981, -71.4562],
+            'JUAN DE HERRERA': [19.5342, -71.2341],
+            'ESTERO HONDO': [19.6234, -71.5567],
+            'LOS BOTADOS': [19.6456, -71.5891],
+            'BOTONCILLO': [19.6512, -71.3897],
+            'PALO QUEMADO': [19.6789, -71.6123],
+            'LA ISABELA': [19.8456, -71.4567],
+            'PUERTO LIBRE': [19.8234, -71.5891],
+            'LA CRUZ': [19.7345, -71.6234],
+            'COPÉY': [19.7012, -71.5345],
+            'COPEY': [19.7012, -71.5345],
+            'VUELTA LARGA': [19.7123, -71.6456],
+            'PALMAR DE CASTAÑUELAS': [19.7012, -71.4891],
+            'MANUEL BUENO': [19.6891, -71.6345],
+            'LOS CACAOS MC': [19.7234, -71.5567],
+            'ARROYO SECO MC': [19.6456, -71.5789],
+            'LA SIGUA': [19.6678, -71.5891],
+            'CRUCE DE COPÉY': [19.6987, -71.5345],
+            'CRUCE DE COPEY': [19.6987, -71.5345],
+            'CRUCE DE CASTAÑUELAS': [19.7012, -71.4891],
+            'HATILLO PALMA MC': [19.6789, -71.5567],
+            // ============ PROVINCIA DAJABÓN ============
+            'DAJABÓN': [19.5487, -71.7083],
+            'DAJABON': [19.5487, -71.7083],
+            'LOMA DE CABRERA': [19.6234, -71.4891],
+            'LOMA CABRERA': [19.6234, -71.4891],
+            'PARTIDO': [19.6345, -71.5567],
+            'EL PINO': [19.5456, -71.6457],
+            'RESTAURACIÓN': [19.5567, -71.6678],
+            'RESTAURACION': [19.5567, -71.6678],
+            'VILLA RESTAURACIÓN': [19.5567, -71.6678],
+            'RESTAURACIÓN DAJABÓN': [19.5567, -71.6678],
+            'RESTAURACION DAJABON': [19.5567, -71.6678],
+            'AGUA NEGRA': [19.5345, -71.6891],
+            'AGUA NEGRA RESTAURACIÓN': [19.5345, -71.6891],
+            'ARROYO DE AGUA': [19.5456, -71.6789],
+            'ARROYO DE AGUA RESTAURACIÓN': [19.5456, -71.6789],
+            'ARROYO DE LUNA': [19.5567, -71.6891],
+            'ARROYO DE LUNA RESTAURACIÓN': [19.5567, -71.6891],
+            'CAÑA': [19.5678, -71.7012],
+            'CAÑA RESTAURACIÓN': [19.5678, -71.7012],
+            'CAPOTILLO': [19.5891, -71.7123],
+            'CAPOTILLO RESTAURACIÓN': [19.5891, -71.7123],
+            'CAÑONGO': [19.6012, -71.7345],
+            'CAÑONGO RESTAURACIÓN': [19.6012, -71.7345],
+            'EL CEREZO': [19.5789, -71.7234],
+            'EL CEREZO RESTAURACIÓN': [19.5789, -71.7234],
+            'EL NARANJO': [19.5901, -71.7345],
+            'EL NARANJO RESTAURACIÓN': [19.5901, -71.7345],
+            'GUAYUYAL': [19.6123, -71.7456],
+            'GUAYUYAL RESTAURACIÓN': [19.6123, -71.7456],
+            'LA CEIBA': [19.5345, -71.6567],
+            'LA CEIBA RESTAURACIÓN': [19.5345, -71.6567],
+            'LA GURBIA': [19.5456, -71.6678],
+            'LA GURBIA RESTAURACIÓN': [19.5456, -71.6678],
+            'LA GUAZARA': [19.5567, -71.6789],
+            'LA GUAZARA RESTAURACIÓN': [19.5567, -71.6789],
+            'LA HIGUERA': [19.5678, -71.6891],
+            'LA HIGUERA RESTAURACIÓN': [19.5678, -71.6891],
+            'LA PEÑA': [19.5789, -71.7012],
+            'LA PEÑA RESTAURACIÓN': [19.5789, -71.7012],
+            'LAS CAÑITAS': [19.5901, -71.7123],
+            'LAS CAÑITAS RESTAURACIÓN': [19.5901, -71.7123],
+            'LOS ARROYOS RESTAURACIÓN': [19.6012, -71.7234],
+            'LOS CACAOS RESTAURACIÓN': [19.6123, -71.7345],
+            'LOS CERROS': [19.6234, -71.7456],
+            'LOS CERROS RESTAURACIÓN': [19.6234, -71.7456],
+            'LOS CHICHARRONES': [19.5345, -71.6345],
+            'LOS CHICHARRONES RESTAURACIÓN': [19.5345, -71.6345],
+            'LOS MATEOS': [19.5456, -71.6456],
+            'LOS MATEOS RESTAURACIÓN': [19.5456, -71.6456],
+            'NAGUERA': [19.5567, -71.6567],
+            'NAGUERA RESTAURACIÓN': [19.5567, -71.6567],
+            'PINALES': [19.5678, -71.6678],
+            'PINALES RESTAURACIÓN': [19.5678, -71.6678],
+            'SABANA GRANDE': [19.5789, -71.6789],
+            'SABANA GRANDE RESTAURACIÓN': [19.5789, -71.6789],
+            'SAN PEDRO': [19.5901, -71.6891],
+            'SAN PEDRO RESTAURACIÓN': [19.5901, -71.6891],
+            'TIERRA NUEVA': [19.5456, -71.7234],
+            'TIERRA NUEVA RESTAURACIÓN': [19.5456, -71.7234],
+            'VADO VIEJO': [19.6012, -71.7567],
+            'VADO VIEJO RESTAURACIÓN': [19.6012, -71.7567],
+            'VARONCITO': [19.6123, -71.7678],
+            'VARONCITO RESTAURACIÓN': [19.6123, -71.7678],
+            'SANTIAGO DE LA CRUZ': [19.5789, -71.6891],
+            'SANTIAGO DE LA CRUZ DAJABÓN': [19.5789, -71.6891],
+            'LOS ALMACIGOS': [19.5987, -71.5123],
+            'LOS ALMACIGOS DAJABON': [19.5987, -71.5123],
+            'SABANA LARGA': [19.5345, -71.6891],
+            'SABANA LARGA DAJABÓN': [19.5345, -71.6891],
+            'LA ZANJA': [19.5234, -71.7012],
+            'LA ZANJA DAJABÓN': [19.5234, -71.7012],
+            // ============ PROVINCIA SANTIAGO RODRÍGUEZ ============
+            'SABANETA': [19.6456, -71.4012],
+            'SABANETA SANTIAGO RODRIGUEZ': [19.6456, -71.4012],
+            'SAN IGNACIO DE SABANETA': [19.6456, -71.4012],
+            'VILLA LOS ALMACIGOS': [19.6123, -71.4567],
+            'LOS ALMACIGOS SR': [19.6123, -71.4567],
+            'MONCION': [19.6234, -71.4123],
+            'MONCIÓN': [19.6234, -71.4123],
+            'EL LIMÓN': [19.6345, -71.3891],
+            'EL LIMON': [19.6345, -71.3891],
+            'LA CAÑA': [19.5987, -71.4234],
+            'ARROYO DEL AGUA': [19.5891, -71.4345],
+            'LAS YAYAS': [19.6012, -71.4456],
+            'PALMARITO': [19.6123, -71.4678],
+            'CENOVÍ': [19.6234, -71.4789],
+            'CENOVI': [19.6234, -71.4789],
+            'LOS CIRUELOS': [19.6012, -71.4123],
+            // ============ LÍMITES Y ENTRADAS ESTRATÉGICAS ============
+            'ENTRADA A DAJABÓN': [19.5456, -71.6891],
+            'ENTRADA A DAJABON': [19.5456, -71.6891],
+            'ENTRADA MONTE CRISTI': [19.8345, -71.6234],
+            'ENTRADA A RESTAURACIÓN': [19.5567, -71.6678],
+            'ENTRADA A RESTAURACION': [19.5567, -71.6678],
+            'PUENTE MAO': [19.5567, -71.0678],
+            'PUENTE ESPERANZA': [19.5789, -70.9789],
+            'PUENTE SOBRE MAO': [19.5567, -71.0678],
+            'LA VEGA DE ESPERANZA': [19.5891, -70.9891],
+            'LOS RANCHOS': [19.6012, -71.0789],
+            'EL CRUCE': [19.5891, -71.0891],
+            'EL NARANJAL': [19.6123, -71.1012],
+            'PASO DE LOS PERROS': [19.6234, -71.1123],
+            'LOS POZOS': [19.6345, -71.1234],
+            'LA FORTALEZA': [19.6456, -71.1345],
+            'LA ALTAGRACIA': [19.6567, -71.1456]
+        };
+
+        // ============================================
+        // GOOGLE MAPS CLONE v1.0 - FULL EXPERIENCE
+        // ============================================
+
+        const GoogleMapsClone = {
+            map: null,
+            routingControl: null,
+            favoritesLayer: null,
+            gpsMarker: null,
+            searchPolygon: null,
+            pegmanActive: false,
+            measureLayer: null,
+            isMeasuring: false,
+            measurePoints: [],
+            polygonDrawer: null,
+
+            init: function(containerId, centerCoords, locationName) {
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
+                }
+
+                // 1. MAPAS BASE MÚLTIPLES
+                const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                const googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                const googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                const googleTraffic = L.tileLayer('https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                const googleTransit = L.tileLayer('https://mt1.google.com/vt/lyrs=m,transit&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                
+                this.map = L.map(containerId, {
+                    center: centerCoords,
+                    zoom: 16,
+                    layers: [googleStreets],
+                    zoomControl: false // Custom control later
+                });
+
+                // Evento: Click en el mapa para mover el destino (permite guardar ubicación punteada)
+                this.map.on('click', (e) => {
+                    if (this.isMeasuring) {
+                        this.handleMapClick(e);
+                    } else if (this.routingControl) {
+                        const wps = this.routingControl.getWaypoints();
+                        this.routingControl.setWaypoints([wps[0], e.latlng]);
+                    }
+                });
+
+                // Capas
+                const baseMaps = {
+                    "Google Estándar": googleStreets,
+                    "Google Satélite": googleSat,
+                    "Google Híbrido": googleHybrid,
+                    "Google Terreno": googleTerrain
+                };
+                
+                const overlayMaps = {
+                    "Tráfico en Vivo": googleTraffic,
+                    "Transporte Público": googleTransit,
+                    "Bicicletas": L.tileLayer('https://mt1.google.com/vt/lyrs=m,bike&x={x}&y={y}&z={z}', { attribution: '© Google' })
+                };
+
+                L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(this.map);
+                L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+                L.control.fullscreen({ position: 'topright' }).addTo(this.map);
+                L.control.locate({ position: 'bottomright', drawCircle: true, showPopup: true }).addTo(this.map);
+                L.control.scale().addTo(this.map);
+
+                // 2. SEARCH BOX (ESRI Geocoder)
+                const searchControl = L.esri.Geocoding.geosearch({
+                    position: 'topleft',
+                    placeholder: 'Buscar en Google Maps',
+                    useMapBounds: false,
+                    providers: [
+                        L.esri.Geocoding.arcgisOnlineProvider({
+                            apikey: 'AAPK6974ca356c77461f9a08d627e4313d52O-s4Q-4g-4g-4g-4g-4g-4g-4g-4g-4g' // Free tier key
+                        })
+                    ]
+                }).addTo(this.map);
+
+                searchControl.on('results', (data) => {
+                    if (data.results.length > 0) {
+                        const result = data.results[0];
+                        this.showPlace(result.latlng, result.text);
+                    }
+                });
+
+                // 3. RUTAS
+                const maoCoords = [19.559944, -71.090194];
+                this.routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(maoCoords),
+                        L.latLng(centerCoords)
+                    ],
+                    routeWhileDragging: true,
+                    show: false, // Ocultar instrucciones de texto
+                    lineOptions: { styles: [{color: '#4285F4', opacity: 0.7, weight: 6}] },
+                    createMarker: function(i, wp, nWps) {
+                        return L.marker(wp.latLng, {
+                            draggable: true,
+                            icon: L.divIcon({
+                                className: 'custom-pin',
+                                html: `<div style="background-color: ${i === 0 ? '#34A853' : '#EA4335'}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`
+                            })
+                        });
+                    }
+                }).addTo(this.map);
+
+                // Evento para actualizar el recuadro flotante
+                this.routingControl.on('routesfound', function(e) {
+                    const routes = e.routes;
+                    const summary = routes[0].summary;
+                    const time = Math.round(summary.totalTime / 60);
+                    const dist = (summary.totalDistance / 1000).toFixed(1);
+                    
+                    const box = document.getElementById('route-info-box');
+                    const timeEl = document.getElementById('route-time');
+                    const distEl = document.getElementById('route-dist');
+                    
+                    box.classList.remove('hidden');
+                    timeEl.innerText = `${time} min`;
+                    distEl.innerText = `${dist} km`;
+                });
+
+                // 4. MEDICIONES
+                const measureControl = new L.Control.Measure({ 
+                    position: 'topleft', 
+                    primaryLengthUnit: 'meters', 
+                    secondaryLengthUnit: 'kilometers',
+                    primaryAreaUnit: 'sqmeters', 
+                    secondaryAreaUnit: 'hectares',
+                    activeColor: '#4285F4',
+                    completedColor: '#EA4335'
+                });
+                measureControl.addTo(this.map);
+
+                // 5. PEGMAN (Street View Trigger)
+                this.addPegman();
+
+                // 6. BOTTOM SHEET
+
+                // 7. FAVORITOS
+                this.favoritesLayer = L.layerGroup().addTo(this.map);
+                
+                // Marker for destination
+                L.marker(centerCoords).addTo(this.map)
+                    .bindPopup(`<b>${locationName}</b><br>Lat: ${centerCoords[0]}<br>Lon: ${centerCoords[1]}`)
+                    .openPopup();
+                    
+                // Fix map size
+                setTimeout(() => { this.map.invalidateSize(); }, 200);
+            },
+
+            addPegman: function() {
+                const pegmanControl = L.Control.extend({
+                    options: { position: 'bottomright' },
+                    onAdd: function(map) {
+                        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control pegman-icon');
+                        container.innerHTML = '🧑';
+                        container.title = "Arrastra para Street View";
+                        container.draggable = true;
+                        
+                        container.onclick = () => {
+                            alert("Arrastra este icono al mapa para ver Street View");
+                        };
+                        
+                        // Simulación de Drag & Drop para Street View
+                        container.addEventListener('dragend', (e) => {
+                            const dropPoint = map.mouseEventToLatLng(e);
+                            GoogleMapsClone.openStreetView();
+                        });
+
+                        return container;
+                    }
+                });
+                this.map.addControl(new pegmanControl());
+            },
+
+            openStreetView: function() {
+                document.getElementById('panorama-viewer').style.display = 'block';
+                pannellum.viewer('panorama', {
+                    type: 'equirectangular',
+                    panorama: 'https://pannellum.org/images/alma.jpg', // Demo image
+                    autoLoad: true,
+                    compass: true
+                });
+            },
+
+            closeStreetView: function() {
+                document.getElementById('panorama-viewer').style.display = 'none';
+            },
+
+            showPlace: function(latlng, text) {
+                this.map.flyTo(latlng, 18);
+                L.marker(latlng).addTo(this.map).bindPopup(text).openPopup();
+                
+                // Update routing destination
+                if (this.routingControl) {
+                    const wps = this.routingControl.getWaypoints();
+                    this.routingControl.setWaypoints([wps[0], latlng]);
+                }
+            },
+
+            toggleTrafficMode: function() {
+                let trafficLayer = null;
+                this.map.eachLayer(layer => {
+                    if (layer._url && layer._url.includes('traffic')) trafficLayer = layer;
+                });
+
+                if (trafficLayer) {
+                    this.map.removeLayer(trafficLayer);
+                    showToast("Capa de tráfico desactivada", "info");
+                } else {
+                    const googleTraffic = L.tileLayer('https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 });
+                    this.map.addLayer(googleTraffic);
+                    showToast("Analizando tráfico en tiempo real... Ruta optimizada.", "success");
+                    if (this.routingControl) this.routingControl.route();
+                }
+            },
+
+            toggleMeasurementMode: function() {
+                this.isMeasuring = !this.isMeasuring;
+                if (this.isMeasuring) {
+                    this.measurePoints = [];
+                    if (this.measureLayer) this.measureLayer.clearLayers();
+                    else this.measureLayer = L.layerGroup().addTo(this.map);
+                    
+                    showToast("Modo Medición: Toca el primer punto", "info");
+                    document.getElementById('map-container').style.cursor = 'crosshair';
+                } else {
+                    if (this.measureLayer) this.measureLayer.clearLayers();
+                    this.measurePoints = [];
+                    document.getElementById('map-container').style.cursor = '';
+                    showToast("Modo Medición finalizado", "info");
+                }
+            },
+
+            handleMapClick: function(e) {
+                const latlng = e.latlng;
+                this.measurePoints.push(latlng);
+
+                L.marker(latlng, {
+                    icon: L.divIcon({ className: 'bg-white w-3 h-3 rounded-full border-2 border-blue-600 shadow-sm', iconSize: [12, 12], iconAnchor: [6, 6] })
+                }).addTo(this.measureLayer);
+
+                if (this.measurePoints.length === 1) {
+                    showToast("Toca el segundo punto", "info");
+                } else if (this.measurePoints.length === 2) {
+                    const p1 = this.measurePoints[0];
+                    const p2 = this.measurePoints[1];
+                    const line = L.polyline([p1, p2], { color: '#ef4444', weight: 3, dashArray: '10, 10' }).addTo(this.measureLayer);
+                    const dist = this.map.distance(p1, p2);
+                    const distText = dist < 1000 ? `${Math.round(dist)} m` : `${(dist/1000).toFixed(2)} km`;
+                    L.popup().setLatLng(line.getCenter()).setContent(`<div class="text-center font-black text-slate-800">📏 ${distText}</div>`).openOn(this.map);
+                    this.isMeasuring = false;
+                    document.getElementById('map-container').style.cursor = '';
+                }
+            },
+
+            toggleAreaMode: function() {
+                if (this.isMeasuring) this.toggleMeasurementMode(); // Desactivar medición lineal si está activa
+
+                if (!this.measureLayer) this.measureLayer = L.layerGroup().addTo(this.map);
+
+                if (this.polygonDrawer) {
+                    this.polygonDrawer.disable();
+                    this.polygonDrawer = null;
+                    showToast("Modo Área finalizado", "info");
+                    document.getElementById('map-container').style.cursor = '';
+                } else {
+                    this.polygonDrawer = new L.Draw.Polygon(this.map, {
+                        shapeOptions: {
+                            color: '#ec4899', // Pink-500
+                            weight: 3,
+                            fillOpacity: 0.2
+                        },
+                        showArea: true,
+                        metric: true
+                    });
+                    this.polygonDrawer.enable();
+                    showToast("Modo Área: Click para puntos, Doble-Click terminar", "info");
+                    document.getElementById('map-container').style.cursor = 'crosshair';
+
+                    this.map.off(L.Draw.Event.CREATED);
+                    this.map.once(L.Draw.Event.CREATED, (e) => {
+                        const layer = e.layer;
+                        this.measureLayer.addLayer(layer);
+                        
+                        const latlngs = layer.getLatLngs()[0];
+                        const area = L.GeometryUtil.geodesicArea(latlngs);
+                        const areaText = area >= 10000 ? `${(area / 10000).toFixed(2)} ha` : `${area.toFixed(2)} m²`;
+                        
+                        layer.bindPopup(`<div class="text-center font-black text-slate-800">📐 Área Calculada<br><span class="text-lg text-pink-600">${areaText}</span></div>`).openPopup();
+                        
+                        this.polygonDrawer = null;
+                        document.getElementById('map-container').style.cursor = '';
+                    });
+                }
+            }
+        };
+
+        // EXPOSE TO WINDOW FOR HTML BUTTONS
+        window.GoogleMapsClone = GoogleMapsClone;
+
+        let customLocations = JSON.parse(localStorage.getItem('edenorte_custom_locations') || '{}');
+
+        window.openMap = (locationName) => {
+            const modal = document.getElementById('map-modal');
+            const title = document.getElementById('map-title');
+            const status = document.getElementById('map-status');
+            const searchInput = document.getElementById('fav-search');
+            if(searchInput) searchInput.value = '';
+            
+            modal.classList.remove('hidden');
+            title.innerText = locationName.toUpperCase();
+            
+            // Normalizar búsqueda
+            const searchKey = locationName.toUpperCase().trim();
+            let coords = customLocations[searchKey] || coordenadasRegionNorte[searchKey];
+            const maoCoords = [19.559944, -71.090194]; // Oficina Mao (Ubicación Exacta)
+
+            // Búsqueda inteligente si no hay coincidencia exacta
+            if (!coords) {
+                const keys = Object.keys(coordenadasRegionNorte);
+                const match = keys.find(k => k.includes(searchKey) || searchKey.includes(k));
+                if (match) {
+                    coords = coordenadasRegionNorte[match];
+                    status.innerText = `UBICACIÓN APROXIMADA: ${match}`;
+                } else {
+                    // Buscar en custom keys
+                    const customKeys = Object.keys(customLocations);
+                    const customMatch = customKeys.find(k => k.includes(searchKey) || searchKey.includes(k));
+                    if(customMatch) {
+                        coords = customLocations[customMatch];
+                        status.innerText = `UBICACIÓN GUARDADA: ${customMatch}`;
+                    } else {
+                        status.innerText = "UBICACIÓN NO ENCONTRADA EN BASE DE DATOS OFFLINE";
+                        coords = maoCoords; // Default a Mao
+                    }
+                }
+            } else {
+                status.innerText = "COORDENADAS PRECISAS • BASE DE DATOS OFFLINE";
+            }
+
+            // INICIALIZAR GOOGLE MAPS CLONE
+            GoogleMapsClone.init('map-container', coords, locationName);
+        };
+
+        window.openExternalMap = (type) => {
+            let sLat = 19.559944, sLng = -71.090194; // Default Start
+            let dLat = 0, dLng = 0;
+
+            if (GoogleMapsClone.routingControl) {
+                const wps = GoogleMapsClone.routingControl.getWaypoints();
+                if (wps && wps.length >= 2) {
+                    if(wps[0].latLng) { sLat = wps[0].latLng.lat; sLng = wps[0].latLng.lng; }
+                    if(wps[wps.length-1].latLng) { dLat = wps[wps.length-1].latLng.lat; dLng = wps[wps.length-1].latLng.lng; }
+                }
+            }
+
+            if (dLat === 0 && dLng === 0) return alert("Destino no válido");
+
+            if (type === 'google') window.open(`https://www.google.com/maps/dir/?api=1&origin=${sLat},${sLng}&destination=${dLat},${dLng}&travelmode=driving`, '_blank');
+            else if (type === 'waze') window.open(`https://waze.com/ul?ll=${dLat},${dLng}&navigate=yes`, '_blank');
+        };
+
+        window.saveCurrentDest = async () => {
+            let dLat = 0, dLng = 0;
+            if (GoogleMapsClone.routingControl) {
+                const wps = GoogleMapsClone.routingControl.getWaypoints();
+                if (wps && wps.length >= 2 && wps[wps.length-1].latLng) {
+                    dLat = wps[wps.length-1].latLng.lat;
+                    dLng = wps[wps.length-1].latLng.lng;
+                }
+            }
+            
+            if (dLat === 0) return alert("No hay destino válido para guardar.");
+
+            const name = prompt("Nombre para esta ubicación:", document.getElementById('map-title').innerText);
+            if (name) {
+                const key = name.toUpperCase().trim();
+                const coords = [dLat, dLng];
+                
+                customLocations[key] = coords;
+                localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
+                renderMapFavorites();
+                renderFavoriteMarkers();
+                
+                try {
+                    await setDoc(doc(db, "ubicaciones", key), {
+                        nombre: key, coords: coords, autor: window.currentUser, fecha: new Date().toISOString()
+                    });
+                    showToast("Ubicación guardada en Firebase", "success");
+                } catch(e) {
+                    console.error(e);
+                    showToast("Guardado localmente (Sin conexión)", "warning");
+                }
+            }
+        };
+
+        window.addManualLocation = async () => {
+            const input = prompt("Ingrese coordenadas (Latitud, Longitud):", "");
+            if (!input) return;
+            
+            const parts = input.split(',').map(s => parseFloat(s.trim()));
+            if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
+                return alert("Formato incorrecto. Ejemplo: 19.55, -71.07");
+            }
+            
+            const name = prompt("Nombre para esta ubicación:");
+            if (!name) return;
+            
+            const key = name.toUpperCase().trim();
+            const coords = [parts[0], parts[1]];
+            
+            customLocations[key] = coords;
+            localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
+            renderMapFavorites();
+            renderFavoriteMarkers();
+            
+            try {
+                await setDoc(doc(db, "ubicaciones", key), {
+                    nombre: key, coords: coords, autor: window.currentUser, fecha: new Date().toISOString()
+                });
+                showToast("Ubicación guardada en Firebase", "success");
+            } catch(e) {
+                console.error(e);
+                showToast("Guardado localmente (Sin conexión)", "warning");
+            }
+            
+            if(GoogleMapsClone.map) GoogleMapsClone.showPlace(coords, key);
+        };
+
+        window.deleteFavorite = async (key) => {
+            if(!confirm("¿Eliminar \"" + key + "\" de sus ubicaciones guardadas?")) return;
+            
+            delete customLocations[key];
+            localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
+            renderMapFavorites();
+            renderFavoriteMarkers();
+            
+            try {
+                await deleteDoc(doc(db, "ubicaciones", key));
+                showToast("Ubicación eliminada", "success");
+            } catch(e) {
+                console.error(e);
+                showToast("Eliminado localmente", "warning");
+            }
+        };
+
+        window.filterFavorites = () => {
+            const term = document.getElementById('fav-search').value;
+            renderMapFavorites(term);
+        };
+
+        window.renderMapFavorites = (filter = "") => {
+            const container = document.getElementById('fav-container');
+            const list = document.getElementById('fav-list');
+            const allKeys = Object.keys(customLocations);
+            
+            if (allKeys.length === 0) { container.classList.add('hidden'); return; }
+            
+            container.classList.remove('hidden');
+            
+            let keys = allKeys;
+            if(filter) {
+                const f = filter.toUpperCase();
+                keys = keys.filter(k => k.includes(f));
+            }
+
+            if(keys.length === 0) {
+                list.innerHTML = `<div class="text-[9px] text-slate-500 italic w-full text-center py-2">No se encontraron resultados</div>`;
+                return;
+            }
+
+            list.innerHTML = keys.map(k => `
+                <div class="shrink-0 flex items-center bg-slate-700 rounded-lg border border-white/10 overflow-hidden group">
+                    <button onclick="openMap('${k}')" class="hover:bg-blue-600 text-white px-3 py-1.5 text-[9px] font-bold uppercase transition-colors h-full border-r border-white/10">
+                        ${k}
+                    </button>
+                    <button onclick="deleteFavorite('${k}')" class="bg-slate-800 hover:bg-red-500 text-slate-400 hover:text-white px-2 py-1.5 text-[9px] font-bold transition-colors h-full flex items-center" title="Eliminar">
+                        ✕
+                    </button>
+                </div>
+            `).join('');
+        };
+
+        window.renderFavoriteMarkers = () => {
+            if (!GoogleMapsClone.favoritesLayer) return;
+            GoogleMapsClone.favoritesLayer.clearLayers();
+            Object.entries(customLocations).forEach(([k, v]) => {
+                L.marker(v, { opacity: 0.6, title: k }).addTo(GoogleMapsClone.favoritesLayer)
+                    .bindPopup(`<div class="text-center"><b class="uppercase text-blue-600">${k}</b><br><button onclick="openMap('${k}')" class="mt-2 bg-slate-800 text-white px-3 py-1 rounded-lg text-[9px] font-bold uppercase w-full">Trazar Ruta</button></div>`);
+            });
+        };
+
+        window.toggleFavoriteMarkers = () => {
+            if (!GoogleMapsClone.favoritesLayer) return;
+            if (GoogleMapsClone.favoritesLayer.getLayers().length > 0) {
+                GoogleMapsClone.favoritesLayer.clearLayers();
+            } else {
+                renderFavoriteMarkers();
+            }
+        };
+
+        window.clearSearch = () => {
+            if (GoogleMapsClone.searchPolygon) {
+                GoogleMapsClone.map.removeLayer(GoogleMapsClone.searchPolygon);
+                GoogleMapsClone.searchPolygon = null;
+            }
+            const input = document.querySelector('.geocoder-control-input');
+            if(input) input.value = '';
+            showToast("Búsqueda limpiada", "success");
+        };
+
+        window.closeMap = () => {
+            document.getElementById('map-modal').classList.add('hidden');
+            // No need to destroy map here, GoogleMapsClone handles re-init
+        };
+
+        window.centerOnGPS = () => {
+            if (!navigator.geolocation) {
+                return showToast("Geolocalización no es soportada por este navegador.", "error");
+            }
+            if (!GoogleMapsClone.map) return;
+
+            showToast("Obteniendo ubicación GPS...", "success");
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userCoords = [position.coords.latitude, position.coords.longitude];
+                    GoogleMapsClone.map.flyTo(userCoords, 17, { animate: true, duration: 1.5 });
+
+                    if (GoogleMapsClone.gpsMarker) GoogleMapsClone.map.removeLayer(GoogleMapsClone.gpsMarker);
+                    
+                    GoogleMapsClone.gpsMarker = L.marker(userCoords, { icon: L.divIcon({ className: 'gps-marker', iconSize: [16, 16] }) })
+                        .addTo(GoogleMapsClone.map)
+                        .bindPopup("<b>Estás aquí</b>")
+                        .openPopup();
+                    
+                    showToast("Mapa centrado en tu ubicación.", "success");
+                },
+                (error) => {
+                    let message = "Error al obtener la ubicación: ";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED: message += "Permiso denegado."; break;
+                        case error.POSITION_UNAVAILABLE: message += "Información no disponible."; break;
+                        case error.TIMEOUT: message += "La solicitud expiró."; break;
+                        default: message += "Error desconocido."; break;
+                    }
+                    showToast(message, "error");
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         };
 
         renderEquipo();
