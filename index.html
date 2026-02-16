@@ -342,6 +342,8 @@
         /* ANIMATIONS */
         .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
         /* SPINNER */
         .spinner {
@@ -697,6 +699,34 @@
                     <option value="">-- SELECCIONAR --</option>
                 </select>
                 <button onclick="confirmLinkTerritory()" class="w-full bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Vincular</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="email-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
+        <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center shrink-0">
+                <h2 class="text-xl font-black text-blue-500 italic glow-text">ENVIAR REPORTE</h2>
+                <button onclick="closeEmailModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Correo del Supervisor</label>
+                    <div class="flex gap-2">
+                        <input id="email-supervisor" type="email" list="email-history" placeholder="ejemplo@edenorte.com" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                        <datalist id="email-history"></datalist>
+                    </div>
+                </div>
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2">Vista Previa del Mensaje</p>
+                    <p id="email-preview" class="text-[10px] text-slate-300 italic leading-relaxed whitespace-pre-line"></p>
+                </div>
+                <div class="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-xl">
+                    <p class="text-[9px] font-bold text-yellow-500 uppercase">⚠️ Importante: Al abrirse el correo, recuerda ADJUNTAR el PDF que guardaste previamente.</p>
+                </div>
+                <button onclick="shareReportDirectly()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mb-2 hidden" id="btn-share-native">📲 Compartir PDF Adjunto</button>
+                <button onclick="sendReportEmail()" class="w-full btn-gradient text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Abrir Correo</button>
             </div>
         </div>
     </div>
@@ -1638,11 +1668,22 @@
                 container.appendChild(item);
             });
             if(filtered.length > 0) {
-                const btnP = document.createElement('button');
-                btnP.className = "w-full btn-gradient text-white py-5 rounded-2xl font-black text-xs uppercase shadow-2xl mt-4 no-print";
-                btnP.innerText = `Generar Reporte Imprimible`;
-                btnP.onclick = () => generatePrintable(window.viewingWeek);
-                container.appendChild(btnP);
+                const btnContainer = document.createElement('div');
+                btnContainer.className = "flex gap-2 mt-4 no-print";
+                
+                const btnPrint = document.createElement('button');
+                btnPrint.className = "flex-1 btn-gradient text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg";
+                btnPrint.innerHTML = `🖨️ Imprimir PDF`;
+                btnPrint.onclick = () => generatePrintable(window.viewingWeek);
+                
+                const btnEmail = document.createElement('button');
+                btnEmail.className = "flex-1 bg-slate-700 hover:bg-slate-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg border border-white/10";
+                btnEmail.innerHTML = `✉️ Enviar Correo`;
+                btnEmail.onclick = () => openEmailModal(window.viewingWeek, filtered);
+                
+                btnContainer.appendChild(btnPrint);
+                btnContainer.appendChild(btnEmail);
+                container.appendChild(btnContainer);
             }
         };
 
@@ -2021,7 +2062,8 @@
             { t: "1. PANTALLA DE REGISTRO", d: "Aquí creas las dietas diarias.<br><br>• <b>Fecha/Semana:</b> Se ajustan automáticamente, pero son editables.<br>• <b>Horarios:</b> Definen el monto. Si sales antes de las 7am aplica Desayuno. Si llegas después de las 8pm aplica Cena.<br>• <b>Equipo:</b> Toca un nombre para incluirlo. Usa '+' para extras." },
             { t: "2. HISTORIAL Y EDICIÓN", d: "Visualiza y gestiona lo guardado.<br><br>• Usa las flechas ◀ ▶ para cambiar de semana.<br>• <b>Editar:</b> Carga los datos en el formulario para corregir.<br>• <b>Imprimir:</b> Genera el PDF oficial listo para firmar." },
             { t: "3. WIDGET CALENDARIO", d: "Tu agenda personal integrada.<br><br>• Toca el botón 📅 flotante.<br>• Selecciona un día para guardar notas o recordatorios de viajes futuros.<br>• Los puntos naranjas indican que ese día tiene una nota." },
-            { t: "4. ESTADO DE CUENTAS", d: "En la pestaña 'ACTIVOS', puedes ver el resumen mensual de dinero generado por cada empleado. Útil para el cuadre mensual." }
+            { t: "4. ESTADO DE CUENTAS", d: "En la pestaña 'ACTIVOS', puedes ver el resumen mensual de dinero generado por cada empleado. Útil para el cuadre mensual." },
+            { t: "5. ASISTENTE IA 🤖", d: "Tu copiloto inteligente.<br><br>• Toca el botón robot morado.<br>• Pregúntale cosas como: '¿Cómo calculo una dieta?', 'Resume mis gastos', o dudas sobre la app.<br>• Usa tecnología Google Gemini." }
         ];
 
         window.toggleGuide = () => {
@@ -2154,6 +2196,142 @@
             } catch(e) {
                 console.error(e);
                 showToast("Error al eliminar: " + e.message, "error");
+            }
+        };
+
+        // EMAIL LOGIC
+        window.emailData = {};
+
+        window.openEmailModal = (week, records) => {
+            const modal = document.getElementById('email-modal');
+            const input = document.getElementById('email-supervisor');
+            const datalist = document.getElementById('email-history');
+            const preview = document.getElementById('email-preview');
+            
+            // Verificar soporte de Share API
+            const shareBtn = document.getElementById('btn-share-native');
+            if (navigator.share) shareBtn.classList.remove('hidden');
+
+            // Load history
+            const history = JSON.parse(localStorage.getItem('edenorte_email_history') || '[]');
+            datalist.innerHTML = history.map(e => `<option value="${e}">`).join('');
+            if(history.length > 0 && !input.value) input.value = history[0];
+
+            // Prepare Data
+            const total = records.reduce((sum, r) => sum + r.total, 0);
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-DO');
+            const timeStr = now.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', hour12: true });
+            
+            window.emailData = {
+                week: week,
+                total: total,
+                date: dateStr,
+                time: timeStr
+            };
+
+            // Generate Preview
+            const subject = `REPORTE DE DIETAS - SEMANA ${week} - ${dateStr}`;
+            const body = `Estimado Supervisor,
+
+Adjunto remito el reporte de dietas correspondiente a la Semana Fiscal ${week}.
+
+RESUMEN:
+• Agente: ${window.currentUserName}
+• ID: ${window.currentUser}
+• Total: RD$ ${total.toLocaleString()}
+• Generado: ${dateStr} a las ${timeStr}
+
+Favor confirmar recepción.
+
+Atentamente,
+${window.currentUserName}
+Edenorte Dominicana`;
+
+            preview.innerText = `ASUNTO: ${subject}\n\n${body}`;
+            modal.classList.remove('hidden');
+        };
+
+        window.closeEmailModal = () => {
+            document.getElementById('email-modal').classList.add('hidden');
+        };
+
+        window.sendReportEmail = () => {
+            const email = document.getElementById('email-supervisor').value.trim();
+            if(!email) return showToast("Ingrese un correo válido", "warning");
+            
+            // Save to history
+            let history = JSON.parse(localStorage.getItem('edenorte_email_history') || '[]');
+            if(!history.includes(email)) {
+                history.unshift(email);
+                localStorage.setItem('edenorte_email_history', JSON.stringify(history.slice(0, 5))); // Keep last 5
+            }
+
+            const { week, total, date, time } = window.emailData;
+            const subject = `REPORTE DE DIETAS - SEMANA ${week} - ${date}`;
+            const body = `Estimado Supervisor,
+
+Adjunto remito el reporte de dietas correspondiente a la Semana Fiscal ${week}.
+
+RESUMEN:
+• Agente: ${window.currentUserName}
+• ID: ${window.currentUser}
+• Total: RD$ ${total.toLocaleString()}
+• Generado: ${date} a las ${time}
+
+Favor confirmar recepción.
+
+Atentamente,
+${window.currentUserName}
+Edenorte Dominicana`;
+
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+            
+            closeEmailModal();
+            showToast("Correo abierto. No olvides adjuntar el PDF.", "success");
+        };
+
+        window.shareReportDirectly = async () => {
+            const element = document.getElementById('print-section');
+            const originalDisplay = element.style.display;
+            
+            // Preparar vista para PDF (hacerla visible temporalmente)
+            element.style.display = 'block';
+            
+            const opt = {
+                margin: 5,
+                filename: `Reporte_Semana_${window.emailData.week}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showToast("Generando PDF y adjuntando...", "info");
+
+            try {
+                // Generar Blob del PDF
+                const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+                element.style.display = originalDisplay; // Restaurar vista
+
+                const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+
+                // Intentar compartir nativamente (Móvil/Edge/Safari)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Reporte de Dietas Edenorte',
+                        text: `Adjunto reporte de la Semana ${window.emailData.week}.`
+                    });
+                    showToast("Compartido exitosamente", "success");
+                    closeEmailModal();
+                } else {
+                    throw new Error("Tu dispositivo no soporta compartir archivos directos.");
+                }
+            } catch (e) {
+                console.error(e);
+                element.style.display = originalDisplay;
+                showToast("No se pudo adjuntar automático (Usa el botón normal)", "error");
             }
         };
 
@@ -3046,5 +3224,4 @@
         populateYearSelector();
     </script>
 </body>
-</html>
 </html>
