@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Edenorte Mao - Gestión de Dietas Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -30,6 +30,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.css" />
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+    <!-- 4. PDF & EXCEL PARSING -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- 4. GEOCODER AVANZADO (ESRI) -->
     <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
@@ -646,6 +650,17 @@
             }
         }
 
+        .loader-ai {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #1e3a8a;
+            border-bottom-color: #3b82f6;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
         #map-container {
             height: 100%;
             width: 100%;
@@ -1130,7 +1145,7 @@
 
     <!-- Calendar Widget -->
     <div id="mini-calendar"
-        class="premium-card no-print fixed bottom-24 right-[44px] w-64 p-5 hidden z-[60] flex flex-col gap-2 shadow-2xl border border-white/10 backdrop-blur-xl">
+        class="premium-card no-print fixed bottom-24 right-[60px] w-72 p-5 hidden z-[100] flex flex-col gap-2 shadow-2xl border border-white/10 backdrop-blur-2xl">
         <div class="flex justify-between items-center mb-2">
             <button onclick="changeCalendarMonth(-1)"
                 class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">◀</button>
@@ -1161,6 +1176,15 @@
                 <button onclick="markCalendarTime('llegadaFinal')"
                     class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/40 text-[7px] font-black py-1.5 rounded-lg transition-all uppercase leading-tight text-center">🔵
                     Llegada<br>Final</button>
+            </div>
+            <!-- Botones de Lugar y Labor -->
+            <div class="grid grid-cols-2 gap-1 mb-2">
+                <button onclick="markCalendarInfo('lugar')"
+                    class="bg-pink-600/20 hover:bg-pink-600 text-pink-400 hover:text-white border border-pink-600/40 text-[7px] font-black py-1.5 rounded-lg transition-all uppercase leading-tight text-center">📍
+                    Lugar</button>
+                <button onclick="markCalendarInfo('labor')"
+                    class="bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-600/40 text-[7px] font-black py-1.5 rounded-lg transition-all uppercase leading-tight text-center">🛠
+                    Labor</button>
             </div>
             <!-- Horas marcadas del dia -->
             <div id="cal-times-display" class="bg-white/5 rounded-lg p-2 mb-2 hidden">
@@ -1327,6 +1351,8 @@
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Historial</button>
             <button id="btn-act" onclick="showTab('activos')"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Activos</button>
+            <button id="btn-res" onclick="showTab('resumen')"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Resumen</button>
         </nav>
 
         <main class="p-4 max-w-2xl mx-auto">
@@ -1349,8 +1375,14 @@
                             <div class="flex-1">
                                 <label class="text-[8px] font-black text-slate-500 uppercase block">Semana
                                     Fiscal</label>
-                                <input id="f-semana" type="number"
-                                    class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
+                                <div class="flex items-center gap-1">
+                                    <button type="button" onclick="document.getElementById('f-semana').stepDown()"
+                                        class="text-blue-400 font-bold px-1 hover:text-white">◀</button>
+                                    <input id="f-semana" type="number"
+                                        class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none text-center">
+                                    <button type="button" onclick="document.getElementById('f-semana').stepUp()"
+                                        class="text-blue-400 font-bold px-1 hover:text-white">▶</button>
+                                </div>
                             </div>
                             <div class="flex-1">
                                 <label class="text-[8px] font-black text-slate-500 uppercase block">Año Fiscal</label>
@@ -1465,6 +1497,67 @@
                 </div>
                 <div id="activos-list" class="space-y-4"></div>
             </div>
+
+            <div id="tab-resumen" class="hidden space-y-6">
+                <div class="premium-card p-8 text-center border-dashed border-2 border-blue-500/30 hover:border-blue-500 transition-all cursor-pointer group"
+                    onclick="document.getElementById('memento-file').click()">
+                    <div class="flex flex-col items-center gap-4">
+                        <div
+                            class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span class="text-4xl">🤖</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-white italic glow-text">ASISTENTE MEMENTO</h3>
+                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Cargar
+                                Reporte (PDF, EXCEL, TXT)</p>
+                        </div>
+                        <input type="file" id="memento-file" class="hidden" accept=".pdf,.xlsx,.xls,.txt"
+                            onchange="processMementoFile(event)">
+                    </div>
+                </div>
+
+                <div id="memento-loading" class="hidden premium-card p-10 text-center animate-pulse">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="loader-ai"></div>
+                        <p class="text-xs font-black text-blue-400 uppercase tracking-widest">Interpretando con Gemini
+                            1.5 Flash...</p>
+                    </div>
+                </div>
+
+                <div id="memento-result" class="hidden flex flex-col gap-4 fade-in">
+                    <!-- Chat History -->
+                    <div id="chat-history"
+                        class="premium-card p-6 space-y-4 max-h-[500px] overflow-y-auto bg-slate-900/60 border border-white/5">
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs">🤖
+                            </div>
+                            <div
+                                class="bg-blue-600/10 p-3 rounded-2xl rounded-tl-none border border-blue-500/20 max-w-[80%]">
+                                <p class="text-[11px] text-slate-200">Archivo procesado. ¿En qué más puedo ayudarte con
+                                    este reporte? He extraído los datos clave para tu historial.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="premium-card p-3 flex gap-2 border border-blue-500/20 bg-slate-900/80 sticky bottom-2">
+                        <input id="chat-input" type="text" placeholder="Escribe un ajuste o pregunta..."
+                            class="flex-1 bg-transparent border-none outline-none text-xs text-white px-3"
+                            onkeypress="if(event.key === 'Enter') sendUserMessage()">
+                        <button onclick="sendUserMessage()"
+                            class="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-xl transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <button onclick="window.print()"
+                        class="w-full bg-white/5 hover:bg-white/10 text-slate-400 py-3 rounded-xl font-black uppercase text-[10px] transition-all border border-white/5">🖨️
+                        Imprimir Reporte Final</button>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -1472,6 +1565,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile, verifyBeforeUpdateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDocs, where, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCP5X8LN3otg7cgSSFwRfd8UhXI5EAn1yY",
@@ -1494,6 +1588,195 @@
                 console.warn('Persistencia fallida: El navegador no lo soporta');
             }
         });
+
+        // CONFIGURACIÓN SEGURA DE GEMINI AI
+        let geminiAPI = null;
+        const VALID_HOSTS = ['joshgritz.github.io', 'localhost', '127.0.0.1'];
+
+        const initGemini = async () => {
+            if (!VALID_HOSTS.includes(window.location.hostname)) {
+                console.error("Acceso denegado a IA: Dominio no autorizado.");
+                return null;
+            }
+
+            try {
+                // La llave se protege dinámicamente consultando config/ia
+                const iaSnap = await getDoc(doc(db, "config", "ia"));
+                if (iaSnap.exists() && iaSnap.data().apiKey) {
+                    const genAI = new GoogleGenerativeAI(iaSnap.data().apiKey);
+                    return genAI.getGenerativeModel({
+                        model: "gemini-1.5-flash",
+                        systemInstruction: "Eres un asistente experto para Edenorte Mao. Tu trabajo es leer reportes de Memento, extraer toda información para un reporte de impresión profesional. IMPORTANTE: Si detectas datos de dietas (Fecha, Hora Llegada, Hora Salida, Lugar, Labor), genera un bloque JSON al final de tu respuesta para que el sistema los sincronice automáticamente. Formato: {\"fecha\": \"YYYY-MM-DD\", \"llegadaLugar\": \"HH:mm\", \"salida\": \"HH:mm\", \"llegadaFinal\": \"HH:mm\", \"lugar\": \"...\", \"labor\": \"...\"}. Mantén el resto del reporte formal y técnico."
+                    });
+                } else {
+                    console.warn("IA Config: No se encontró API Key en Firestore config/ia");
+                }
+            } catch (e) {
+                console.error("IA Init Error:", e);
+            }
+            return null;
+        };
+
+        // Configurar PDF.js Worker
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        }
+
+        let currentChatSession = null;
+
+        window.processMementoFile = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const loading = document.getElementById('memento-loading');
+            const result = document.getElementById('memento-result');
+            const history = document.getElementById('chat-history');
+
+            loading.classList.remove('hidden');
+            result.classList.add('hidden');
+            history.innerHTML = ''; // Limpiar chat previo
+
+            try {
+                let text = "";
+                const fileName = file.name;
+                const fileType = fileName.split('.').pop().toLowerCase();
+
+                if (fileType === 'txt' || fileType === 'csv') {
+                    text = await file.text();
+                } else if (fileType === 'pdf') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        text += textContent.items.map(item => item.str).join(' ') + "\n";
+                    }
+                } else if (fileType === 'xlsx' || fileType === 'xls') {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data);
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    text = XLSX.utils.sheet_to_txt(firstSheet);
+                }
+
+                if (!text) throw new Error("No se pudo extraer texto del archivo.");
+
+                const model = await initGemini();
+                if (!model) throw new Error("Acceso a IA no configurado o no autorizado.");
+
+                currentChatSession = model.startChat({ history: [] });
+
+                const responseText = await sendToGemini(`Procesa este archivo de Memento:\n\n${text}`);
+
+                loading.classList.add('hidden');
+                result.classList.remove('hidden');
+
+                // Guardar log inicial
+                await saveMementoLog(fileName, responseText);
+
+            } catch (e) {
+                console.error(e);
+                showToast("Error procesando memento: " + e.message, "error");
+                loading.classList.add('hidden');
+            }
+            event.target.value = '';
+        };
+
+        const sendToGemini = async (msg) => {
+            if (!currentChatSession) return;
+
+            const result = await currentChatSession.sendMessage(msg);
+            const response = await result.response;
+            const text = response.text();
+
+            // Sincronización Automática de Datos
+            extractAndSyncData(text);
+
+            // Renderizar en el chat
+            addChatMessage('bot', text);
+            return text;
+        };
+
+        window.sendUserMessage = async () => {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg || !currentChatSession) return;
+
+            addChatMessage('user', msg);
+            input.value = '';
+
+            try {
+                await sendToGemini(msg);
+            } catch (e) {
+                showToast("Error en chat IA", "error");
+            }
+        };
+
+        const addChatMessage = (role, text) => {
+            const history = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            div.className = "flex gap-3 " + (role === 'user' ? 'justify-end' : '');
+
+            // Limpiar JSON de la visualización del usuario para que se vea limpio
+            const cleanText = text.replace(/\{[\s\S]*?\}/g, '').trim();
+
+            div.innerHTML = `
+                ${role === 'bot' ? '<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] shrink-0">🤖</div>' : ''}
+                <div class="${role === 'user' ? 'bg-blue-600' : 'bg-blue-600/10 border border-blue-500/20'} p-3 rounded-2xl ${role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} max-w-[85%]">
+                    <div class="text-[11px] text-white leading-relaxed memento-report-style">${formatAIResponse(cleanText)}</div>
+                </div>
+                ${role === 'user' ? '<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] shrink-0">👤</div>' : ''}
+            `;
+            history.appendChild(div);
+            history.scrollTop = history.scrollHeight;
+        };
+
+        const extractAndSyncData = async (text) => {
+            const jsonMatch = text.match(/\{[\s\S]*?\}/);
+            if (jsonMatch) {
+                try {
+                    const data = JSON.parse(jsonMatch[0]);
+                    if (data.fecha) {
+                        await setDoc(doc(db, "marcajes", data.fecha), {
+                            ...data,
+                            autor: window.currentUser || 'AI_SYNC',
+                            updatedAt: new Date().toISOString()
+                        }, { merge: true });
+                        showToast("🎯 Datos sincronizados automáticamente", "success");
+                        // Si estamos en la misma fecha, disparar autofill
+                        const currentFormDate = document.getElementById('f-fecha').value;
+                        if (currentFormDate === data.fecha) {
+                            autoFillFromMarcaje(data.fecha);
+                        }
+                    }
+                } catch (e) { console.warn("JSON Sync Error", e); }
+            }
+        };
+
+        const formatAIResponse = (text) => {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-400">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em class="text-slate-400">$1</em>')
+                .replace(/### (.*)/g, '<h3 class="text-xs font-black text-white mt-2 mb-1 uppercase">$1</h3>')
+                .replace(/## (.*)/g, '<h2 class="text-sm font-black text-blue-500 mt-4 mb-2 uppercase">$1</h2>')
+                .replace(/- (.*)/g, '<div class="flex gap-1 mb-0.5"><span class="text-blue-500">•</span><span>$1</span></div>')
+                .replace(/\n/g, '<br>');
+        };
+
+        const saveMementoLog = async (fileName, interpretation) => {
+            if (!window.currentUser) return;
+            try {
+                await addDoc(collection(db, "memento_logs"), {
+                    fileName: fileName,
+                    interpretation: interpretation,
+                    userId: window.currentUserId || window.currentUser,
+                    userName: window.currentUserName,
+                    date: new Date().toISOString(),
+                    timestamp: new Date()
+                });
+            } catch (e) {
+                console.error("Error saving memento log:", e);
+            }
+        };
 
         window.currentUser = "";
         window.currentUserName = "";
@@ -1585,7 +1868,7 @@
                     window.viewingYear = window.currentYear;
                     // Asignar automáticamente la semana fiscal al formulario desde Firestore
                     const semanaInput = document.getElementById('f-semana');
-                    if (semanaInput && !semanaInput.value) {
+                    if (semanaInput) {
                         semanaInput.value = window.currentWeek;
                     }
                 }
@@ -2406,9 +2689,12 @@
             document.getElementById('tab-registro').classList.toggle('hidden', tab !== 'registro');
             document.getElementById('tab-historial').classList.toggle('hidden', tab !== 'historial');
             document.getElementById('tab-activos').classList.toggle('hidden', tab !== 'activos');
+            document.getElementById('tab-resumen').classList.toggle('hidden', tab !== 'resumen');
+
             document.getElementById('btn-reg').classList.toggle('tab-active', tab === 'registro');
             document.getElementById('btn-hist').classList.toggle('tab-active', tab === 'historial');
             document.getElementById('btn-act').classList.toggle('tab-active', tab === 'activos');
+            document.getElementById('btn-res').classList.toggle('tab-active', tab === 'resumen');
 
             // Animation trigger
             const activeContent = document.getElementById(`tab-${tab}`);
@@ -2575,6 +2861,8 @@
                 if (marcaje.llegadaLugar) html += `<p class="text-[9px] font-bold text-green-400">🟢 Llegada Lugar: <span class="text-white">${marcaje.llegadaLugar}</span></p>`;
                 if (marcaje.salida) html += `<p class="text-[9px] font-bold text-orange-400">🟠 Salida Lugar: <span class="text-white">${marcaje.salida}</span></p>`;
                 if (marcaje.llegadaFinal) html += `<p class="text-[9px] font-bold text-blue-400">🔵 Llegada Final: <span class="text-white">${marcaje.llegadaFinal}</span></p>`;
+                if (marcaje.lugar) html += `<p class="text-[9px] font-bold text-pink-400">📍 Lugar: <span class="text-white">${marcaje.lugar}</span></p>`;
+                if (marcaje.labor) html += `<p class="text-[9px] font-bold text-purple-400">🛠 Labor: <span class="text-white">${marcaje.labor}</span></p>`;
                 timesContent.innerHTML = html;
             } else {
                 timesDisplay.classList.add('hidden');
@@ -2646,6 +2934,43 @@
             }
         };
 
+        // Guardar información de texto (Lugar/Labor) en Firestore
+        window.markCalendarInfo = async (type) => {
+            if (!window.selectedCalDay) return showToast("Selecciona un día primero", "warning");
+
+            const labels = { lugar: 'Nombre del Lugar', labor: 'Detalles de la Labor' };
+            const currentVal = (window.marcajesData && window.marcajesData[isoDate()] && window.marcajesData[isoDate()][type]) || '';
+            const input = prompt(`Ingrese ${labels[type]}:`, currentVal);
+
+            if (input === null) return; // Cancelado
+
+            const dateStr = isoDate();
+
+            try {
+                await setDoc(doc(db, "marcajes", dateStr), {
+                    [type]: input.toUpperCase(),
+                    fecha: dateStr,
+                    autor: window.currentUser || 'sistema',
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                if (!window.marcajesData[dateStr]) window.marcajesData[dateStr] = {};
+                window.marcajesData[dateStr][type] = input.toUpperCase();
+
+                showToast(`${type.toUpperCase()} actualizado ✓`, "success");
+                selectCalendarDay(window.selectedCalDay);
+            } catch (e) {
+                console.error(e);
+                showToast("Error al guardar: " + e.message, "error");
+            }
+        };
+
+        function isoDate() {
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(window.selectedCalDay).padStart(2, '0')}`;
+        }
+
         // Autocompletar campos de hora del formulario desde marcajes del calendario
         window.autoFillFromMarcaje = (isoDate) => {
             const marcaje = window.marcajesData && window.marcajesData[isoDate];
@@ -2663,10 +2988,19 @@
             if (marcaje.llegadaFinal) {
                 document.getElementById('h-lle-mao').value = marcaje.llegadaFinal;
                 filled.push('Llegada Final');
-                updateCalculos();
             }
+            if (marcaje.lugar) {
+                document.getElementById('f-lugar').value = marcaje.lugar;
+                filled.push('Lugar');
+            }
+            if (marcaje.labor) {
+                document.getElementById('f-trabajo').value = marcaje.labor;
+                filled.push('Labor');
+            }
+
             if (filled.length > 0) {
-                showToast(`📋 Horas del calendario: ${filled.join(', ')}`, "success");
+                updateCalculos();
+                showToast(`📋 Autocompletado: ${filled.join(', ')}`, "success");
             }
         };
 
@@ -3222,7 +3556,9 @@ Edenorte Dominicana`;
                     center: centerCoords,
                     zoom: 16,
                     layers: [defaultLayer],
-                    zoomControl: false
+                    zoomControl: true,
+                    touchZoom: true,
+                    doubleClickZoom: true
                 });
 
                 // Evento: Click en el mapa para mover el destino (permite guardar ubicación punteada)
