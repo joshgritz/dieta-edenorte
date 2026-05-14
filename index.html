@@ -1511,8 +1511,9 @@
                             <p class="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Cargar
                                 Reporte (PDF, EXCEL, TXT)</p>
                         </div>
-                        <input type="file" id="memento-file" class="hidden" accept=".pdf,.xlsx,.xls,.txt"
-                            onchange="processMementoFile(event)">
+                        <input type="file" id="memento-file" class="hidden"
+                            accept=".csv, .txt, .xlsx, .xls, text/plain, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            inputmode="file" onchange="processMementoFile(event)">
                     </div>
                 </div>
 
@@ -1641,7 +1642,11 @@
                 const fileName = file.name;
                 const fileType = fileName.split('.').pop().toLowerCase();
 
-                if (fileType === 'txt' || fileType === 'csv') {
+                const isText = fileType === 'txt' || fileType === 'csv' ||
+                    file.type === 'text/plain' || file.type === 'text/csv' ||
+                    file.type === 'application/csv' || file.type === 'text/comma-separated-values';
+
+                if (isText) {
                     text = await file.text();
                 } else if (fileType === 'pdf') {
                     const arrayBuffer = await file.arrayBuffer();
