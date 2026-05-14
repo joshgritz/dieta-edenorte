@@ -1601,16 +1601,23 @@
             }
 
             try {
+                console.log("🤖 IA: Verificando autorización para:", window.location.hostname);
+
                 // La llave se protege dinámicamente consultando config/ia
                 const iaSnap = await getDoc(doc(db, "config", "ia"));
                 if (iaSnap.exists() && iaSnap.data().apiKey) {
-                    const genAI = new GoogleGenerativeAI(iaSnap.data().apiKey);
+                    const apiKey = iaSnap.data().apiKey;
+                    console.log("🔑 IA: API Key cargada correctamente (Longitud:", apiKey.length, ")");
+
+                    const genAI = new GoogleGenerativeAI(apiKey);
+                    // Usamos la versión estable del modelo Flash
                     return genAI.getGenerativeModel({
                         model: "gemini-1.5-flash",
                         systemInstruction: "Eres un asistente experto para Edenorte Mao. Tu trabajo es leer reportes de Memento, extraer toda información para un reporte de impresión profesional. IMPORTANTE: Si detectas datos de dietas (Fecha, Hora Llegada, Hora Salida, Lugar, Labor), genera un bloque JSON al final de tu respuesta para que el sistema los sincronice automáticamente. Formato: {\"fecha\": \"YYYY-MM-DD\", \"llegadaLugar\": \"HH:mm\", \"salida\": \"HH:mm\", \"llegadaFinal\": \"HH:mm\", \"lugar\": \"...\", \"labor\": \"...\"}. Mantén el resto del reporte formal y técnico."
                     });
                 } else {
-                    console.warn("IA Config: No se encontró API Key en Firestore config/ia");
+                    console.error("❌ IA Error: No se encontró apiKey en config/ia");
+                    showToast("Error de configuración de IA", "error");
                 }
             } catch (e) {
                 console.error("IA Init Error:", e);
@@ -1647,7 +1654,13 @@
                     file.type === 'application/csv' || file.type === 'text/comma-separated-values';
 
                 if (isText) {
-                    text = await file.text();
+                    text = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = (e) => reject(new Error("Error al leer archivo de texto"));
+                        reader.readAsText(file, 'UTF-8');
+                    });
+                    console.log("📄 Archivo de texto leído correctamente (", text.length, " caracteres)");
                 } else if (fileType === 'pdf') {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
