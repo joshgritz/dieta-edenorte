@@ -1,59 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Edenorte Mao - Gestión de Dietas Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- CORE LEAFLET -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <!-- 1. CONTROLES & UTILIDADES -->
     <script src="https://unpkg.com/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.css" />
     <script src="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/Leaflet.fullscreen.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-fullscreen@1.0.2/dist/leaflet.fullscreen.css" />
-    
+
     <!-- 2. RUTAS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    
+
     <!-- 3. MEDICIONES & DIBUJO -->
     <script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.css" />
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
-    
+
     <!-- 4. GEOCODER AVANZADO (ESRI) -->
     <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
     <script src="https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/esri-leaflet-geocoder.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@3.1.4/dist/esri-leaflet-geocoder.css" />
-    
+
     <!-- 6. CLUSTERS & HEATMAP -->
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #f8fafc;
             min-height: 100vh;
-            margin: 0; 
-            -webkit-tap-highlight-color: transparent; 
+            margin: 0;
+            -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
         }
 
         /* --- MEJORAS VISUALES LOGIN (NUEVAS) --- */
         .login-wrapper {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 40;
             background: #0f172a;
             overflow: hidden;
@@ -62,10 +68,14 @@
         /* Fondo animado sutil */
         .bg-blobs {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 0;
             overflow: hidden;
         }
+
         .blob {
             position: absolute;
             filter: blur(80px);
@@ -73,14 +83,49 @@
             animation: float 10s infinite ease-in-out;
             border-radius: 50%;
         }
-        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #1e3a8a; animation-delay: 0s; }
-        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #1d4ed8; animation-delay: 2s; }
-        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #3b82f6; animation-delay: 4s; opacity: 0.2; }
+
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: #1e3a8a;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: #1d4ed8;
+            animation-delay: 2s;
+        }
+
+        .blob-3 {
+            top: 40%;
+            left: 40%;
+            width: 40vw;
+            height: 40vw;
+            background: #3b82f6;
+            animation-delay: 4s;
+            opacity: 0.2;
+        }
 
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
         }
 
         /* Tarjeta Login Glassmorphism */
@@ -94,8 +139,15 @@
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .input-group-icon {
@@ -107,8 +159,8 @@
             pointer-events: none;
             transition: color 0.3s;
         }
-        
-        .login-input:focus ~ .input-group-icon {
+
+        .login-input:focus~.input-group-icon {
             color: #3b82f6;
         }
 
@@ -119,19 +171,30 @@
             transition: all 0.3s ease;
             box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
         }
+
         .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 0 30px rgba(37, 99, 235, 0.6);
         }
+
         .login-btn::after {
             content: '';
             position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: 0.5s;
         }
-        .login-btn:active { transform: scale(0.98); }
-        .login-btn:hover::after { left: 100%; }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .login-btn:hover::after {
+            left: 100%;
+        }
 
         /* --------------------------------------- */
 
@@ -148,13 +211,15 @@
             transform: translateY(-2px);
         }
 
-        .tab-active { 
-            color: #3b82f6; 
+        .tab-active {
+            color: #3b82f6;
             background: rgba(59, 130, 246, 0.1);
             border-bottom: 3px solid #3b82f6;
         }
 
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         .btn-gradient {
             background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
@@ -162,192 +227,407 @@
             transition: all 0.3s ease;
         }
 
-        .btn-gradient:active { transform: scale(0.95); opacity: 0.9; }
+        .btn-gradient:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
 
-        @media print { .no-print { display: none !important; } #print-section { display: block !important; } body { background: white; color: black; } }
-        
-        #print-section { display: none; padding: 20px; background: white; min-height: 100vh; color: #1e293b; }
-        .print-card { border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 10px; border-radius: 12px; border-left: 8px solid #1e3a8a; }
-        
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        .accordion-open .accordion-content { max-height: 2000px; padding-top: 1rem; }
-        .accordion-open .arrow-icon { transform: rotate(180deg); color: #3b82f6; }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
 
-        input, textarea, select {
+            #print-section {
+                display: block !important;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+        }
+
+        #print-section {
+            display: none;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        .print-card {
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border-left: 8px solid #1e3a8a;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+
+        .accordion-open .accordion-content {
+            max-height: 2000px;
+            padding-top: 1rem;
+        }
+
+        .accordion-open .arrow-icon {
+            transform: rotate(180deg);
+            color: #3b82f6;
+        }
+
+        input,
+        textarea,
+        select {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: white !important;
         }
 
-        input::placeholder { color: rgba(255, 255, 255, 0.3); }
-        
-        .glow-text { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
 
         /* MEJORAS UI: Inputs y Contraste (Corregido para modo oscuro) */
-        input, textarea, select {
+        input,
+        textarea,
+        select {
             background: rgba(255, 255, 255, 0.08) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
             color: white !important;
             transition: all 0.3s ease;
         }
-        
-        input:focus, textarea:focus, select:focus {
+
+        input:focus,
+        textarea:focus,
+        select:focus {
             background: rgba(255, 255, 255, 0.15) !important;
             border-color: #3b82f6 !important;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important;
             outline: none;
         }
 
-        input::placeholder, textarea::placeholder {
+        input::placeholder,
+        textarea::placeholder {
             color: rgba(255, 255, 255, 0.4) !important;
         }
 
         /* Fix dropdown options visibility */
-        option { background-color: #1e293b; color: white; }
+        option {
+            background-color: #1e293b;
+            color: white;
+        }
 
         /* TOAST NOTIFICATIONS */
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: white; padding: 16px 24px; border-radius: 16px; font-size: 12px; font-weight: 800; box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateX(120%); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; pointer-events: auto; min-width: 250px; }
-        .toast.show { transform: translateX(0); }
-        .toast-success { border-left: 4px solid #22c55e; }
-        .toast-error { border-left: 4px solid #ef4444; }
-        .toast-warning { border-left: 4px solid #f59e0b; }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 800;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateX(120%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+            min-width: 250px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            border-left: 4px solid #22c55e;
+        }
+
+        .toast-error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast-warning {
+            border-left: 4px solid #f59e0b;
+        }
 
         /* VALIDATION STYLES */
-        .input-error { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        .input-error {
+            border-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important;
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
         }
 
         /* SKELETON LOADER */
-        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
 
         /* LIGHT MODE - HIGH CONTRAST & DESIGN */
-        body.light-mode { background: #f1f5f9; color: #0f172a; }
-        
+        body.light-mode {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
         /* Cards: Strong borders and shadows */
-        body.light-mode .premium-card { 
-            background: #ffffff; 
-            border: 2px solid #cbd5e1; 
+        body.light-mode .premium-card {
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
-        body.light-mode .premium-card:hover { 
-            border-color: #3b82f6; 
+
+        body.light-mode .premium-card:hover {
+            border-color: #3b82f6;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
-        
+
         /* Text Overrides */
-        body.light-mode .text-white { color: #0f172a !important; }
-        body.light-mode .text-slate-300, 
-        body.light-mode .text-slate-400, 
-        body.light-mode .text-slate-500 { color: #475569 !important; font-weight: 700 !important; }
-        body.light-mode .text-blue-400 { color: #2563eb !important; }
-        
+        body.light-mode .text-white {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .text-slate-300,
+        body.light-mode .text-slate-400,
+        body.light-mode .text-slate-500 {
+            color: #475569 !important;
+            font-weight: 700 !important;
+        }
+
+        body.light-mode .text-blue-400 {
+            color: #2563eb !important;
+        }
+
         /* Inputs: High visibility */
-        body.light-mode input, 
-        body.light-mode textarea, 
-        body.light-mode select { 
-            background: #f8fafc !important; 
-            border: 2px solid #94a3b8 !important; 
-            color: #0f172a !important; 
+        body.light-mode input,
+        body.light-mode textarea,
+        body.light-mode select {
+            background: #f8fafc !important;
+            border: 2px solid #94a3b8 !important;
+            color: #0f172a !important;
             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05) !important;
         }
-        body.light-mode input:focus, 
-        body.light-mode textarea:focus, 
-        body.light-mode select:focus { 
-            background: #ffffff !important; 
-            border-color: #2563eb !important; 
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important; 
+
+        body.light-mode input:focus,
+        body.light-mode textarea:focus,
+        body.light-mode select:focus {
+            background: #ffffff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
         }
-        body.light-mode input::placeholder, 
-        body.light-mode textarea::placeholder { color: #64748b !important; }
-        body.light-mode option { background-color: #ffffff; color: #0f172a; }
+
+        body.light-mode input::placeholder,
+        body.light-mode textarea::placeholder {
+            color: #64748b !important;
+        }
+
+        body.light-mode option {
+            background-color: #ffffff;
+            color: #0f172a;
+        }
 
         /* Exceptions (Keep dark/colored elements) */
-        body.light-mode .bg-gradient-to-br { 
+        body.light-mode .bg-gradient-to-br {
             background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
             box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
             border: none !important;
         }
-        body.light-mode .bg-gradient-to-br .text-white { color: white !important; }
-        body.light-mode .bg-gradient-to-br .text-blue-200 { color: #bfdbfe !important; }
-        
+
+        body.light-mode .bg-gradient-to-br .text-white {
+            color: white !important;
+        }
+
+        body.light-mode .bg-gradient-to-br .text-blue-200 {
+            color: #bfdbfe !important;
+        }
+
         /* Secondary Elements */
-        body.light-mode .bg-white\/5 { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; }
-        body.light-mode .border-white\/5, 
-        body.light-mode .border-white\/10, 
-        body.light-mode .border-white\/20 { border-color: #cbd5e1 !important; }
-        
-        body.light-mode header { 
-            background: rgba(255,255,255,0.9) !important; 
-            border-bottom: 2px solid #cbd5e1; 
+        body.light-mode .bg-white\/5 {
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        body.light-mode .border-white\/5,
+        body.light-mode .border-white\/10,
+        body.light-mode .border-white\/20 {
+            border-color: #cbd5e1 !important;
+        }
+
+        body.light-mode header {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-bottom: 2px solid #cbd5e1;
             backdrop-filter: blur(10px);
         }
-        
+
         /* Modals */
         body.light-mode #map-modal .premium-card,
         body.light-mode #settings-modal .premium-card,
         body.light-mode #guide-modal .premium-card,
-        body.light-mode #territory-modal .premium-card { 
-            background: #ffffff !important; 
+        body.light-mode #territory-modal .premium-card {
+            background: #ffffff !important;
             border: 2px solid #64748b !important;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
         }
-        
-        body.light-mode #map-container { border: 2px solid #94a3b8; }
-        body.light-mode .leaflet-control-geocoder { 
-            background: #ffffff !important; 
-            color: #0f172a !important; 
-            border: 2px solid #94a3b8 !important; 
+
+        body.light-mode #map-container {
+            border: 2px solid #94a3b8;
+        }
+
+        body.light-mode .leaflet-control-geocoder {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 2px solid #94a3b8 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
         }
-        body.light-mode .leaflet-control-geocoder input { color: #0f172a !important; }
-        
+
+        body.light-mode .leaflet-control-geocoder input {
+            color: #0f172a !important;
+        }
+
         /* Tab Active State in Light Mode */
         body.light-mode .tab-active {
             background: #eff6ff !important;
             color: #1d4ed8 !important;
             border-bottom-color: #1d4ed8 !important;
         }
-        
+
         /* Fix Dropdowns in Light Mode */
-        body.light-mode option { 
-            background-color: #ffffff !important; 
-            color: #0f172a !important; 
+        body.light-mode option {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
         }
-        
+
         /* Map Controls in Light Mode */
         body.light-mode .geocoder-control-input {
             background-color: #ffffff !important;
             color: #0f172a !important;
             border: 2px solid #cbd5e1 !important;
         }
+
         body.light-mode .geocoder-control-suggestions {
             background-color: #ffffff !important;
             border: 1px solid #cbd5e1 !important;
         }
-        body.light-mode .geocoder-control-suggestion { color: #0f172a !important; border-bottom: 1px solid #f1f5f9 !important; }
-        body.light-mode .geocoder-control-suggestion:hover { background-color: #eff6ff !important; }
+
+        body.light-mode .geocoder-control-suggestion {
+            color: #0f172a !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+
+        body.light-mode .geocoder-control-suggestion:hover {
+            background-color: #eff6ff !important;
+        }
 
         /* CUSTOM SCROLLBAR */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
-        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.6); }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.6);
+        }
 
         /* ANIMATIONS */
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
 
         /* SPINNER */
         .spinner {
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top: 3px solid white;
             width: 20px;
@@ -355,9 +635,23 @@
             animation: spin 1s linear infinite;
             display: inline-block;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #map-container { height: 100%; width: 100%; border-radius: 1rem; z-index: 1; }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #map-container {
+            height: 100%;
+            width: 100%;
+            border-radius: 1rem;
+            z-index: 1;
+        }
 
         /* ============================================ */
         /* GOOGLE MAPS CLONE - ESTILO EXACTO            */
@@ -370,25 +664,29 @@
             --google-yellow: #fbbc05;
             --google-gray: #5f6368;
         }
-        
+
         /* Dark Mode Search Box */
         .geocoder-control-input {
             background-color: #1e293b !important;
             color: white !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
+
         .geocoder-control-input::placeholder {
             color: #94a3b8 !important;
         }
+
         .geocoder-control-suggestions {
             background-color: #1e293b !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             width: 100% !important;
         }
+
         .geocoder-control-suggestion {
             color: #e2e8f0 !important;
-            border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         }
+
         .geocoder-control-suggestion:hover {
             background-color: #3b82f6 !important;
             color: white !important;
@@ -406,14 +704,16 @@
         }
 
         @keyframes googleDash {
-            to { stroke-dashoffset: -20; }
+            to {
+                stroke-dashoffset: -20;
+            }
         }
 
         /* PEGMAN */
         .pegman-icon {
             font-size: 28px;
             cursor: grab;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
             transition: transform 0.2s;
             background: white;
             border-radius: 4px;
@@ -422,7 +722,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
         }
 
         .pegman-icon:active {
@@ -439,6 +739,7 @@
             color: #1e293b !important;
             z-index: 1000 !important;
         }
+
         .leaflet-control-geocoder-form input {
             height: 40px !important;
             padding-left: 10px !important;
@@ -449,6 +750,7 @@
             outline: none !important;
             border-radius: 24px !important;
         }
+
         /* FIX: Conflict Resolution - Force visible text for ALL Leaflet inputs (Search & Routing) */
         .leaflet-control-container input,
         .leaflet-routing-container input,
@@ -459,6 +761,7 @@
             box-shadow: none !important;
             text-shadow: none !important;
         }
+
         .leaflet-control-geocoder-alternatives {
             background: white !important;
             color: #1e293b !important;
@@ -466,10 +769,12 @@
             border-radius: 0.5rem !important;
             margin-top: 5px !important;
         }
+
         /* FIX: Routing Container Visibility & Conflict */
         .leaflet-routing-container {
             display: none !important;
         }
+
         .leaflet-control-geocoder-alternatives li:hover {
             background: #f1f5f9 !important;
         }
@@ -477,19 +782,25 @@
         /* PANORAMA VIEWER */
         #panorama-viewer {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 2000;
             background: black;
             display: none;
         }
+
         .leaflet-control-geocoder-alternatives li:hover {
             background: #1e3a8a !important;
         }
+
         #panorama-close {
             position: absolute;
-            top: 20px; left: 20px;
+            top: 20px;
+            left: 20px;
             z-index: 2001;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -508,39 +819,56 @@
             box-shadow: 0 0 0 3px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.7);
             animation: pulse-gps 2s infinite;
         }
+
         @keyframes pulse-gps {
             0% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
             }
+
             70% {
                 transform: scale(1);
                 box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
             }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
         }
     </style>
 </head>
+
 <body>
     <!-- Offline Banner -->
-    <div id="offline-banner" class="hidden fixed top-0 left-0 w-full bg-red-600 text-white text-center text-[10px] font-bold py-2 z-[200] uppercase tracking-widest shadow-lg">
+    <div id="offline-banner"
+        class="hidden fixed top-0 left-0 w-full bg-red-600 text-white text-center text-[10px] font-bold py-2 z-[200] uppercase tracking-widest shadow-lg">
         ⚠️ Sin conexión a internet - Modo Offline
     </div>
 
     <div id="print-section">
         <div style="text-align: center; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 25px;">
-            <h1 style="color: #1e3a8a; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px;">EDENORTE DOMINICANA</h1>
-            <p style="font-size: 12px; font-weight: 700; color: #64748b; margin: 5px 0; text-transform: uppercase;">Reporte de Gestión de Dietas - Mao</p>
+            <h1 style="color: #1e3a8a; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px;">EDENORTE
+                DOMINICANA</h1>
+            <p style="font-size: 12px; font-weight: 700; color: #64748b; margin: 5px 0; text-transform: uppercase;">
+                Reporte de Gestión de Dietas - Mao</p>
         </div>
-        <div id="print-meta" style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; margin-bottom: 20px;"></div>
+        <div id="print-meta"
+            style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; margin-bottom: 20px;">
+        </div>
         <div id="print-list"></div>
-        <div id="print-total-box" style="background: #1e3a8a; color: white; padding: 20px; border-radius: 15px; margin-top: 20px; text-align: right;"></div>
-        <button onclick="returnToApp()" class="no-print w-full mt-6 bg-slate-900 text-white py-4 rounded-xl font-bold uppercase">Regresar</button>
+        <div id="print-total-box"
+            style="background: #1e3a8a; color: white; padding: 20px; border-radius: 15px; margin-top: 20px; text-align: right;">
+        </div>
+        <button onclick="returnToApp()"
+            class="no-print w-full mt-6 bg-slate-900 text-white py-4 rounded-xl font-bold uppercase">Regresar</button>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
-        <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+    <div id="settings-modal"
+        class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
+        <div
+            class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-6 border-b border-white/10 flex justify-between items-center shrink-0">
                 <h2 class="text-xl font-black text-blue-500 italic glow-text">AJUSTES DE CUENTA</h2>
                 <button onclick="closeSettings()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
@@ -548,43 +876,58 @@
             <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
                 <div>
                     <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nombre Completo</label>
-                    <input id="set-name" type="text" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                    <input id="set-name" type="text"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">ID Empleado (Vinculación)</label>
-                    <input id="set-id" type="text" placeholder="Ej. 19579" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">ID Empleado
+                        (Vinculación)</label>
+                    <input id="set-id" type="text" placeholder="Ej. 19579"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Correo Electrónico</label>
-                    <input id="set-email" type="email" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                    <input id="set-email" type="email"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nueva Contraseña (Opcional)</label>
-                    <input id="set-pass" type="password" placeholder="Dejar en blanco para no cambiar" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nueva Contraseña
+                        (Opcional)</label>
+                    <input id="set-pass" type="password" placeholder="Dejar en blanco para no cambiar"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Apariencia</label>
-                    <select id="set-theme" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                    <select id="set-theme"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
                         <option value="dark">MODO OSCURO</option>
                         <option value="light">MODO CLARO</option>
                     </select>
                 </div>
                 <div class="pt-4 border-t border-white/10">
-                    <label class="text-[9px] font-black text-orange-500 uppercase block mb-1">Confirmar con Contraseña Actual</label>
-                    <input id="set-current-pass" type="password" placeholder="Requerido para guardar cambios" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-orange-500/30 text-white outline-none focus:border-orange-500">
+                    <label class="text-[9px] font-black text-orange-500 uppercase block mb-1">Confirmar con Contraseña
+                        Actual</label>
+                    <input id="set-current-pass" type="password" placeholder="Requerido para guardar cambios"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-orange-500/30 text-white outline-none focus:border-orange-500">
                 </div>
-                <button onclick="saveSettings()" class="w-full btn-gradient text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mt-2">Guardar Cambios</button>
-                
+                <button onclick="saveSettings()"
+                    class="w-full btn-gradient text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mt-2">Guardar
+                    Cambios</button>
+
                 <div class="pt-4 mt-2 border-t border-white/10">
-                    <button onclick="deleteAccount()" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-500 hover:text-white transition-all">Eliminar Cuenta Permanentemente</button>
+                    <button onclick="deleteAccount()"
+                        class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-500 hover:text-white transition-all">Eliminar
+                        Cuenta Permanentemente</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Guide Modal -->
-    <div id="guide-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
-        <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
+    <div id="guide-modal"
+        class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
+        <div
+            class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[80vh]">
             <div class="p-6 border-b border-white/10 flex justify-between items-center">
                 <h2 class="text-xl font-black text-blue-500 italic glow-text">MANUAL DE USUARIO</h2>
                 <button onclick="toggleGuide()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
@@ -594,32 +937,42 @@
     </div>
 
     <!-- Map Modal -->
-    <div id="map-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-2 fade-in no-print">
-        <div class="premium-card w-full h-full max-w-[98vw] max-h-[95vh] bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col">
+    <div id="map-modal"
+        class="fixed inset-0 z-[200] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-2 fade-in no-print">
+        <div
+            class="premium-card w-full h-full max-w-[98vw] max-h-[95vh] bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col">
             <div class="p-4 border-b border-white/10 flex justify-between items-center shrink-0 bg-slate-900">
                 <h2 id="map-title" class="text-lg font-black text-blue-500 italic glow-text uppercase">UBICACIÓN</h2>
                 <button onclick="closeMap()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
             </div>
             <div class="px-4 py-2 bg-slate-900 border-b border-white/10 flex gap-2">
-                <input id="map-manual-search" type="text" placeholder="🔍 Buscar calle, sector o lugar..." class="w-full bg-slate-800 text-white text-sm font-bold p-3 rounded-xl border border-white/10 outline-none focus:border-blue-500 uppercase" onkeypress="if(event.key === 'Enter') GoogleMapsClone.manualSearch()">
-                <button onclick="GoogleMapsClone.manualSearch()" class="bg-blue-600 text-white px-4 rounded-xl font-black uppercase text-xs hover:bg-blue-500">Buscar</button>
+                <input id="map-manual-search" type="text" placeholder="🔍 Buscar calle, sector o lugar..."
+                    class="w-full bg-slate-800 text-white text-sm font-bold p-3 rounded-xl border border-white/10 outline-none focus:border-blue-500 uppercase"
+                    onkeypress="if(event.key === 'Enter') GoogleMapsClone.manualSearch()">
+                <button onclick="GoogleMapsClone.manualSearch()"
+                    class="bg-blue-600 text-white px-4 rounded-xl font-black uppercase text-xs hover:bg-blue-500">Buscar</button>
             </div>
             <div class="p-2 bg-slate-800 flex-1 relative">
                 <div id="map-container"></div>
-                
+
                 <!-- Google Maps Elements -->
-                <div id="panorama-viewer"><button id="panorama-close" onclick="GoogleMapsClone.closeStreetView()">← Volver al Mapa</button><div id="panorama" style="width:100%;height:100%;"></div></div>
+                <div id="panorama-viewer"><button id="panorama-close" onclick="GoogleMapsClone.closeStreetView()">←
+                        Volver al Mapa</button>
+                    <div id="panorama" style="width:100%;height:100%;"></div>
+                </div>
             </div>
             <div class="p-4 border-t border-white/10 text-center shrink-0">
                 <div class="mb-3 flex justify-center items-center gap-2">
-                    <span id="map-status" class="text-[10px] font-bold text-slate-400 uppercase">COORDENADAS OFFLINE • REGIÓN NORTE</span>
+                    <span id="map-status" class="text-[10px] font-bold text-slate-400 uppercase">COORDENADAS OFFLINE •
+                        REGIÓN NORTE</span>
                     <span id="route-status" class="text-[10px] font-black text-green-400 uppercase hidden"></span>
                 </div>
-                
+
                 <div id="fav-container" class="hidden mb-3">
                     <div class="flex justify-between items-center mb-2">
                         <p class="text-[8px] font-black text-slate-500 uppercase text-left">Mis Ubicaciones</p>
-                        <input id="fav-search" type="text" onkeyup="filterFavorites()" placeholder="🔍 Buscar..." class="bg-slate-800/50 border border-white/10 rounded-lg px-2 py-1 text-[9px] font-bold text-white outline-none focus:border-blue-500 w-24 focus:w-32 transition-all uppercase">
+                        <input id="fav-search" type="text" onkeyup="filterFavorites()" placeholder="🔍 Buscar..."
+                            class="bg-slate-800/50 border border-white/10 rounded-lg px-2 py-1 text-[9px] font-bold text-white outline-none focus:border-blue-500 w-24 focus:w-32 transition-all uppercase">
                     </div>
                     <div id="fav-list" class="flex gap-2 overflow-x-auto pb-2"></div>
                 </div>
@@ -627,43 +980,66 @@
                 <div id="terr-list-container" class="hidden mb-3 border-t border-white/10 pt-2">
                     <div class="flex justify-between items-center mb-2">
                         <p class="text-[8px] font-black text-pink-500 uppercase text-left">Territorios Creados</p>
-                        <input id="terr-search" type="text" onkeyup="renderTerritoryList()" placeholder="🔍 Filtrar..." class="bg-slate-800/50 border border-white/10 rounded-lg px-2 py-1 text-[9px] font-bold text-white outline-none focus:border-pink-500 w-24 focus:w-32 transition-all uppercase">
+                        <input id="terr-search" type="text" onkeyup="renderTerritoryList()" placeholder="🔍 Filtrar..."
+                            class="bg-slate-800/50 border border-white/10 rounded-lg px-2 py-1 text-[9px] font-bold text-white outline-none focus:border-pink-500 w-24 focus:w-32 transition-all uppercase">
                     </div>
                     <div id="terr-list" class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar"></div>
                 </div>
 
                 <div class="flex gap-2 justify-center flex-wrap">
-                    <button id="map-btn-save-dest" onclick="saveCurrentDest()" class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/50 hover:bg-yellow-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">⭐ Guardar</button>
-                    <button id="map-btn-clear" onclick="clearSearch()" class="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">🗑️ Limpiar</button>
-                    <button id="map-btn-create-terr" onclick="GoogleMapsClone.startTerritoryCreation()" class="bg-pink-600/10 text-pink-500 border border-pink-600/50 hover:bg-pink-600 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">✏️ Crear Territorio</button>
-                    <button id="map-btn-terr-list" onclick="toggleTerritoryListVisibility()" class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/50 hover:bg-indigo-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">Ver Lista</button>
-                    <button id="map-btn-fav-markers" onclick="toggleFavoriteMarkers()" class="bg-purple-500/10 text-purple-400 border border-purple-500/50 hover:bg-purple-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">👁️ Ver Puntos</button>
-                    <button id="map-btn-gps" onclick="centerOnGPS()" class="bg-green-500/10 text-green-400 border border-green-500/50 hover:bg-green-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">📍 Mi Ubicación</button>
-                    <button id="map-btn-gmaps" onclick="openExternalMap('google')" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg">Google Maps ↗</button>
-                    <button id="map-btn-waze" onclick="openExternalMap('waze')" class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg">Waze ↗</button>
+                    <button id="map-btn-save-dest" onclick="saveCurrentDest()"
+                        class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/50 hover:bg-yellow-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">⭐
+                        Guardar</button>
+                    <button id="map-btn-clear" onclick="clearSearch()"
+                        class="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">🗑️
+                        Limpiar</button>
+                    <button id="map-btn-create-terr" onclick="GoogleMapsClone.startTerritoryCreation()"
+                        class="bg-pink-600/10 text-pink-500 border border-pink-600/50 hover:bg-pink-600 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">✏️
+                        Crear Territorio</button>
+                    <button id="map-btn-terr-list" onclick="toggleTerritoryListVisibility()"
+                        class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/50 hover:bg-indigo-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">Ver
+                        Lista</button>
+                    <button id="map-btn-fav-markers" onclick="toggleFavoriteMarkers()"
+                        class="bg-purple-500/10 text-purple-400 border border-purple-500/50 hover:bg-purple-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">👁️
+                        Ver Puntos</button>
+                    <button id="map-btn-gps" onclick="centerOnGPS()"
+                        class="bg-green-500/10 text-green-400 border border-green-500/50 hover:bg-green-500 hover:text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg transition-all">📍
+                        Mi Ubicación</button>
+                    <button id="map-btn-gmaps" onclick="openExternalMap('google')"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg">Google
+                        Maps ↗</button>
+                    <button id="map-btn-waze" onclick="openExternalMap('waze')"
+                        class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 shadow-lg">Waze
+                        ↗</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Territory Modal -->
-    <div id="territory-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 fade-in no-print">
+    <div id="territory-modal"
+        class="fixed inset-0 z-[300] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 fade-in no-print">
         <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col">
             <div class="p-4 border-b border-white/10 flex justify-between items-center">
-                <h2 id="terr-modal-title" class="text-lg font-black text-pink-500 italic glow-text uppercase">GESTIÓN DE TERRITORIO</h2>
-                <button onclick="closeTerritoryModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+                <h2 id="terr-modal-title" class="text-lg font-black text-pink-500 italic glow-text uppercase">GESTIÓN DE
+                    TERRITORIO</h2>
+                <button onclick="closeTerritoryModal()"
+                    class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
             </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="terr-id">
-                
+
                 <div>
-                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nombre del Territorio</label>
-                    <input id="terr-name" type="text" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Nombre del
+                        Territorio</label>
+                    <input id="terr-name" type="text"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
                 </div>
-                
+
                 <div>
                     <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Tipo de Demarcación</label>
-                    <select id="terr-type" onchange="updateTerritoryForm()" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500">
+                    <select id="terr-type" onchange="updateTerritoryForm()"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500">
                         <option value="LOCALIDAD">LOCALIDAD (Amarillo)</option>
                         <option value="PROVINCIA">PROVINCIA (Rojo)</option>
                         <option value="MUNICIPIO">MUNICIPIO (Azul)</option>
@@ -672,92 +1048,135 @@
                 </div>
 
                 <div id="group-provincia" class="hidden">
-                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Pertenece a la Provincia</label>
-                    <input id="terr-parent-prov" type="text" placeholder="Ej. VALVERDE" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Pertenece a la
+                        Provincia</label>
+                    <input id="terr-parent-prov" type="text" placeholder="Ej. VALVERDE"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
                 </div>
 
                 <div id="group-municipio" class="hidden">
-                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Pertenece al Municipio</label>
-                    <input id="terr-parent-mun" type="text" placeholder="Ej. MAO" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Pertenece al
+                        Municipio</label>
+                    <input id="terr-parent-mun" type="text" placeholder="Ej. MAO"
+                        class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
                 </div>
 
-                <button onclick="saveTerritory()" class="w-full bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mt-2">Guardar Territorio</button>
+                <button onclick="saveTerritory()"
+                    class="w-full bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mt-2">Guardar
+                    Territorio</button>
             </div>
         </div>
     </div>
 
     <!-- Link Territory Modal -->
-    <div id="link-territory-modal" class="fixed inset-0 z-[400] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 fade-in no-print">
+    <div id="link-territory-modal"
+        class="fixed inset-0 z-[400] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 fade-in no-print">
         <div class="premium-card w-full max-w-sm bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col">
             <div class="p-4 border-b border-white/10 flex justify-between items-center">
                 <h2 class="text-lg font-black text-pink-500 italic glow-text uppercase">VINCULAR TERRITORIO</h2>
                 <button onclick="closeLinkModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
             </div>
             <div class="p-6 space-y-4">
-                <p class="text-[10px] text-slate-400 font-bold uppercase">Selecciona el polígono para: <span id="link-loc-name" class="text-white"></span></p>
-                <select id="link-terr-select" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
+                <p class="text-[10px] text-slate-400 font-bold uppercase">Selecciona el polígono para: <span
+                        id="link-loc-name" class="text-white"></span></p>
+                <select id="link-terr-select"
+                    class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-pink-500 uppercase">
                     <option value="">-- SELECCIONAR --</option>
                 </select>
-                <button onclick="confirmLinkTerritory()" class="w-full bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Vincular</button>
+                <button onclick="confirmLinkTerritory()"
+                    class="w-full bg-pink-600 hover:bg-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Vincular</button>
             </div>
         </div>
     </div>
 
     <!-- Email Modal -->
-    <div id="email-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
-        <div class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
+    <div id="email-modal"
+        class="fixed inset-0 z-[500] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 fade-in no-print">
+        <div
+            class="premium-card w-full max-w-md bg-slate-900/90 border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-6 border-b border-white/10 flex justify-between items-center shrink-0">
                 <h2 class="text-xl font-black text-blue-500 italic glow-text">ENVIAR REPORTE</h2>
                 <button onclick="closeEmailModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
             </div>
             <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
                 <div>
-                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Correo del Supervisor</label>
+                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Correo del
+                        Supervisor</label>
                     <div class="flex gap-2">
-                        <input id="email-supervisor" type="email" list="email-history" placeholder="ejemplo@edenorte.com" class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
+                        <input id="email-supervisor" type="email" list="email-history"
+                            placeholder="ejemplo@edenorte.com"
+                            class="w-full p-3 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white outline-none focus:border-blue-500">
                         <datalist id="email-history"></datalist>
                     </div>
                 </div>
                 <div class="bg-white/5 p-4 rounded-xl border border-white/10">
                     <p class="text-[9px] font-black text-slate-500 uppercase mb-2">Vista Previa del Mensaje</p>
-                    <p id="email-preview" class="text-[10px] text-slate-300 italic leading-relaxed whitespace-pre-line"></p>
+                    <p id="email-preview" class="text-[10px] text-slate-300 italic leading-relaxed whitespace-pre-line">
+                    </p>
                 </div>
                 <div class="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-xl">
-                    <p class="text-[9px] font-bold text-yellow-500 uppercase">⚠️ Importante: Al abrirse el correo, recuerda ADJUNTAR el PDF que guardaste previamente.</p>
+                    <p class="text-[9px] font-bold text-yellow-500 uppercase">⚠️ Importante: Al abrirse el correo,
+                        recuerda ADJUNTAR el PDF que guardaste previamente.</p>
                 </div>
-                <button onclick="shareReportDirectly()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mb-2 hidden" id="btn-share-native">📲 Compartir PDF Adjunto</button>
-                <button onclick="sendReportEmail()" class="w-full btn-gradient text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Abrir Correo</button>
+                <button onclick="shareReportDirectly()"
+                    class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg mb-2 hidden"
+                    id="btn-share-native">📲 Compartir PDF Adjunto</button>
+                <button onclick="sendReportEmail()"
+                    class="w-full btn-gradient text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg">Abrir
+                    Correo</button>
             </div>
         </div>
     </div>
 
     <!-- Calendar Widget -->
-    <div id="mini-calendar" class="premium-card no-print fixed bottom-24 right-6 w-64 p-5 hidden z-50 flex flex-col gap-2 shadow-2xl border border-white/10 backdrop-blur-xl">
+    <div id="mini-calendar"
+        class="premium-card no-print fixed bottom-24 right-6 w-64 p-5 hidden z-50 flex flex-col gap-2 shadow-2xl border border-white/10 backdrop-blur-xl">
         <div class="flex justify-between items-center mb-2">
-            <button onclick="changeCalendarMonth(-1)" class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">◀</button>
+            <button onclick="changeCalendarMonth(-1)"
+                class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">◀</button>
             <span id="cal-month-year" class="text-xs font-black text-white uppercase tracking-widest"></span>
-            <button onclick="changeCalendarMonth(1)" class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">▶</button>
+            <button onclick="changeCalendarMonth(1)"
+                class="text-blue-400 font-black hover:bg-white/5 p-2 rounded-lg transition-colors">▶</button>
         </div>
         <div class="grid grid-cols-7 text-center mb-1">
-            <span class="text-[9px] font-black text-slate-500">D</span><span class="text-[9px] font-black text-slate-500">L</span><span class="text-[9px] font-black text-slate-500">M</span><span class="text-[9px] font-black text-slate-500">M</span><span class="text-[9px] font-black text-slate-500">J</span><span class="text-[9px] font-black text-slate-500">V</span><span class="text-[9px] font-black text-slate-500">S</span>
+            <span class="text-[9px] font-black text-slate-500">D</span><span
+                class="text-[9px] font-black text-slate-500">L</span><span
+                class="text-[9px] font-black text-slate-500">M</span><span
+                class="text-[9px] font-black text-slate-500">M</span><span
+                class="text-[9px] font-black text-slate-500">J</span><span
+                class="text-[9px] font-black text-slate-500">V</span><span
+                class="text-[9px] font-black text-slate-500">S</span>
         </div>
         <div id="cal-days" class="grid grid-cols-7 gap-1 text-center"></div>
         <div id="cal-note-area" class="hidden mt-2 border-t border-white/10 pt-2 animate-pulse">
             <p id="cal-selected-date" class="text-[9px] font-black text-blue-400 uppercase mb-1 text-center"></p>
-            <textarea id="cal-note-input" placeholder="Escribe un recordatorio..." class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-[10px] text-white h-16 resize-none outline-none focus:border-blue-500 mb-1"></textarea>
-            <button onclick="saveCalendarNote()" class="w-full bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] font-bold py-1.5 rounded transition-colors uppercase">Guardar Nota</button>
+            <textarea id="cal-note-input" placeholder="Escribe un recordatorio..."
+                class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-[10px] text-white h-16 resize-none outline-none focus:border-blue-500 mb-1"></textarea>
+            <button onclick="saveCalendarNote()"
+                class="w-full bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] font-bold py-1.5 rounded transition-colors uppercase">Guardar
+                Nota</button>
         </div>
     </div>
 
     <!-- Floating Action Buttons (Bottom Right) -->
     <div class="no-print fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-        <div id="fab-menu" class="flex flex-col gap-3 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none">
-            <button onclick="toggleGuide()" class="w-12 h-12 bg-slate-800 text-blue-400 rounded-full shadow-2xl flex items-center justify-center border-2 border-slate-600 text-xl cursor-pointer font-black hover:scale-110 transition-transform" title="Manual de Usuario">?</button>
-            <button onclick="toggleTheme()" id="theme-btn" class="w-12 h-12 bg-white text-slate-900 rounded-full shadow-2xl flex items-center justify-center border-2 border-slate-200 text-xl cursor-pointer hover:scale-110 transition-transform" title="Cambiar Tema">☀️</button>
-            <button onclick="openTerritoryMap()" class="w-12 h-12 bg-pink-600 text-white rounded-full shadow-2xl flex items-center justify-center border-2 border-pink-400 text-xl cursor-pointer hover:scale-110 transition-transform" title="Gestor de Territorios">🗺️</button>
-            <button onclick="toggleCalendar()" class="w-12 h-12 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center border-2 border-blue-400 text-xl cursor-pointer hover:scale-110 transition-transform" title="Calendario">📅</button>
+        <div id="fab-menu"
+            class="flex flex-col gap-3 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none">
+            <button onclick="toggleGuide()"
+                class="w-12 h-12 bg-slate-800 text-blue-400 rounded-full shadow-2xl flex items-center justify-center border-2 border-slate-600 text-xl cursor-pointer font-black hover:scale-110 transition-transform"
+                title="Manual de Usuario">?</button>
+            <button onclick="toggleTheme()" id="theme-btn"
+                class="w-12 h-12 bg-white text-slate-900 rounded-full shadow-2xl flex items-center justify-center border-2 border-slate-200 text-xl cursor-pointer hover:scale-110 transition-transform"
+                title="Cambiar Tema">☀️</button>
+            <button onclick="openTerritoryMap()"
+                class="w-12 h-12 bg-pink-600 text-white rounded-full shadow-2xl flex items-center justify-center border-2 border-pink-400 text-xl cursor-pointer hover:scale-110 transition-transform"
+                title="Gestor de Territorios">🗺️</button>
+            <button onclick="toggleCalendar()"
+                class="w-12 h-12 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center border-2 border-blue-400 text-xl cursor-pointer hover:scale-110 transition-transform"
+                title="Calendario">📅</button>
         </div>
-        <button onclick="toggleFab()" id="fab-main-btn" class="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 border-2 border-blue-400 text-2xl cursor-pointer z-50">☰</button>
+        <button onclick="toggleFab()" id="fab-main-btn"
+            class="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 border-2 border-blue-400 text-2xl cursor-pointer z-50">☰</button>
     </div>
 
     <div id="toast-container" class="toast-container"></div>
@@ -773,43 +1192,46 @@
 
         <div class="login-card premium-card p-8 w-full max-w-md relative z-10">
             <div class="text-center mb-8">
-                <h1 id="login-title" class="text-4xl font-black text-blue-500 italic mb-1 glow-text tracking-tight">EDENORTE</h1>
-                <p id="login-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Systems Mao Sector</p>
+                <h1 id="login-title" class="text-4xl font-black text-blue-500 italic mb-1 glow-text tracking-tight">
+                    EDENORTE</h1>
+                <p id="login-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Systems
+                    Mao Sector</p>
             </div>
-            
+
             <form id="login-form" onsubmit="event.preventDefault(); handleSubmit();">
                 <div class="space-y-5">
                     <!-- Input Nombre (Nuevo) -->
                     <div id="name-group" class="relative hidden">
                         <span class="input-group-icon">👤</span>
-                        <input id="register-name" type="text" placeholder="NOMBRE COMPLETO" 
-                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                        <input id="register-name" type="text" placeholder="NOMBRE COMPLETO"
+                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500"
                             onkeypress="if(event.key === 'Enter') handleSubmit()">
                     </div>
 
                     <!-- Input ID (Nuevo - Solo Registro) -->
                     <div id="id-group" class="relative hidden">
                         <span class="input-group-icon">🆔</span>
-                        <input id="register-id" type="text" placeholder="ID EMPLEADO (Ej. 19579)" 
-                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                        <input id="register-id" type="text" placeholder="ID EMPLEADO (Ej. 19579)"
+                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500"
                             oninput="checkId()" onkeypress="if(event.key === 'Enter') handleSubmit()">
                     </div>
 
                     <!-- Input Email con Icono -->
                     <div class="relative">
                         <span class="input-group-icon">✉️</span>
-                        <input id="login-user-code" type="text" placeholder="CORREO / ID" 
-                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                        <input id="login-user-code" type="text" placeholder="CORREO / ID"
+                            class="login-input w-full p-4 pl-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500"
                             onkeypress="if(event.key === 'Enter') handleSubmit()">
                     </div>
 
                     <!-- Input Password con Icono -->
                     <div id="pass-group" class="relative">
                         <span class="input-group-icon">🔒</span>
-                        <input id="login-pass" type="password" placeholder="CONTRASEÑA" 
-                            class="login-input w-full p-4 pl-12 pr-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500" 
+                        <input id="login-pass" type="password" placeholder="CONTRASEÑA"
+                            class="login-input w-full p-4 pl-12 pr-12 rounded-2xl font-bold text-center bg-slate-800/50 border border-slate-600 text-white outline-none transition-all focus:bg-slate-800 focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] placeholder-slate-500"
                             onkeypress="if(event.key === 'Enter') handleSubmit()">
-                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors z-20">
+                        <button type="button" onclick="togglePasswordVisibility()"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors z-20">
                             👁️
                         </button>
                     </div>
@@ -817,16 +1239,21 @@
                     <!-- Remember & Forgot -->
                     <div class="flex justify-between items-center -mt-2">
                         <div id="remember-box" class="flex items-center gap-2">
-                            <input id="remember-me" type="checkbox" class="accent-blue-500 w-3 h-3 cursor-pointer rounded bg-slate-800 border-slate-600">
-                            <label for="remember-me" class="text-[10px] font-bold text-slate-400 uppercase cursor-pointer select-none hover:text-white transition-colors">Recordarme</label>
+                            <input id="remember-me" type="checkbox"
+                                class="accent-blue-500 w-3 h-3 cursor-pointer rounded bg-slate-800 border-slate-600">
+                            <label for="remember-me"
+                                class="text-[10px] font-bold text-slate-400 uppercase cursor-pointer select-none hover:text-white transition-colors">Recordarme</label>
                         </div>
                         <div id="forgot-link-box">
-                            <a href="#" onclick="toggleMode('reset')" class="text-[10px] font-bold text-slate-400 hover:text-blue-400 transition-colors">¿OLVIDASTE TU CONTRASEÑA?</a>
+                            <a href="#" onclick="toggleMode('reset')"
+                                class="text-[10px] font-bold text-slate-400 hover:text-blue-400 transition-colors">¿OLVIDASTE
+                                TU CONTRASEÑA?</a>
                         </div>
                     </div>
 
                     <!-- Botón Login Mejorado -->
-                    <button id="login-submit-btn" type="button" onclick="handleSubmit()" class="login-btn w-full text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg">
+                    <button id="login-submit-btn" type="button" onclick="handleSubmit()"
+                        class="login-btn w-full text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg">
                         Acceder al Sistema
                     </button>
                 </div>
@@ -834,70 +1261,90 @@
 
             <div id="login-footer" class="mt-8 text-center border-t border-slate-700/50 pt-6">
                 <p class="text-xs text-slate-400 font-semibold">
-                    ¿Eres nuevo personal? 
-                    <a href="#" onclick="toggleMode('register')" class="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer">Crear Usuario</a>
+                    ¿Eres nuevo personal?
+                    <a href="#" onclick="toggleMode('register')"
+                        class="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer">Crear
+                        Usuario</a>
                 </p>
             </div>
-            
+
             <div id="back-login-footer" class="hidden mt-8 text-center border-t border-slate-700/50 pt-6">
-                <a href="#" onclick="toggleMode('login')" class="text-xs text-slate-400 hover:text-white font-bold transition-colors cursor-pointer">← Volver al Inicio de Sesión</a>
+                <a href="#" onclick="toggleMode('login')"
+                    class="text-xs text-slate-400 hover:text-white font-bold transition-colors cursor-pointer">← Volver
+                    al Inicio de Sesión</a>
             </div>
         </div>
     </div>
     <!-- FIN LOGIN -->
 
     <div id="app-screen" class="no-print hidden min-h-screen pb-20">
-        <header class="p-6 flex justify-between items-center border-b border-white/5 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <header
+            class="p-6 flex justify-between items-center border-b border-white/5 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
             <div class="flex items-center gap-3">
                 <div>
                     <h1 class="text-2xl font-black italic text-blue-500 glow-text">EDENORTE</h1>
-                    <p id="logged-user-display" class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter"></p>
+                    <p id="logged-user-display" class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                    </p>
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="openSettings()" class="bg-blue-500/10 text-blue-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-blue-500/20 hover:bg-blue-500/20 transition-colors">Ajustes</button>
-                <button onclick="logout()" class="bg-red-500/10 text-red-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-red-500/20 hover:bg-red-500/20 transition-colors">Salir</button>
+                <button onclick="openSettings()"
+                    class="bg-blue-500/10 text-blue-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-blue-500/20 hover:bg-blue-500/20 transition-colors">Ajustes</button>
+                <button onclick="logout()"
+                    class="bg-red-500/10 text-red-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-red-500/20 hover:bg-red-500/20 transition-colors">Salir</button>
             </div>
         </header>
 
         <nav class="flex px-4 py-2 gap-2 overflow-x-auto">
-            <button id="btn-reg" onclick="showTab('registro')" class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Registro</button>
-            <button id="btn-hist" onclick="showTab('historial')" class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Historial</button>
-            <button id="btn-act" onclick="showTab('activos')" class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Activos</button>
+            <button id="btn-reg" onclick="showTab('registro')"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Registro</button>
+            <button id="btn-hist" onclick="showTab('historial')"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Historial</button>
+            <button id="btn-act" onclick="showTab('activos')"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Activos</button>
         </nav>
 
         <main class="p-4 max-w-2xl mx-auto">
             <div id="tab-registro" class="space-y-6">
                 <div class="flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl">
                     <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                    <span class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Semana Operativa: <span id="target-week-badge">1</span></span>
+                    <span class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Semana Operativa: <span
+                            id="target-week-badge">1</span></span>
                 </div>
 
                 <div class="premium-card p-6 space-y-5">
                     <div class="space-y-4 border-b border-white/5 pb-4">
                         <div class="flex justify-between items-center">
                             <input id="f-fecha" type="date" class="font-bold text-blue-400 outline-none bg-transparent">
-                            <span id="edit-indicator" class="hidden text-[10px] font-black bg-orange-500 text-white px-3 py-1 rounded-full">MODO EDICIÓN</span>
+                            <span id="edit-indicator"
+                                class="hidden text-[10px] font-black bg-orange-500 text-white px-3 py-1 rounded-full">MODO
+                                EDICIÓN</span>
                         </div>
                         <div class="flex gap-4">
                             <div class="flex-1">
-                                <label class="text-[8px] font-black text-slate-500 uppercase block">Semana Fiscal</label>
-                                <input id="f-semana" type="number" class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
+                                <label class="text-[8px] font-black text-slate-500 uppercase block">Semana
+                                    Fiscal</label>
+                                <input id="f-semana" type="number"
+                                    class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
                             </div>
                             <div class="flex-1">
                                 <label class="text-[8px] font-black text-slate-500 uppercase block">Año Fiscal</label>
-                                <input id="f-ano" type="number" class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
+                                <input id="f-ano" type="number"
+                                    class="w-full bg-transparent border-b border-white/10 font-bold text-white py-1 outline-none">
                             </div>
                         </div>
                     </div>
-                    <input id="f-lugar" type="text" placeholder="LOCALIDAD / LUGAR" class="w-full text-xl font-black p-4 rounded-xl uppercase">
-                    <textarea id="f-trabajo" placeholder="DETALLES DE LA LABOR..." class="w-full font-bold h-24 p-4 rounded-xl uppercase resize-none"></textarea>
+                    <input id="f-lugar" type="text" placeholder="LOCALIDAD / LUGAR"
+                        class="w-full text-xl font-black p-4 rounded-xl uppercase">
+                    <textarea id="f-trabajo" placeholder="DETALLES DE LA LABOR..."
+                        class="w-full font-bold h-24 p-4 rounded-xl uppercase resize-none"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="premium-card p-4 text-center">
                         <label class="text-[8px] font-black text-slate-500 uppercase block mb-2">Salida Mao</label>
-                        <input id="h-sal-mao" type="time" value="07:00" onchange="updateCalculos()" class="text-xl font-black w-full text-center bg-transparent">
+                        <input id="h-sal-mao" type="time" value="07:00" onchange="updateCalculos()"
+                            class="text-xl font-black w-full text-center bg-transparent">
                     </div>
                     <div class="premium-card p-4 text-center">
                         <label class="text-[8px] font-black text-slate-500 uppercase block mb-2">Llegada Lugar</label>
@@ -909,29 +1356,38 @@
                     </div>
                     <div class="premium-card p-4 text-center">
                         <label class="text-[8px] font-black text-slate-500 uppercase block mb-2">Regreso Mao</label>
-                        <input id="h-lle-mao" type="time" value="18:02" onchange="updateCalculos()" class="text-xl font-black w-full text-center">
+                        <input id="h-lle-mao" type="time" value="18:02" onchange="updateCalculos()"
+                            class="text-xl font-black w-full text-center">
                     </div>
                 </div>
 
                 <div class="premium-card p-6">
-                    <h3 class="text-xs font-black text-slate-400 uppercase mb-6 tracking-widest border-b border-white/5 pb-2">Personal en Operación</h3>
+                    <h3
+                        class="text-xs font-black text-slate-400 uppercase mb-6 tracking-widest border-b border-white/5 pb-2">
+                        Personal en Operación</h3>
                     <div id="equipo-list" class="space-y-3"></div>
                     <div class="mt-8 flex gap-2">
-                        <input id="new-name" type="text" placeholder="NOMBRE APOYO" class="flex-1 p-3 rounded-xl text-[11px] font-bold uppercase">
-                        <input id="new-code" type="text" placeholder="ID" class="w-20 p-3 rounded-xl text-[11px] font-bold uppercase">
-                        <button onclick="addExtraMember()" class="btn-gradient px-6 rounded-xl font-black text-xl">+</button>
+                        <input id="new-name" type="text" placeholder="NOMBRE APOYO"
+                            class="flex-1 p-3 rounded-xl text-[11px] font-bold uppercase">
+                        <input id="new-code" type="text" placeholder="ID"
+                            class="w-20 p-3 rounded-xl text-[11px] font-bold uppercase">
+                        <button onclick="addExtraMember()"
+                            class="btn-gradient px-6 rounded-xl font-black text-xl">+</button>
                     </div>
                 </div>
 
                 <div class="premium-card p-8 bg-gradient-to-br from-blue-600 to-blue-900 border-none">
                     <div class="flex justify-between items-center">
                         <div>
-                            <p class="text-[10px] font-black text-blue-200 mb-1 uppercase tracking-tighter">Monto Estimado</p>
+                            <p class="text-[10px] font-black text-blue-200 mb-1 uppercase tracking-tighter">Monto
+                                Estimado</p>
                             <h2 id="display-total" class="text-4xl font-black italic text-white glow-text">RD$ 0</h2>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <button id="btn-save" onclick="saveRecord()" class="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-2xl">Confirmar</button>
-                            <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden bg-red-500 text-white px-8 py-2 rounded-xl font-black uppercase text-[8px]">Cancelar</button>
+                            <button id="btn-save" onclick="saveRecord()"
+                                class="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-2xl">Confirmar</button>
+                            <button id="btn-cancel-edit" onclick="cancelEdit()"
+                                class="hidden bg-red-500 text-white px-8 py-2 rounded-xl font-black uppercase text-[8px]">Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -939,28 +1395,46 @@
 
             <div id="tab-historial" class="hidden space-y-4">
                 <div class="premium-card p-4 flex items-center justify-between">
-                    <button onclick="changeViewWeek(-1)" class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full font-black text-blue-500">◀</button>
+                    <button onclick="changeViewWeek(-1)"
+                        class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full font-black text-blue-500">◀</button>
                     <div class="text-center">
-                        <span class="text-[9px] font-bold text-slate-500 block uppercase italic">Visualizando Semana</span>
+                        <span class="text-[9px] font-bold text-slate-500 block uppercase italic">Visualizando
+                            Semana</span>
                         <div class="flex items-center gap-2 justify-center">
-                            <select id="year-selector" class="text-sm font-black bg-transparent border border-white/5 px-3 py-2 rounded-lg"></select>
+                            <select id="year-selector"
+                                class="text-sm font-black bg-transparent border border-white/5 px-3 py-2 rounded-lg"></select>
                             <span id="view-week-display" class="font-black text-3xl text-white italic">1</span>
                         </div>
                     </div>
-                    <button onclick="changeViewWeek(1)" class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full font-black text-blue-500">▶</button>
+                    <button onclick="changeViewWeek(1)"
+                        class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full font-black text-blue-500">▶</button>
                 </div>
                 <div id="semanas-container" class="space-y-6"></div>
             </div>
 
             <div id="tab-activos" class="hidden space-y-6">
                 <div class="premium-card p-8 text-center">
-                    <p class="text-[10px] font-black text-blue-400 uppercase mb-4 tracking-widest">Estado de Cuentas Mensual</p>
-                    <select id="month-filter" onchange="renderActivos()" class="w-full p-5 rounded-2xl font-black text-white text-center appearance-none">
+                    <p class="text-[10px] font-black text-blue-400 uppercase mb-4 tracking-widest">Estado de Cuentas
+                        Mensual</p>
+                    <select id="month-filter" onchange="renderActivos()"
+                        class="w-full p-5 rounded-2xl font-black text-white text-center appearance-none">
                         <option value="ALL">REPORTE HISTÓRICO</option>
-                        <option value="0">ENERO</option><option value="1">FEBRERO</option><option value="2">MARZO</option><option value="3">ABRIL</option><option value="4">MAYO</option><option value="5">JUNIO</option><option value="6">JULIO</option><option value="7">AGOSTO</option><option value="8">SEPTIEMBRE</option><option value="9">OCTUBRE</option><option value="10">NOVIEMBRE</option><option value="11">DICIEMBRE</option>
+                        <option value="0">ENERO</option>
+                        <option value="1">FEBRERO</option>
+                        <option value="2">MARZO</option>
+                        <option value="3">ABRIL</option>
+                        <option value="4">MAYO</option>
+                        <option value="5">JUNIO</option>
+                        <option value="6">JULIO</option>
+                        <option value="7">AGOSTO</option>
+                        <option value="8">SEPTIEMBRE</option>
+                        <option value="9">OCTUBRE</option>
+                        <option value="10">NOVIEMBRE</option>
+                        <option value="11">DICIEMBRE</option>
                     </select>
                 </div>
-                <div class="premium-card p-10 bg-gradient-to-b from-blue-600 to-blue-900 border-none text-center shadow-blue-500/20 shadow-2xl">
+                <div
+                    class="premium-card p-10 bg-gradient-to-b from-blue-600 to-blue-900 border-none text-center shadow-blue-500/20 shadow-2xl">
                     <p class="text-[11px] font-bold text-blue-200 mb-2 tracking-[0.4em] uppercase">Acumulado General</p>
                     <h2 id="total-general-activos" class="text-6xl font-black italic text-white glow-text">RD$ 0</h2>
                 </div>
@@ -999,25 +1473,22 @@
         window.loadingData = false;
         window.territoriesData = [];
         window.locationsMetadata = {}; // Almacena datos completos de ubicaciones (incluyendo links a territorios)
-        
+
         // SECURITY: Prevent XSS attacks
         const escapeHTML = (str) => {
             if (!str) return '';
-            return String(str).replace(/[&<>'"]/g, 
+            return String(str).replace(/[&<>'"]/g,
                 tag => ({
                     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
                 }[tag]));
         };
 
-        const equipoBase = [
-            { name: 'RAMÓN RODRÍGUEZ', code: '17866', active: true, ficha: '7344', isExtra: false, vac: false },
-            { name: 'JEFRY ENMANUEL TORRES', code: '19014', active: true, ficha: '7344', isExtra: false, vac: false },
-            { name: 'JOSE ALFREDO VENTURA', code: '19579', active: true, ficha: '7344', isExtra: false, vac: false }
-        ];
-        window.equipo = JSON.parse(JSON.stringify(equipoBase));
+        // SEGURIDAD: Empleados se cargan dinámicamente desde Firestore (colección 'empleados')
+        window.equipoBase = [];
+        window.equipo = [];
 
         const formatAMPM = (time) => {
-            if(!time) return "---";
+            if (!time) return "---";
             let [h, m] = time.split(':');
             let ampm = h >= 12 ? 'PM' : 'AM';
             h = h % 12 || 12;
@@ -1080,6 +1551,28 @@
                 }
                 updateHeader();
             });
+
+            // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
+            onSnapshot(collection(db, "empleados"), (snapshot) => {
+                window.equipoBase = snapshot.docs.map(d => {
+                    const data = d.data();
+                    return {
+                        name: data.name || data.nombre || '',
+                        code: data.code || data.codigo || d.id,
+                        active: true,
+                        ficha: data.ficha || '7344',
+                        isExtra: false,
+                        vac: false
+                    };
+                });
+                // Solo recargar equipo si NO estamos en modo edición
+                if (!window.editingId) {
+                    window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
+                    if (typeof renderEquipo === 'function') renderEquipo();
+                    if (typeof updateCalculos === 'function') updateCalculos();
+                }
+            });
+
             const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
             onSnapshot(q, (snapshot) => {
                 window.registros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1088,7 +1581,7 @@
                     try {
                         if (!r.semana) r.semana = getWeekNumber(r.fecha);
                         if (!r.año) r.año = getYearOfWeek(r.fecha);
-                    } catch(e) { }
+                    } catch (e) { }
                 });
                 populateYearSelector();
                 window.loadingData = false;
@@ -1101,11 +1594,11 @@
                 snapshot.forEach(doc => {
                     const d = doc.data();
                     window.locationsMetadata[d.nombre] = d; // Guardar metadata completa
-                    if(d.nombre && d.coords) customLocations[d.nombre] = d.coords;
+                    if (d.nombre && d.coords) customLocations[d.nombre] = d.coords;
                 });
                 localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
-                if(typeof window.renderMapFavorites === 'function') window.renderMapFavorites();
-                if(typeof window.renderFavoriteMarkers === 'function') window.renderFavoriteMarkers();
+                if (typeof window.renderMapFavorites === 'function') window.renderMapFavorites();
+                if (typeof window.renderFavoriteMarkers === 'function') window.renderFavoriteMarkers();
             });
 
             // Sincronización de Territorios (Polígonos)
@@ -1120,8 +1613,8 @@
                     }
                     return { id: d.id, ...data };
                 });
-                if(GoogleMapsClone.map) GoogleMapsClone.renderTerritories(window.territoriesData);
-                if(typeof window.renderTerritoryList === 'function') window.renderTerritoryList();
+                if (GoogleMapsClone.map) GoogleMapsClone.renderTerritories(window.territoriesData);
+                if (typeof window.renderTerritoryList === 'function') window.renderTerritoryList();
             });
         };
 
@@ -1187,11 +1680,11 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         };
 
-        // Auto-fill Name Logic
+        // Auto-fill Name Logic (desde Firestore empleados)
         window.checkId = () => {
             const id = document.getElementById('register-id').value.trim();
-            const member = window.equipo.find(m => m.code === id);
-            if(member) {
+            const member = window.equipoBase.find(m => m.code === id);
+            if (member) {
                 document.getElementById('register-name').value = member.name;
             }
         };
@@ -1199,7 +1692,7 @@
         // Loading Helper
         window.toggleLoading = (isLoading) => {
             const btn = document.getElementById('login-submit-btn');
-            if(isLoading) {
+            if (isLoading) {
                 btn.innerHTML = '<div class="spinner"></div>';
                 btn.disabled = true;
                 btn.classList.add('opacity-70', 'cursor-not-allowed');
@@ -1241,7 +1734,7 @@
                 try {
                     const idInput = input.toUpperCase();
                     let foundEmail = null;
-                    
+
                     // 0. Intentar buscar en caché local (Bypass de seguridad)
                     const cachedEmail = localStorage.getItem(`user_map_${idInput}`);
                     if (cachedEmail) foundEmail = cachedEmail;
@@ -1250,7 +1743,7 @@
                     if (!foundEmail) {
                         const q = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
                         const querySnapshot = await getDocs(q);
-                    
+
                         if (!querySnapshot.empty) {
                             foundEmail = querySnapshot.docs[0].data().email;
                         } else {
@@ -1271,47 +1764,53 @@
 
             try {
                 const remember = document.getElementById('remember-me').checked;
-                if(remember) localStorage.setItem('rememberedUser', input);
+                if (remember) localStorage.setItem('rememberedUser', input);
                 else localStorage.removeItem('rememberedUser');
 
                 await signInWithEmailAndPassword(auth, email, pass);
                 // La redirección se maneja en onAuthStateChanged
-                
+
                 // Success: Clear lockout
                 localStorage.removeItem('loginAttempts');
                 localStorage.removeItem('loginLockout');
                 toggleLoading(false);
             } catch (error) {
-                // AUTO-ACTIVACIÓN: Si el usuario no existe pero usa la contraseña maestra, lo registramos automáticamente
-                if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && pass === 'Edenorte2025') {
+                // SEGURIDAD: Auto-activación con clave de activación desde Firestore (nunca hardcodeada)
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
                     try {
-                        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                        
-                        // Crear perfil básico en Firestore
-                        const userId = input.includes('@') ? input.split('@')[0].toUpperCase() : input.toUpperCase();
-                        await setDoc(doc(db, "usuarios", userId), {
-                            uid: userCredential.user.uid,
-                            email: email,
-                            nombre: userId, // Nombre temporal igual al ID
-                            fechaRegistro: new Date().toISOString(),
-                            rol: "usuario"
-                        });
+                        // Leer clave de activación desde Firestore
+                        const configSnap = await getDoc(doc(db, "config", "global"));
+                        const claveActivacion = configSnap.exists() ? configSnap.data().claveActivacion : null;
 
-                        showToast("Cuenta activada. Configure su perfil en Ajustes.", "success");
-                        localStorage.removeItem('loginAttempts');
-                        localStorage.removeItem('loginLockout');
-                        toggleLoading(false);
-                        return; // Detener flujo de error y entrar
+                        if (claveActivacion && pass === claveActivacion) {
+                            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+
+                            // Crear perfil básico en Firestore
+                            const userId = input.includes('@') ? input.split('@')[0].toUpperCase() : input.toUpperCase();
+                            await setDoc(doc(db, "usuarios", userId), {
+                                uid: userCredential.user.uid,
+                                email: email,
+                                nombre: userId,
+                                fechaRegistro: new Date().toISOString(),
+                                rol: "usuario"
+                            });
+
+                            showToast("Cuenta activada. Configure su perfil en Ajustes.", "success");
+                            localStorage.removeItem('loginAttempts');
+                            localStorage.removeItem('loginLockout');
+                            toggleLoading(false);
+                            return;
+                        }
                     } catch (regError) { console.error("Auto-reg failed", regError); }
                 }
 
                 console.error(error);
                 toggleLoading(false);
-                
+
                 // Handle Lockout Counter
                 let attempts = parseInt(localStorage.getItem('loginAttempts') || '0') + 1;
                 localStorage.setItem('loginAttempts', attempts);
-                
+
                 if (attempts >= 3) {
                     const lockUntil = new Date().getTime() + 60000; // 1 minute
                     localStorage.setItem('loginLockout', lockUntil);
@@ -1322,17 +1821,17 @@
                 }
             }
         };
-        
+
         window.handleRegister = async () => {
             const name = document.getElementById('register-name').value.trim().toUpperCase();
             const idEmpleado = document.getElementById('register-id').value.trim().toUpperCase();
             const input = document.getElementById('login-user-code').value.trim();
             const pass = document.getElementById('login-pass').value;
-            
+
             if (!input || !pass || !name || !idEmpleado) return showToast("Complete todos los campos", "warning");
             if (!/^[A-ZÁÉÍÓÚÑ\s]+$/.test(name)) return showToast("El nombre solo puede contener letras", "warning");
             if (pass.length < 6) return showToast("La contraseña debe tener al menos 6 caracteres", "warning");
-            
+
             toggleLoading(true);
 
             const email = input.includes('@') ? input : `${input}@edenorte.com`;
@@ -1346,7 +1845,7 @@
                 if (docSnap.exists()) throw new Error("Este ID de empleado ya está registrado.");
 
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                
+
                 // Guardar ID y datos básicos en colección 'usuarios'
                 await setDoc(doc(db, "usuarios", userId), {
                     uid: userCredential.user.uid,
@@ -1371,7 +1870,7 @@
             const input = document.getElementById('login-user-code').value.trim();
             if (!input) return showToast("Ingrese su correo o ID", "warning");
             const email = input.includes('@') ? input : `${input}@edenorte.com`;
-            
+
             toggleLoading(true);
             try {
                 await sendPasswordResetEmail(auth, email);
@@ -1391,7 +1890,7 @@
                 window.currentUser = user.email.split('@')[0].toUpperCase();
                 window.currentUserName = user.displayName || window.currentUser;
                 window.currentUserId = window.currentUser; // Default
-                
+
                 // Intentar obtener nombre real de Firestore
                 try {
                     const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
@@ -1399,17 +1898,17 @@
                     if (!querySnapshot.empty) {
                         const data = querySnapshot.docs[0].data();
                         window.currentUserName = data.nombre;
-                        
+
                         // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
                         if (data.employeeId) window.currentUserId = data.employeeId;
                         else window.currentUserId = querySnapshot.docs[0].id;
-                        
+
                         // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
                         if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
                         localStorage.setItem(`user_map_${querySnapshot.docs[0].id}`, user.email);
 
-                        if(data.tema) {
-                            if(data.tema === 'light') {
+                        if (data.tema) {
+                            if (data.tema === 'light') {
                                 document.body.classList.add('light-mode');
                                 document.getElementById('theme-btn').innerText = '🌙';
                             } else {
@@ -1420,16 +1919,12 @@
                         }
                     }
                 } catch (e) { console.log("Perfil no encontrado en DB, usando Auth"); }
-                
+
                 // Actualizar currentUser global para que los registros usen el ID correcto
                 window.currentUser = window.currentUserId;
 
-                // FIX: Corrección de identidad para BDIMAO0005 -> 19579 (Jose Alfredo Ventura)
-                if (window.currentUser === 'BDIMAO0005' || window.currentUserId === 'BDIMAO0005') {
-                    window.currentUser = '19579';
-                    window.currentUserId = '19579';
-                    window.currentUserName = 'JOSE ALFREDO VENTURA';
-                }
+                // SEGURIDAD: Las correcciones de identidad se manejan desde Firestore (colección 'usuarios')
+                // Ya no hay correcciones hardcodeadas en el código
 
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
@@ -1452,7 +1947,7 @@
 
         window.changeViewWeek = (val) => {
             window.viewingWeek += val;
-            if(window.viewingWeek < 1) window.viewingWeek = 1;
+            if (window.viewingWeek < 1) window.viewingWeek = 1;
             updateHeader(); renderHistorial();
         };
 
@@ -1486,18 +1981,18 @@
         };
 
         window.removeExtraMember = (i) => {
-            if(confirm("¿Eliminar apoyo del equipo?")) { window.equipo.splice(i, 1); renderEquipo(); updateCalculos(); }
+            if (confirm("¿Eliminar apoyo del equipo?")) { window.equipo.splice(i, 1); renderEquipo(); updateCalculos(); }
         };
 
         window.toggleVac = (i) => {
             window.equipo[i].vac = !window.equipo[i].vac;
-            if(window.equipo[i].vac) window.equipo[i].active = false;
+            if (window.equipo[i].vac) window.equipo[i].active = false;
             renderEquipo(); updateCalculos();
         };
 
         window.toggleActive = (i) => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
         window.updateFicha = (i, val) => { window.equipo[i].ficha = val.toUpperCase(); };
-        
+
         window.addExtraMember = () => {
             const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
@@ -1512,10 +2007,10 @@
         const getDesgloseMonto = () => {
             const salH = parseInt(document.getElementById('h-sal-mao').value.split(':')[0]) || 0;
             const lleH = parseInt(document.getElementById('h-lle-mao').value.split(':')[0]) || 0;
-            return { 
-                almuerzo: 350, 
-                desayuno: (salH <= 7) ? 200 : 0, 
-                cena: (lleH >= 20) ? 200 : 0 
+            return {
+                almuerzo: 350,
+                desayuno: (salH <= 7) ? 200 : 0,
+                cena: (lleH >= 20) ? 200 : 0
             };
         };
 
@@ -1533,13 +2028,13 @@
             let hasError = false;
             required.forEach(id => {
                 const el = document.getElementById(id);
-                if(!el.value.trim()) {
+                if (!el.value.trim()) {
                     el.classList.add('input-error');
                     el.addEventListener('input', () => el.classList.remove('input-error'), { once: true });
                     hasError = true;
                 }
             });
-            if(hasError) return showToast("Por favor complete los campos marcados en rojo", "error");
+            if (hasError) return showToast("Por favor complete los campos marcados en rojo", "error");
 
             const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
             const fecha = document.getElementById('f-fecha').value;
@@ -1551,9 +2046,9 @@
             const timeStr = now.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', hour12: true });
             const dateStr = now.toLocaleDateString('es-DO');
             const userInfo = window.currentUserName || window.currentUser;
-            
+
             let historial = [];
-            
+
             if (window.editingId) {
                 const oldRecord = window.registros.find(r => r.id === window.editingId);
                 if (oldRecord) {
@@ -1599,7 +2094,7 @@
             container.innerHTML = '';
 
             if (window.loadingData) {
-                for(let i=0; i<3; i++) {
+                for (let i = 0; i < 3; i++) {
                     container.innerHTML += `
                         <div class="premium-card p-5 border-l-4 border-l-white/10">
                             <div class="flex justify-between mb-4">
@@ -1633,12 +2128,12 @@
                 const item = document.createElement('div');
                 item.className = "premium-card p-5 border-l-4 border-l-blue-500";
                 const d = r.desglose || { almuerzo: 350, desayuno: 0, cena: 0 };
-                
+
                 // Texto de detalle de comidas
                 let detalleComidas = [];
-                if(d.desayuno > 0) detalleComidas.push("Desayuno");
+                if (d.desayuno > 0) detalleComidas.push("Desayuno");
                 detalleComidas.push("Almuerzo");
-                if(d.cena > 0) detalleComidas.push("Cena");
+                if (d.cena > 0) detalleComidas.push("Cena");
 
                 item.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
@@ -1653,7 +2148,7 @@
                     <p class="text-[10px] text-blue-300 font-bold uppercase italic mb-1">${detalleComidas.join(" + ")}</p>
                     <p class="text-[10px] text-slate-400 font-bold uppercase mb-4">Misión: ${formatAMPM(r.horas.sm)} - ${formatAMPM(r.horas.rm)}</p>
                     <div class="space-y-2 border-t border-white/5 pt-4">
-                        ${r.personal.map(p => `<p class="text-[9px] text-slate-300 font-semibold uppercase tracking-tighter">• ${escapeHTML(p.name)} <span class="text-blue-400">| RD$ ${ (d.almuerzo + d.desayuno + d.cena) }</span></p>`).join('')}
+                        ${r.personal.map(p => `<p class="text-[9px] text-slate-300 font-semibold uppercase tracking-tighter">• ${escapeHTML(p.name)} <span class="text-blue-400">| RD$ ${(d.almuerzo + d.desayuno + d.cena)}</span></p>`).join('')}
                     </div>
                     <div class="mt-3 pt-2 border-t border-white/5">
                         <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full flex items-center justify-between text-[8px] font-black text-slate-500 uppercase tracking-widest hover:text-blue-400 transition-colors py-1">
@@ -1667,20 +2162,20 @@
                 `;
                 container.appendChild(item);
             });
-            if(filtered.length > 0) {
+            if (filtered.length > 0) {
                 const btnContainer = document.createElement('div');
                 btnContainer.className = "flex gap-2 mt-4 no-print";
-                
+
                 const btnPrint = document.createElement('button');
                 btnPrint.className = "flex-1 btn-gradient text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg";
                 btnPrint.innerHTML = `🖨️ Imprimir PDF`;
                 btnPrint.onclick = () => generatePrintable(window.viewingWeek);
-                
+
                 const btnEmail = document.createElement('button');
                 btnEmail.className = "flex-1 bg-slate-700 hover:bg-slate-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg border border-white/10";
                 btnEmail.innerHTML = `✉️ Enviar Correo`;
                 btnEmail.onclick = () => openEmailModal(window.viewingWeek, filtered);
-                
+
                 btnContainer.appendChild(btnPrint);
                 btnContainer.appendChild(btnEmail);
                 container.appendChild(btnContainer);
@@ -1727,11 +2222,11 @@
                 return;
             }
 
-            Object.entries(stats).sort((a,b) => b[1].total - a[1].total).forEach(([code, data]) => {
+            Object.entries(stats).sort((a, b) => b[1].total - a[1].total).forEach(([code, data]) => {
                 const card = document.createElement('div');
                 card.className = "premium-card overflow-hidden";
-                
-                const sortedWeeks = Object.keys(data.weeks).sort((a,b) => b - a);
+
+                const sortedWeeks = Object.keys(data.weeks).sort((a, b) => b - a);
                 const weeksHtml = sortedWeeks.map(w => {
                     const weekData = data.weeks[w];
                     return `
@@ -1783,7 +2278,7 @@
             document.getElementById('print-meta').innerHTML = `<span>SEMANA FISCAL: ${num}</span><span>ZONA SECTORIAL MAO</span>`;
             list.innerHTML = '';
             let gt = 0;
-            data.sort((a,b) => new Date(a.fecha) - new Date(b.fecha)).forEach(r => {
+            data.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)).forEach(r => {
                 gt += r.total;
                 const d = r.desglose || { almuerzo: 350, desayuno: 0, cena: 0 };
                 const subIndividual = (d.almuerzo + d.desayuno + d.cena);
@@ -1832,25 +2327,25 @@
             document.getElementById('f-fecha').value = r.fecha; document.getElementById('f-lugar').value = r.lugar; document.getElementById('f-trabajo').value = r.trabajo || '';
             document.getElementById('f-semana').value = r.semana; document.getElementById('f-ano').value = r.año || getISOYear(r.fecha);
             document.getElementById('h-sal-mao').value = r.horas.sm; document.getElementById('h-lle-lug').value = r.horas.ll; document.getElementById('h-sal-lug').value = r.horas.sl; document.getElementById('h-lle-mao').value = r.horas.rm;
-            window.equipo = JSON.parse(JSON.stringify(equipoBase));
+            window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
             r.personal.forEach(p => {
                 let found = window.equipo.find(e => e.code === p.code);
-                if(found) { found.active = true; found.ficha = p.ficha; } else { window.equipo.push({ ...p, active: true, isExtra: true }); }
+                if (found) { found.active = true; found.ficha = p.ficha; } else { window.equipo.push({ ...p, active: true, isExtra: true }); }
             });
-            window.equipo.forEach(e => { if(!r.personal.some(p => p.code === e.code)) e.active = false; });
+            window.equipo.forEach(e => { if (!r.personal.some(p => p.code === e.code)) e.active = false; });
             document.getElementById('edit-indicator').classList.remove('hidden'); document.getElementById('btn-cancel-edit').classList.remove('hidden');
             document.getElementById('btn-save').innerText = "Guardar Cambios"; renderEquipo(); updateCalculos(); showTab('registro');
         };
 
-        window.deleteRecord = async (id) => { if(confirm("¿Seguro que desea eliminar este registro permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
-        
+        window.deleteRecord = async (id) => { if (confirm("¿Seguro que desea eliminar este registro permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
+
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('f-fecha').value = today;
             document.getElementById('f-semana').value = ''; document.getElementById('f-ano').value = getISOYear(today);
             document.getElementById('edit-indicator').classList.add('hidden'); document.getElementById('btn-cancel-edit').classList.add('hidden');
-            document.getElementById('btn-save').innerText = "Confirmar"; window.equipo = JSON.parse(JSON.stringify(equipoBase)); renderEquipo(); updateCalculos();
+            document.getElementById('btn-save').innerText = "Confirmar"; window.equipo = JSON.parse(JSON.stringify(window.equipoBase)); renderEquipo(); updateCalculos();
         };
 
         window.returnToApp = () => { document.getElementById('print-section').style.display = 'none'; document.getElementById('app-screen').classList.remove('hidden'); };
@@ -1863,31 +2358,31 @@
             document.getElementById('btn-reg').classList.toggle('tab-active', tab === 'registro');
             document.getElementById('btn-hist').classList.toggle('tab-active', tab === 'historial');
             document.getElementById('btn-act').classList.toggle('tab-active', tab === 'activos');
-            
+
             // Animation trigger
             const activeContent = document.getElementById(`tab-${tab}`);
             activeContent.classList.remove('fade-in');
             void activeContent.offsetWidth; // Trigger reflow
             activeContent.classList.add('fade-in');
 
-            if(tab === 'historial') renderHistorial();
-            if(tab === 'activos') renderActivos();
+            if (tab === 'historial') renderHistorial();
+            if (tab === 'activos') renderActivos();
         };
 
         // Populate year selector with years from registros - Sincronización automática
         const populateYearSelector = () => {
             const sel = document.getElementById('year-selector');
-            if(!sel) return;
+            if (!sel) return;
             const añosUnicos = [...new Set(window.registros.map(r => r.año || new Date(r.fecha + "T12:00:00").getFullYear()))];
             if (añosUnicos.length === 0) {
                 const currentYear = new Date().getFullYear();
-                añosUnicos.push(currentYear, currentYear-1, currentYear-2);
+                añosUnicos.push(currentYear, currentYear - 1, currentYear - 2);
             }
-            añosUnicos.sort((a,b) => b - a);
+            añosUnicos.sort((a, b) => b - a);
             sel.innerHTML = '';
             añosUnicos.forEach(año => { const opt = document.createElement('option'); opt.value = año; opt.text = año; sel.appendChild(opt); });
             sel.value = window.viewingYear || new Date().getFullYear();
-            
+
             // EVENT LISTENER: Sincronización automática al cambiar año
             sel.removeEventListener('change', sel._changeHandler);
             sel._changeHandler = (e) => {
@@ -1907,7 +2402,7 @@
         // Sound System (Web Audio API)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const playSound = (type) => {
-            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => { });
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
@@ -1961,8 +2456,8 @@
             document.getElementById('theme-btn').innerText = isLight ? '🌙' : '☀️';
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
         };
-        
-        if(localStorage.getItem('theme') === 'light') {
+
+        if (localStorage.getItem('theme') === 'light') {
             document.body.classList.add('light-mode');
             document.getElementById('theme-btn').innerText = '🌙';
         }
@@ -1971,15 +2466,15 @@
         document.getElementById('f-fecha').value = initDate;
         document.getElementById('f-semana').value = ''; // Iniciar vacio para ingreso manual
         document.getElementById('f-ano').value = getISOYear(initDate);
-        
+
         const savedUser = localStorage.getItem('rememberedUser');
-        if(savedUser) {
+        if (savedUser) {
             document.getElementById('login-user-code').value = savedUser;
             document.getElementById('remember-me').checked = true;
         }
 
         document.getElementById('f-fecha').addEventListener('change', (e) => {
-            if(e.target.value) {
+            if (e.target.value) {
                 // document.getElementById('f-semana').value = getISOWeek(e.target.value); // Desactivado automatico
                 document.getElementById('f-ano').value = getISOYear(e.target.value);
             }
@@ -1993,7 +2488,7 @@
         window.toggleCalendar = () => {
             const cal = document.getElementById('mini-calendar');
             cal.classList.toggle('hidden');
-            if(!cal.classList.contains('hidden')) renderCalendar();
+            if (!cal.classList.contains('hidden')) renderCalendar();
         };
 
         window.changeCalendarMonth = (d) => {
@@ -2008,7 +2503,7 @@
             const year = calDate.getFullYear();
             const month = calDate.getMonth();
             const dateKey = `note_${year}-${month}-${day}`;
-            
+
             document.getElementById('cal-note-area').classList.remove('hidden');
             document.getElementById('cal-note-area').classList.remove('animate-pulse');
             document.getElementById('cal-selected-date').innerText = `${day} DE ${monthNames[month]}`;
@@ -2017,15 +2512,15 @@
         };
 
         window.saveCalendarNote = () => {
-            if(!window.selectedCalDay) return;
+            if (!window.selectedCalDay) return;
             const year = calDate.getFullYear();
             const month = calDate.getMonth();
             const dateKey = `note_${year}-${month}-${window.selectedCalDay}`;
             const val = document.getElementById('cal-note-input').value.trim();
-            
-            if(val) localStorage.setItem(dateKey, val);
+
+            if (val) localStorage.setItem(dateKey, val);
             else localStorage.removeItem(dateKey);
-            
+
             showToast("Recordatorio actualizado", "success");
             renderCalendar();
         };
@@ -2038,12 +2533,12 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
             let html = '';
-            for(let i=0; i<firstDay; i++) html += `<span></span>`;
-            for(let i=1; i<=daysInMonth; i++) {
+            for (let i = 0; i < firstDay; i++) html += `<span></span>`;
+            for (let i = 1; i <= daysInMonth; i++) {
                 const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
                 const isSelected = i === window.selectedCalDay;
                 const hasNote = localStorage.getItem(`note_${year}-${month}-${i}`);
-                
+
                 let classes = `relative text-[10px] font-bold py-1.5 rounded-lg cursor-pointer transition-all `;
                 if (isSelected) classes += 'bg-white/20 text-white ring-1 ring-white/50 ';
                 else if (isToday) classes += 'bg-blue-500 text-white shadow-lg shadow-blue-500/50 ';
@@ -2068,11 +2563,11 @@
 
         window.toggleGuide = () => {
             const m = document.getElementById('guide-modal');
-            if(m.classList.contains('hidden')) {
+            if (m.classList.contains('hidden')) {
                 m.classList.remove('hidden');
                 const c = document.getElementById('guide-content');
-                if(c.innerHTML.trim() === '') {
-                    c.innerHTML = guideSteps.map((s,i) => `
+                if (c.innerHTML.trim() === '') {
+                    c.innerHTML = guideSteps.map((s, i) => `
                         <div class="bg-white/5 rounded-xl overflow-hidden border border-white/5">
                             <button onclick="this.nextElementSibling.classList.toggle('hidden');" class="w-full p-4 text-left font-bold text-[11px] text-blue-300 uppercase flex justify-between hover:bg-white/5 transition-colors items-center">
                                 ${s.t} <span class="text-[10px] opacity-50">▼</span>
@@ -2101,7 +2596,7 @@
         // SETTINGS LOGIC
         window.openSettings = () => {
             const user = auth.currentUser;
-            if(!user) return;
+            if (!user) return;
             document.getElementById('set-name').value = window.currentUserName;
             document.getElementById('set-email').value = user.email;
             document.getElementById('set-id').value = window.currentUserId;
@@ -2124,7 +2619,7 @@
             const newTheme = document.getElementById('set-theme').value;
             const currentPass = document.getElementById('set-current-pass').value;
 
-            if(!currentPass) return showToast("Ingrese su contraseña actual para confirmar", "warning");
+            if (!currentPass) return showToast("Ingrese su contraseña actual para confirmar", "warning");
             if (!/^[A-ZÁÉÍÓÚÑ\s]+$/.test(newName)) return showToast("El nombre solo puede contener letras", "warning");
 
             try {
@@ -2133,15 +2628,15 @@
                 await reauthenticateWithCredential(user, credential);
 
                 // Actualizar Auth
-                if(newName !== window.currentUserName) await updateProfile(user, { displayName: newName });
-                
+                if (newName !== window.currentUserName) await updateProfile(user, { displayName: newName });
+
                 let emailChanged = false;
-                if(newEmail !== user.email) {
+                if (newEmail !== user.email) {
                     await verifyBeforeUpdateEmail(user, newEmail);
                     emailChanged = true;
                 }
-                
-                if(newPass) await updatePassword(user, newPass);
+
+                if (newPass) await updatePassword(user, newPass);
 
                 // Actualizar Firestore (Buscar documento por UID)
                 const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
@@ -2151,7 +2646,7 @@
                 }
 
                 // Aplicar Tema
-                if(newTheme === 'light') {
+                if (newTheme === 'light') {
                     document.body.classList.add('light-mode');
                     document.getElementById('theme-btn').innerText = '🌙';
                 } else {
@@ -2165,8 +2660,8 @@
                 window.currentUser = window.currentUserId; // Actualizar referencia global
                 updateHeader();
                 closeSettings();
-                
-                if(emailChanged) { showToast("Verifique su nuevo correo para completar el cambio.", "success"); }
+
+                if (emailChanged) { showToast("Verifique su nuevo correo para completar el cambio.", "success"); }
                 else showToast("Perfil actualizado correctamente", "success");
             } catch (e) {
                 console.error(e);
@@ -2176,24 +2671,24 @@
 
         window.deleteAccount = async () => {
             const pass = prompt("⚠️ ZONA DE PELIGRO ⚠️\n\nPara eliminar su cuenta permanentemente y borrar todos sus datos, escriba su contraseña:");
-            if(!pass) return;
-            
+            if (!pass) return;
+
             toggleLoading(true); // Reusar spinner si es visible, o mostrar toast
             try {
                 const user = auth.currentUser;
                 const credential = EmailAuthProvider.credential(user.email, pass);
                 await reauthenticateWithCredential(user, credential);
-                
+
                 // Eliminar documento de Firestore
                 const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) await deleteDoc(querySnapshot.docs[0].ref);
-                
+
                 // Eliminar Auth
                 await deleteUser(user);
                 alert("Su cuenta ha sido eliminada permanentemente.");
                 location.reload();
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
                 showToast("Error al eliminar: " + e.message, "error");
             }
@@ -2207,7 +2702,7 @@
             const input = document.getElementById('email-supervisor');
             const datalist = document.getElementById('email-history');
             const preview = document.getElementById('email-preview');
-            
+
             // Verificar soporte de Share API
             const shareBtn = document.getElementById('btn-share-native');
             if (navigator.share) shareBtn.classList.remove('hidden');
@@ -2215,14 +2710,14 @@
             // Load history
             const history = JSON.parse(localStorage.getItem('edenorte_email_history') || '[]');
             datalist.innerHTML = history.map(e => `<option value="${e}">`).join('');
-            if(history.length > 0 && !input.value) input.value = history[0];
+            if (history.length > 0 && !input.value) input.value = history[0];
 
             // Prepare Data
             const total = records.reduce((sum, r) => sum + r.total, 0);
             const now = new Date();
             const dateStr = now.toLocaleDateString('es-DO');
             const timeStr = now.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', hour12: true });
-            
+
             window.emailData = {
                 week: week,
                 total: total,
@@ -2258,11 +2753,11 @@ Edenorte Dominicana`;
 
         window.sendReportEmail = () => {
             const email = document.getElementById('email-supervisor').value.trim();
-            if(!email) return showToast("Ingrese un correo válido", "warning");
-            
+            if (!email) return showToast("Ingrese un correo válido", "warning");
+
             // Save to history
             let history = JSON.parse(localStorage.getItem('edenorte_email_history') || '[]');
-            if(!history.includes(email)) {
+            if (!history.includes(email)) {
                 history.unshift(email);
                 localStorage.setItem('edenorte_email_history', JSON.stringify(history.slice(0, 5))); // Keep last 5
             }
@@ -2287,7 +2782,7 @@ Edenorte Dominicana`;
 
             const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.location.href = mailtoLink;
-            
+
             closeEmailModal();
             showToast("Correo abierto. No olvides adjuntar el PDF.", "success");
         };
@@ -2295,10 +2790,10 @@ Edenorte Dominicana`;
         window.shareReportDirectly = async () => {
             const element = document.getElementById('print-section');
             const originalDisplay = element.style.display;
-            
+
             // Preparar vista para PDF (hacerla visible temporalmente)
             element.style.display = 'block';
-            
+
             const opt = {
                 margin: 5,
                 filename: `Reporte_Semana_${window.emailData.week}.pdf`,
@@ -2337,7 +2832,7 @@ Edenorte Dominicana`;
 
         // TERRITORY MANAGEMENT
         window.deleteTerritory = async (id) => {
-            if(confirm("¿Eliminar este territorio permanentemente?")) {
+            if (confirm("¿Eliminar este territorio permanentemente?")) {
                 await deleteDoc(doc(db, "territorios", id));
                 showToast("Territorio eliminado", "success");
             }
@@ -2348,29 +2843,29 @@ Edenorte Dominicana`;
         window.openTerritoryModal = (id = null, geometry = null) => {
             const modal = document.getElementById('territory-modal');
             const title = document.getElementById('terr-modal-title');
-            
+
             // Reset Form
             document.getElementById('terr-id').value = '';
             document.getElementById('terr-name').value = '';
             document.getElementById('terr-type').value = 'LOCALIDAD';
             document.getElementById('terr-parent-prov').value = '';
             document.getElementById('terr-parent-mun').value = '';
-            
+
             if (id) {
                 const t = window.territoriesData.find(x => x.id === id);
-                if(!t) return;
+                if (!t) return;
                 title.innerText = "EDITAR TERRITORIO";
                 document.getElementById('terr-id').value = t.id;
                 document.getElementById('terr-name').value = t.name;
                 document.getElementById('terr-type').value = t.type || 'LOCALIDAD';
                 document.getElementById('terr-parent-prov').value = t.parentProv || '';
                 document.getElementById('terr-parent-mun').value = t.parentMun || '';
-                window.tempGeometry = t.geometry; 
+                window.tempGeometry = t.geometry;
             } else {
                 title.innerText = "NUEVO TERRITORIO";
-                if(geometry) window.tempGeometry = geometry;
+                if (geometry) window.tempGeometry = geometry;
             }
-            
+
             window.updateTerritoryForm();
             modal.classList.remove('hidden');
         };
@@ -2383,7 +2878,7 @@ Edenorte Dominicana`;
             const type = document.getElementById('terr-type').value;
             const groupProv = document.getElementById('group-provincia');
             const groupMun = document.getElementById('group-municipio');
-            
+
             if (type === 'LOCALIDAD') {
                 groupProv.classList.add('hidden');
                 groupMun.classList.remove('hidden');
@@ -2405,11 +2900,11 @@ Edenorte Dominicana`;
             const type = document.getElementById('terr-type').value;
             const parentProv = document.getElementById('terr-parent-prov').value.trim().toUpperCase();
             const parentMun = document.getElementById('terr-parent-mun').value.trim().toUpperCase();
-            
-            if(!name) return showToast("El nombre es obligatorio", "warning");
-            if(!window.currentUser) return showToast("Debes iniciar sesión para guardar", "error");
-            if(!window.tempGeometry) return showToast("Error: No hay geometría dibujada", "error");
-            
+
+            if (!name) return showToast("El nombre es obligatorio", "warning");
+            if (!window.currentUser) return showToast("Debes iniciar sesión para guardar", "error");
+            if (!window.tempGeometry) return showToast("Error: No hay geometría dibujada", "error");
+
             const data = {
                 name: name,
                 type: type,
@@ -2419,14 +2914,14 @@ Edenorte Dominicana`;
                 autor: window.currentUser,
                 fecha: new Date().toISOString()
             };
-            
+
             try {
-                if(id) { await updateDoc(doc(db, "territorios", id), data); showToast("Territorio actualizado", "success"); }
+                if (id) { await updateDoc(doc(db, "territorios", id), data); showToast("Territorio actualizado", "success"); }
                 else { await addDoc(collection(db, "territorios"), data); showToast("Territorio creado", "success"); }
                 closeTerritoryModal();
                 // Asegurar que la lista se actualice
-                if(!document.getElementById('terr-list-container').classList.contains('hidden')) renderTerritoryList();
-            } catch(e) { console.error(e); showToast("Error: " + e.message, "error"); }
+                if (!document.getElementById('terr-list-container').classList.contains('hidden')) renderTerritoryList();
+            } catch (e) { console.error(e); showToast("Error: " + e.message, "error"); }
         };
 
         // LINKING LOGIC
@@ -2434,30 +2929,30 @@ Edenorte Dominicana`;
 
         window.handleTerritoryLink = (locationName) => {
             const meta = window.locationsMetadata[locationName];
-            
+
             // Verificar si el territorio vinculado existe realmente (Evitar links rotos)
             const linkedTerrId = meta ? meta.territoryId : null;
             const territoryExists = linkedTerrId && window.territoriesData.find(t => t.id === linkedTerrId);
-            
+
             // Si ya tiene link, mostrarlo
-            if(territoryExists) {
+            if (territoryExists) {
                 showSingleTerritory(linkedTerrId);
                 showToast(`Visualizando territorio de: ${locationName}`, "success");
             } else {
                 // Si no, abrir modal para vincular
                 window.currentLinkLoc = locationName;
                 document.getElementById('link-loc-name').innerText = locationName;
-                
+
                 const select = document.getElementById('link-terr-select');
                 select.innerHTML = '<option value="">-- SELECCIONAR --</option>';
-                
-                window.territoriesData.sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+
+                window.territoriesData.sort((a, b) => a.name.localeCompare(b.name)).forEach(t => {
                     const opt = document.createElement('option');
                     opt.value = t.id;
                     opt.text = `${t.name} (${t.type})`;
                     select.appendChild(opt);
                 });
-                
+
                 document.getElementById('link-territory-modal').classList.remove('hidden');
             }
         };
@@ -2466,18 +2961,18 @@ Edenorte Dominicana`;
 
         window.confirmLinkTerritory = async () => {
             const terrId = document.getElementById('link-terr-select').value;
-            if(!terrId) return showToast("Seleccione un territorio", "warning");
-            
+            if (!terrId) return showToast("Seleccione un territorio", "warning");
+
             try {
                 // Intentar actualizar documento existente
                 await updateDoc(doc(db, "ubicaciones", window.currentLinkLoc), { territoryId: terrId });
                 showToast("Vinculación exitosa", "success");
                 closeLinkModal();
-            } catch(e) { 
+            } catch (e) {
                 console.error("Update failed, trying set", e);
                 // Si falla (ej. documento no existe en Firebase), intentar crear/sobrescribir con datos locales
                 const coords = customLocations[window.currentLinkLoc];
-                if(coords) {
+                if (coords) {
                     try {
                         await setDoc(doc(db, "ubicaciones", window.currentLinkLoc), {
                             nombre: window.currentLinkLoc,
@@ -2488,7 +2983,7 @@ Edenorte Dominicana`;
                         });
                         showToast("Ubicación guardada y vinculada", "success");
                         closeLinkModal();
-                    } catch(e2) { console.error(e2); showToast("Error al vincular: " + e2.message, "error"); }
+                    } catch (e2) { console.error(e2); showToast("Error al vincular: " + e2.message, "error"); }
                 } else {
                     showToast("Error: Ubicación no encontrada", "error");
                 }
@@ -2498,7 +2993,7 @@ Edenorte Dominicana`;
         // ==========================================
         // SISTEMA DE GEOLOCALIZACIÓN OFFLINE (LEAFLET)
         // ==========================================
-        
+
         const coordenadasRegionNorte = {
             'MAO': [19.5519, -71.0781], 'EDENORTE MAO': [19.5519, -71.0781], 'VALVERDE': [19.5519, -71.0781], 'SANTA CRUZ DE MAO': [19.5519, -71.0781],
             'ESPERANZA': [19.5842, -70.9847], 'LAGUNA SALADA': [19.6519, -71.0897], 'JAIBÓN': [19.6128, -71.5081], 'AMINA': [19.5512, -71.1456],
@@ -2541,7 +3036,7 @@ Edenorte Dominicana`;
             searchMarker: null,
             territoriesLayer: null,
 
-            init: function(containerId, centerCoords, locationName, mode = 'routing') {
+            init: function (containerId, centerCoords, locationName, mode = 'routing') {
                 if (this.map) {
                     this.map.remove();
                     this.map = null;
@@ -2553,21 +3048,21 @@ Edenorte Dominicana`;
                     this.searchMarker = null;
                     this.gpsMarker = null;
                 }
-                
+
                 // Reset UI
                 document.getElementById('route-status').classList.add('hidden');
 
                 // 1. MAPAS BASE MÚLTIPLES
                 // CartoDB Voyager: El mejor estilo "Google Maps" gratuito y limpio
-                const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
-                    attribution: '&copy; CARTO', 
-                    maxZoom: 20 
+                const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; CARTO',
+                    maxZoom: 20
                 });
-                
+
                 // Esri World Imagery: Satélite de alta resolución
-                const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { 
-                    attribution: 'Tiles &copy; Esri', 
-                    maxZoom: 19 
+                const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri',
+                    maxZoom: 19
                 });
 
                 // SIEMPRE MAPA CLARO (VOYAGER)
@@ -2595,7 +3090,7 @@ Edenorte Dominicana`;
                     "Mapa Claro (Voyager)": cartoVoyager,
                     "Satélite (Esri)": esriSat
                 };
-                
+
                 const overlayMaps = {
                     "Tráfico en Vivo": L.tileLayer('https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 }),
                     "Transporte": L.tileLayer('https://mt1.google.com/vt/lyrs=m,transit&x={x}&y={y}&z={z}', { attribution: '© Google', maxZoom: 20 })
@@ -2618,8 +3113,8 @@ Edenorte Dominicana`;
                         routeWhileDragging: true,
                         show: true, // Mostrar panel para entrada manual
                         router: L.Routing.osrmv1({ serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1' }), // Servidor OSRM Más Estable (Rutas Viales)
-                        lineOptions: { styles: [{color: '#4285F4', opacity: 0.7, weight: 6}] },
-                        createMarker: function(i, wp, nWps) {
+                        lineOptions: { styles: [{ color: '#4285F4', opacity: 0.7, weight: 6 }] },
+                        createMarker: function (i, wp, nWps) {
                             return L.marker(wp.latLng, {
                                 draggable: true,
                                 icon: L.divIcon({
@@ -2634,7 +3129,7 @@ Edenorte Dominicana`;
                     this.routingControl.on('routingerror', (e) => {
                         console.warn("Error OSRM:", e);
                         showToast("Ruta detallada no disponible. Trazando línea directa.", "warning");
-                        
+
                         // Dibujar línea recta como alternativa si falla el servidor
                         const wps = this.routingControl.getWaypoints();
                         const latlngs = wps.map(wp => wp.latLng).filter(ll => ll);
@@ -2645,12 +3140,12 @@ Edenorte Dominicana`;
                     });
 
                     // Evento para actualizar el recuadro flotante
-                    this.routingControl.on('routesfound', function(e) {
+                    this.routingControl.on('routesfound', function (e) {
                         const routes = e.routes;
                         const summary = routes[0].summary;
                         const time = Math.round(summary.totalTime / 60);
                         const dist = (summary.totalDistance / 1000).toFixed(1);
-                        
+
                         const statusEl = document.getElementById('route-status');
                         statusEl.classList.remove('hidden');
                         statusEl.innerText = `• ${time} MIN (${dist} KM)`;
@@ -2667,23 +3162,23 @@ Edenorte Dominicana`;
                     showCoverageOnHover: false,
                     zoomToBoundsOnClick: true
                 }).addTo(this.map);
-                
+
                 // Marker for destination
                 if (mode === 'routing') {
                     L.marker(centerCoords).addTo(this.map)
                         .bindPopup(`<b>${locationName}</b><br>Lat: ${centerCoords[0]}<br>Lon: ${centerCoords[1]}`)
                         .openPopup();
                 }
-                    
+
                 // Fix map size
                 setTimeout(() => { this.map.invalidateSize(); }, 200);
 
                 // Cargar Territorios si ya existen datos
                 // FIX: Solo cargar automáticamente en modo territorio para evitar saturar el mapa de historial
-                if(mode === 'territory' && window.territoriesData) this.renderTerritories(window.territoriesData);
+                if (mode === 'territory' && window.territoriesData) this.renderTerritories(window.territoriesData);
             },
 
-            openStreetView: function() {
+            openStreetView: function () {
                 document.getElementById('panorama-viewer').style.display = 'block';
                 pannellum.viewer('panorama', {
                     type: 'equirectangular',
@@ -2693,22 +3188,22 @@ Edenorte Dominicana`;
                 });
             },
 
-            closeStreetView: function() {
+            closeStreetView: function () {
                 document.getElementById('panorama-viewer').style.display = 'none';
             },
 
-            manualSearch: async function() {
+            manualSearch: async function () {
                 const query = document.getElementById('map-manual-search').value;
-                if(!query) return;
-                
+                if (!query) return;
+
                 showToast("Buscando en mapa...", "info");
                 try {
                     // Fetch directo a Nominatim para evitar conflictos de librerías
                     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=do&polygon_geojson=1&limit=1`;
                     const res = await fetch(url);
                     const data = await res.json();
-                    
-                    if(data && data.length > 0) {
+
+                    if (data && data.length > 0) {
                         const result = data[0];
                         this.showPlace({
                             lat: parseFloat(result.lat),
@@ -2721,10 +3216,10 @@ Edenorte Dominicana`;
                     } else {
                         showToast("No se encontraron resultados", "error");
                     }
-                } catch(e) { console.error(e); showToast("Error de conexión", "error"); }
+                } catch (e) { console.error(e); showToast("Error de conexión", "error"); }
             },
 
-            showPlace: function(arg1, arg2) {
+            showPlace: function (arg1, arg2) {
                 let latlng, name, bbox, geojson;
 
                 // Detectar si viene de la búsqueda (Objeto con límites) o manual (Coordenadas)
@@ -2734,7 +3229,7 @@ Edenorte Dominicana`;
                     name = arg1.name || "Ubicación";
                     geojson = arg1.geojson;
                     // Convertir bbox de Nominatim [minLat, maxLat, minLon, maxLon] a Leaflet Bounds
-                    if(arg1.bbox) {
+                    if (arg1.bbox) {
                         bbox = [[arg1.bbox[0], arg1.bbox[2]], [arg1.bbox[1], arg1.bbox[3]]];
                     }
                 } else if (arg1.center && arg1.name) {
@@ -2762,7 +3257,7 @@ Edenorte Dominicana`;
                     this.map.removeLayer(this.fallbackLine);
                     this.fallbackLine = null;
                 }
-                
+
                 // 1. MOSTRAR LÍMITES (Prioridad: Polígono Real -> Caja -> Nada)
                 if (geojson) {
                     // DIBUJAR LÍMITES REALES (POLÍGONO)
@@ -2772,14 +3267,14 @@ Edenorte Dominicana`;
                     this.map.fitBounds(this.searchPolygon.getBounds());
                 } else if (bbox) {
                     // FALLBACK A CAJA SI NO HAY POLÍGONO
-                    this.map.fitBounds(bbox); 
+                    this.map.fitBounds(bbox);
                     this.searchPolygon = L.rectangle(bbox, {
                         color: "#ef4444", weight: 2, fillOpacity: 0.05, dashArray: '5, 10'
                     }).addTo(this.map);
                 } else {
                     this.map.flyTo(latlng, 16);
                 }
-                
+
                 // 2. GESTIONAR RUTA O MARCADOR
                 if (this.routingControl) {
                     const wps = this.routingControl.getWaypoints();
@@ -2800,7 +3295,7 @@ Edenorte Dominicana`;
                 }
             },
 
-            startTerritoryCreation: function() {
+            startTerritoryCreation: function () {
                 if (this.polygonDrawer) {
                     this.polygonDrawer.disable();
                     this.polygonDrawer = null;
@@ -2827,7 +3322,7 @@ Edenorte Dominicana`;
                 });
             },
 
-            renderTerritories: function(territories) {
+            renderTerritories: function (territories) {
                 if (!this.map) return;
                 if (this.territoriesLayer) {
                     this.territoriesLayer.clearLayers();
@@ -2846,11 +3341,11 @@ Edenorte Dominicana`;
                     const layer = L.geoJSON(t.geometry, {
                         style: { color: color, weight: weight, fillOpacity: 0.1, fillColor: color }
                     });
-                    
+
                     let parentInfo = '';
-                    if(t.type === 'MUNICIPIO') parentInfo = `Prov. ${t.parentProv || '?'}`;
-                    if(t.type === 'DISTRITO') parentInfo = `Mun. ${t.parentMun || '?'} • Prov. ${t.parentProv || '?'}`;
-                    if(t.type === 'LOCALIDAD') parentInfo = `Mun. ${t.parentMun || '?'}`;
+                    if (t.type === 'MUNICIPIO') parentInfo = `Prov. ${t.parentProv || '?'}`;
+                    if (t.type === 'DISTRITO') parentInfo = `Mun. ${t.parentMun || '?'} • Prov. ${t.parentProv || '?'}`;
+                    if (t.type === 'LOCALIDAD') parentInfo = `Mun. ${t.parentMun || '?'}`;
 
                     const popupContent = `
                         <div class="text-center">
@@ -2871,17 +3366,17 @@ Edenorte Dominicana`;
 
         window.showSingleTerritory = (id) => {
             const t = window.territoriesData.find(x => x.id === id);
-            if(!t) return;
-            
+            if (!t) return;
+
             // Limpiar mapa visualmente
-            if(GoogleMapsClone.territoriesLayer) GoogleMapsClone.territoriesLayer.clearLayers();
-            
+            if (GoogleMapsClone.territoriesLayer) GoogleMapsClone.territoriesLayer.clearLayers();
+
             // Renderizar solo este
             GoogleMapsClone.renderTerritories([t]);
-            
+
             // Zoom al territorio
             const layer = GoogleMapsClone.territoriesLayer.getLayers()[0];
-            if(layer) GoogleMapsClone.map.fitBounds(layer.getBounds());
+            if (layer) GoogleMapsClone.map.fitBounds(layer.getBounds());
         };
 
         // EXPOSE TO WINDOW FOR HTML BUTTONS
@@ -2890,7 +3385,7 @@ Edenorte Dominicana`;
         window.openTerritoryMap = () => {
             const modal = document.getElementById('map-modal');
             const title = document.getElementById('map-title');
-            
+
             // Configurar UI para modo Territorio
             document.getElementById('fav-container').classList.add('hidden');
             document.getElementById('terr-list-container').classList.remove('hidden');
@@ -2899,7 +3394,7 @@ Edenorte Dominicana`;
 
             modal.classList.remove('hidden');
             title.innerText = "GESTOR DE TERRITORIOS";
-            
+
             const maoCoords = [19.559944, -71.090194]; // Centrar en Mao por defecto
             GoogleMapsClone.init('map-container', maoCoords, "Centro de Operaciones", 'territory');
             renderTerritoryList();
@@ -2913,9 +3408,9 @@ Edenorte Dominicana`;
             const status = document.getElementById('map-status');
             const searchInput = document.getElementById('fav-search');
             const terrInput = document.getElementById('terr-search');
-            if(searchInput) searchInput.value = '';
-            if(terrInput) terrInput.value = '';
-            
+            if (searchInput) searchInput.value = '';
+            if (terrInput) terrInput.value = '';
+
             // Configurar UI para modo Ruta
             document.getElementById('fav-container').classList.remove('hidden');
             document.getElementById('terr-list-container').classList.add('hidden');
@@ -2924,7 +3419,7 @@ Edenorte Dominicana`;
 
             modal.classList.remove('hidden');
             title.innerText = locationName.toUpperCase();
-            
+
             // Normalizar búsqueda
             const searchKey = locationName.toUpperCase().trim();
             let coords = customLocations[searchKey] || coordenadasRegionNorte[searchKey];
@@ -2941,7 +3436,7 @@ Edenorte Dominicana`;
                     // Buscar en custom keys
                     const customKeys = Object.keys(customLocations);
                     const customMatch = customKeys.find(k => k.includes(searchKey) || searchKey.includes(k));
-                    if(customMatch) {
+                    if (customMatch) {
                         coords = customLocations[customMatch];
                         status.innerText = `UBICACIÓN GUARDADA: ${customMatch}`;
                     } else {
@@ -2964,8 +3459,8 @@ Edenorte Dominicana`;
             if (GoogleMapsClone.routingControl) {
                 const wps = GoogleMapsClone.routingControl.getWaypoints();
                 if (wps && wps.length >= 2) {
-                    if(wps[0].latLng) { sLat = wps[0].latLng.lat; sLng = wps[0].latLng.lng; }
-                    if(wps[wps.length-1].latLng) { dLat = wps[wps.length-1].latLng.lat; dLng = wps[wps.length-1].latLng.lng; }
+                    if (wps[0].latLng) { sLat = wps[0].latLng.lat; sLng = wps[0].latLng.lng; }
+                    if (wps[wps.length - 1].latLng) { dLat = wps[wps.length - 1].latLng.lat; dLng = wps[wps.length - 1].latLng.lng; }
                 }
             }
 
@@ -2991,40 +3486,40 @@ Edenorte Dominicana`;
             let dLat = 0, dLng = 0;
             if (GoogleMapsClone.routingControl) {
                 const wps = GoogleMapsClone.routingControl.getWaypoints();
-                if (wps && wps.length >= 2 && wps[wps.length-1].latLng) {
-                    dLat = wps[wps.length-1].latLng.lat;
-                    dLng = wps[wps.length-1].latLng.lng;
+                if (wps && wps.length >= 2 && wps[wps.length - 1].latLng) {
+                    dLat = wps[wps.length - 1].latLng.lat;
+                    dLng = wps[wps.length - 1].latLng.lng;
                 }
             }
-            
+
             // Usar el marcador de búsqueda si existe
             if (GoogleMapsClone.searchMarker) {
                 const ll = GoogleMapsClone.searchMarker.getLatLng();
                 dLat = ll.lat; dLng = ll.lng;
             } else if (GoogleMapsClone.map) {
-                 // Fallback al centro del mapa
-                 const c = GoogleMapsClone.map.getCenter();
-                 dLat = c.lat; dLng = c.lng;
+                // Fallback al centro del mapa
+                const c = GoogleMapsClone.map.getCenter();
+                dLat = c.lat; dLng = c.lng;
             }
-            
+
             if (dLat === 0) return alert("No hay destino válido para guardar.");
 
             const name = prompt("Nombre para esta ubicación:", document.getElementById('map-title').innerText);
             if (name) {
                 const key = name.toUpperCase().trim();
                 const coords = [dLat, dLng];
-                
+
                 customLocations[key] = coords;
                 localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
                 renderMapFavorites();
                 renderFavoriteMarkers();
-                
+
                 try {
                     await setDoc(doc(db, "ubicaciones", key), {
                         nombre: key, coords: coords, autor: window.currentUser, fecha: new Date().toISOString()
                     });
                     showToast("Ubicación guardada en Firebase", "success");
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
                     showToast("Guardado localmente (Sin conexión)", "warning");
                 }
@@ -3032,17 +3527,17 @@ Edenorte Dominicana`;
         };
 
         window.deleteFavorite = async (key) => {
-            if(!confirm("¿Eliminar \"" + key + "\" de sus ubicaciones guardadas?")) return;
-            
+            if (!confirm("¿Eliminar \"" + key + "\" de sus ubicaciones guardadas?")) return;
+
             delete customLocations[key];
             localStorage.setItem('edenorte_custom_locations', JSON.stringify(customLocations));
             renderMapFavorites();
             renderFavoriteMarkers();
-            
+
             try {
                 await deleteDoc(doc(db, "ubicaciones", key));
                 showToast("Ubicación eliminada", "success");
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
                 showToast("Eliminado localmente", "warning");
             }
@@ -3057,21 +3552,21 @@ Edenorte Dominicana`;
             const container = document.getElementById('fav-container');
             const list = document.getElementById('fav-list');
             const allKeys = Object.keys(customLocations);
-            
-            if (allKeys.length === 0) { 
-                container.classList.add('hidden'); 
-                return; 
+
+            if (allKeys.length === 0) {
+                container.classList.add('hidden');
+                return;
             }
-            
+
             container.classList.remove('hidden');
-            
+
             let keys = allKeys;
-            if(filter) {
+            if (filter) {
                 const f = filter.toUpperCase();
                 keys = keys.filter(k => k.includes(f));
             }
 
-            if(keys.length === 0) {
+            if (keys.length === 0) {
                 list.innerHTML = `<div class="text-[9px] text-slate-500 italic w-full text-center py-2">No se encontraron resultados</div>`;
                 return;
             }
@@ -3081,7 +3576,7 @@ Edenorte Dominicana`;
                 const isLinked = meta && meta.territoryId;
                 const linkColor = isLinked ? 'text-pink-400 hover:text-white' : 'text-slate-600 hover:text-pink-400';
                 const linkTitle = isLinked ? 'Ver Polígono Vinculado' : 'Vincular a Polígono';
-                
+
                 return `
                 <div class="shrink-0 flex items-center bg-slate-700 rounded-lg border border-white/10 overflow-hidden group">
                     <button onclick="openMap('${k}')" class="hover:bg-blue-600 text-white px-3 py-1.5 text-[9px] font-bold uppercase transition-colors h-full border-r border-white/10">
@@ -3118,24 +3613,24 @@ Edenorte Dominicana`;
         window.toggleTerritoryListVisibility = () => {
             const container = document.getElementById('terr-list-container');
             container.classList.toggle('hidden');
-            if(!container.classList.contains('hidden')) renderTerritoryList();
+            if (!container.classList.contains('hidden')) renderTerritoryList();
         };
 
         window.renderTerritoryList = () => {
             const container = document.getElementById('terr-list-container');
             const list = document.getElementById('terr-list');
             const filter = document.getElementById('terr-search').value.toUpperCase();
-            
+
             if (!window.territoriesData || window.territoriesData.length === 0) {
                 container.classList.add('hidden');
                 return;
             }
-            
+
             container.classList.remove('hidden');
-            
+
             const filtered = window.territoriesData.filter(t => t.name.includes(filter));
-            
-            if(filtered.length === 0) {
+
+            if (filtered.length === 0) {
                 list.innerHTML = `<div class="text-[9px] text-slate-500 italic w-full text-center py-2">No se encontraron territorios</div>`;
                 return;
             }
@@ -3162,20 +3657,20 @@ Edenorte Dominicana`;
                 GoogleMapsClone.map.removeLayer(GoogleMapsClone.searchMarker);
                 GoogleMapsClone.searchMarker = null;
             }
-            
+
             // Limpiar Ruta (Mantener solo origen)
             if (GoogleMapsClone.routingControl) {
                 const wps = GoogleMapsClone.routingControl.getWaypoints();
-                if(wps.length > 0) GoogleMapsClone.routingControl.setWaypoints([wps[0]]);
+                if (wps.length > 0) GoogleMapsClone.routingControl.setWaypoints([wps[0]]);
             }
 
             // Restaurar todos los territorios
-            if(GoogleMapsClone.map && window.territoriesData) GoogleMapsClone.renderTerritories(window.territoriesData);
+            if (GoogleMapsClone.map && window.territoriesData) GoogleMapsClone.renderTerritories(window.territoriesData);
 
             document.getElementById('route-status').classList.add('hidden');
-            
+
             const input = document.querySelector('.leaflet-control-geocoder-form input');
-            if(input) input.value = '';
+            if (input) input.value = '';
             showToast("Mapa limpiado", "success");
         };
 
@@ -3198,17 +3693,17 @@ Edenorte Dominicana`;
                     GoogleMapsClone.map.flyTo(userCoords, 17, { animate: true, duration: 1.5 });
 
                     if (GoogleMapsClone.gpsMarker) GoogleMapsClone.map.removeLayer(GoogleMapsClone.gpsMarker);
-                    
+
                     GoogleMapsClone.gpsMarker = L.marker(userCoords, { icon: L.divIcon({ className: 'gps-marker', iconSize: [16, 16] }) })
                         .addTo(GoogleMapsClone.map)
                         .bindPopup("<b>Estás aquí</b>")
                         .openPopup();
-                    
+
                     showToast("Mapa centrado en tu ubicación.", "success");
                 },
                 (error) => {
                     let message = "Error al obtener la ubicación: ";
-                    switch(error.code) {
+                    switch (error.code) {
                         case error.PERMISSION_DENIED: message += "Permiso denegado."; break;
                         case error.POSITION_UNAVAILABLE: message += "Información no disponible."; break;
                         case error.TIMEOUT: message += "La solicitud expiró."; break;
@@ -3224,4 +3719,5 @@ Edenorte Dominicana`;
         populateYearSelector();
     </script>
 </body>
+
 </html>
