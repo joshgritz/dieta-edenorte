@@ -1609,11 +1609,11 @@
                     const apiKey = iaSnap.data().apiKey;
                     console.log("🔑 IA: API Key cargada correctamente (Longitud:", apiKey.length, ")");
 
-                    const genAI = new GoogleGenerativeAI(apiKey);
-                    // Usamos la versión estable del modelo Flash
+                    const genAI = new GoogleGenerativeAI(apiKey, { apiVersion: 'v1' });
+                    // Actualizado a Gemini 3.1 Flash para máxima velocidad y estabilidad (Mayo 2026)
                     return genAI.getGenerativeModel({
-                        model: "gemini-1.5-flash",
-                        systemInstruction: "Eres un asistente experto para Edenorte Mao. Tu trabajo es leer reportes de Memento, extraer toda información para un reporte de impresión profesional. IMPORTANTE: Si detectas datos de dietas (Fecha, Hora Llegada, Hora Salida, Lugar, Labor), genera un bloque JSON al final de tu respuesta para que el sistema los sincronice automáticamente. Formato: {\"fecha\": \"YYYY-MM-DD\", \"llegadaLugar\": \"HH:mm\", \"salida\": \"HH:mm\", \"llegadaFinal\": \"HH:mm\", \"lugar\": \"...\", \"labor\": \"...\"}. Mantén el resto del reporte formal y técnico."
+                        model: "gemini-3.1-flash",
+                        systemInstruction: "Eres un asistente experto para Edenorte Mao. VELOCIDAD CRÍTICA: Procesa reportes de Memento. Responde con un resumen técnico ultra-breve y UN BLOQUE JSON al final: {\"fecha\": \"YYYY-MM-DD\", \"llegadaLugar\": \"HH:mm\", \"salida\": \"HH:mm\", \"llegadaFinal\": \"HH:mm\", \"lugar\": \"...\", \"labor\": \"...\"}. No uses explicaciones largas."
                     });
                 } else {
                     console.error("❌ IA Error: No se encontró apiKey en config/ia");
@@ -1800,8 +1800,8 @@
         window.currentUserName = "";
         window.currentUserId = ""; // ID de empleado vinculado
         window.editingId = null;
-        window.currentWeek = 1;
-        window.viewingWeek = 1;
+        window.currentWeek = getISOWeek(new Date());
+        window.viewingWeek = getISOWeek(new Date());
         window.currentYear = new Date().getFullYear();
         window.viewingYear = new Date().getFullYear();
         window.registros = [];
@@ -1874,21 +1874,33 @@
             renderHistorial();
 
             onSnapshot(doc(db, "config", "global"), (snap) => {
+                const today = new Date();
+                const realWeek = getWeekNumber(today);
+                const realYear = getYearOfWeek(today);
+
                 if (snap.exists()) {
-                    window.currentWeek = snap.data().week || getWeekNumber(new Date());
-                    window.currentYear = snap.data().year || getYearOfWeek(new Date());
+                    const dbWeek = snap.data().week;
+                    const dbYear = snap.data().year;
+                    // Si la semana en DB es muy vieja (ej. semana 10 en Mayo), priorizar detección por fecha
+                    if (dbYear === realYear && Math.abs(dbWeek - realWeek) > 2) {
+                        window.currentWeek = realWeek;
+                        window.currentYear = realYear;
+                    } else {
+                        window.currentWeek = dbWeek || realWeek;
+                        window.currentYear = dbYear || realYear;
+                    }
                 } else {
-                    window.currentWeek = getWeekNumber(new Date());
-                    window.currentYear = getYearOfWeek(new Date());
+                    window.currentWeek = realWeek;
+                    window.currentYear = realYear;
                 }
+
                 if (!window.editingId) {
                     window.viewingWeek = window.currentWeek;
                     window.viewingYear = window.currentYear;
-                    // Asignar automáticamente la semana fiscal al formulario desde Firestore
                     const semanaInput = document.getElementById('f-semana');
-                    if (semanaInput) {
-                        semanaInput.value = window.currentWeek;
-                    }
+                    if (semanaInput) semanaInput.value = window.currentWeek;
+                    const anoInput = document.getElementById('f-ano');
+                    if (anoInput) anoInput.value = window.currentYear;
                 }
                 updateHeader();
             });
