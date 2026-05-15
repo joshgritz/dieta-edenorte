@@ -1717,9 +1717,23 @@
 
         function nisParseDate(str) {
             if (!str || !str.trim()) return null;
-            const p = str.trim().split('/');
-            if (p.length !== 3) return null;
-            let [d, m, y] = p.map(Number);
+            // Soporte para DD/MM/YYYY, YYYY-MM-DD, DD-MM-YYYY
+            let d, m, y;
+            if (str.includes('/')) {
+                const p = str.split('/');
+                if (p.length === 3) [d, m, y] = p.map(Number);
+            } else if (str.includes('-')) {
+                const p = str.split('-');
+                if (p.length === 3) {
+                    if (p[0].length === 4) [y, m, d] = p.map(Number); // YYYY-MM-DD
+                    else[d, m, y] = p.map(Number); // DD-MM-YYYY
+                }
+            }
+            if (!d || !m || !y) {
+                // Intento final con Date.parse
+                const dt = new Date(str);
+                return isNaN(dt.getTime()) ? null : dt;
+            }
             if (y < 100) y += 2000;
             const dt = new Date(y, m - 1, d);
             return isNaN(dt.getTime()) ? null : dt;
@@ -1748,23 +1762,42 @@
                 if (lines.length < 2) { showToast('CSV vacío o inválido', 'error'); return; }
 
                 const sep = lines[0].includes(';') ? ';' : ',';
-                const headers = lines[0].split(sep).map(h => h.replace(/^["']|["']$/g, '').trim());
-
-                // Mapeo Inteligente de Columnas
-                const colMap = {
-                    lugar: headers.find(h => h.toLowerCase().includes('sector') || h.toLowerCase().includes('localidad') || h.toLowerCase().includes('lugar')),
-                    trabajo: headers.find(h => h.toLowerCase().includes('labor') || h.toLowerCase().includes('actividad') || h.toLowerCase().includes('trabajo')),
-                    personal: headers.find(h => h.toLowerCase().includes('operarios') || h.toLowerCase().includes('cuadrilla') || h.toLowerCase().includes('personal')),
-                    fecha: headers.find(h => h.toLowerCase().includes('fecha')),
-                    ct: headers.find(h => h.toLowerCase() === 'ct'),
-                    nis: headers.find(h => h.toLowerCase() === 'nis'),
-                    nif: headers.find(h => h.toLowerCase() === 'nif'),
-                    hora: headers.find(h => h.toLowerCase() === 'hora')
+                // Parser robusto para CSV con comillas
+                const parseCSVLine = (line) => {
+                    const result = [];
+                    let cur = '';
+                    let inQuote = false;
+                    for (let char of line) {
+                        if (char === '"') inQuote = !inQuote;
+                        else if (char === sep && !inQuote) {
+                            result.push(cur.trim());
+                            cur = '';
+                        } else cur += char;
+                    }
+                    result.push(cur.trim());
+                    return result.map(v => v.replace(/^["']|["']$/g, '').trim());
                 };
 
+                const headers = parseCSVLine(lines[0]);
+                console.log("📊 CSV Headers:", headers);
+
+                // Mapeo Inteligente de Columnas (ampliado)
+                const colMap = {
+                    lugar: headers.find(h => /sector|localidad|lugar|municipio|barrio/i.test(h)),
+                    trabajo: headers.find(h => /labor|actividad|trabajo|tarea|descripcion/i.test(h)),
+                    personal: headers.find(h => /operarios|cuadrilla|personal|empleado|tecnico/i.test(h)),
+                    fecha: headers.find(h => /fecha|f\.|date/i.test(h)),
+                    ct: headers.find(h => /^ct$|centro|transformador/i.test(h)),
+                    nis: headers.find(h => /^nis$/i.test(h)),
+                    nif: headers.find(h => /^nif$/i.test(h)),
+                    hora: headers.find(h => /hora|time/i.test(h))
+                };
+                console.log("🎯 Mapping:", colMap);
+
                 const rows = [];
+                const syncPromises = [];
                 for (let i = 1; i < lines.length; i++) {
-                    const vals = lines[i].split(sep).map(v => v.replace(/^["']|["']$/g, '').trim());
+                    const vals = parseCSVLine(lines[i]);
                     if (vals.every(v => !v)) continue;
                     const obj = {};
                     headers.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
@@ -1778,26 +1811,26 @@
 
                     // Sincronización Automática a Firestore (registros)
                     if (pd) {
-                        try {
-                            const sem = getISOWeek(pd);
-                            const ano = getISOYear(pd);
-                            const fechaISO = obj._dk;
 
-                            // Evitar duplicados (opcional, pero recomendado)
-                            // Por ahora simplemente agregamos
-                            await addDoc(collection(db, "registros"), {
-                                fecha: fechaISO,
-                                lugar: obj._lugar || 'DESCONOCIDO',
-                                labor: obj._trabajo || 'TRABAJO MEMENTO',
-                                personal: (obj._personal || 'EQUIPO').split(',').map(n => ({ name: n.trim(), code: 'MEMENTO' })),
-                                semana: sem,
-                                año: ano,
-                                horas: { sm: '08:00', ll: '08:30', sl: '17:00', rm: '18:00' }, // Defaults
-                                total: 0,
-                                autor: window.currentUser || 'CSV_IMPORT',
-                                source: 'MEMENTO'
-                            });
-                        } catch (err) { console.error("Sync error:", err); }
+                        const sem = getISOWeek(pd);
+                        const ano = getISOYear(pd);
+                        const fechaISO = obj._dk;
+
+                        // Evitar duplicados (opcional, pero recomendado)
+                        // Por ahora simplemente agregamos
+                        syncPromises.push(addDoc(collection(db, "registros"), {
+                            fecha: fechaISO,
+                            lugar: obj._lugar || 'DESCONOCIDO',
+                            labor: obj._trabajo || 'TRABAJO MEMENTO',
+                            personal: (obj._personal || 'EQUIPO').split(/[,;]/).map(n => ({ name: n.trim(), code: 'MEMENTO' })),
+                            semana: sem,
+                            año: ano,
+                            horas: { sm: '08:00', ll: '08:30', sl: '17:00', rm: '18:00' }, // Defaults
+                            total: 0,
+                            autor: window.currentUser || 'CSV_IMPORT',
+                            source: 'MEMENTO'
+                        }));
+
                     }
                 }
 
@@ -1831,7 +1864,13 @@
 
                 nisShowTab('calendar');
                 nisRenderCalendar();
-                showToast('✅ CSV sincronizado con Firestore', 'success');
+
+                if (syncPromises.length > 0) {
+                    Promise.all(syncPromises)
+                        .then(() => showToast(`✅ ${syncPromises.length} registros sincronizados`, 'success'))
+                        .catch(e => console.error("Fallo parcial en sincronización", e));
+                }
+                showToast('📊 Vista previa generada', 'info');
             };
             reader.readAsText(file, 'UTF-8');
             event.target.value = '';
