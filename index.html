@@ -1823,6 +1823,13 @@
         window.equipo = [];
         window.marcajesData = {}; // Marcajes de tiempo del calendario (Firestore → 'marcajes')
 
+        // ORDEN FIJO POR ANTIGÜEDAD (del más antiguo al más reciente)
+        const TEAM_ORDER = [
+            { code: '41258', name: 'Ramón Rodríguez' },
+            { code: '68673', name: 'Jefry Grullon' },
+            { code: '19579', name: 'José Alfredo Ventura' }
+        ];
+
         const formatAMPM = (time) => {
             if (!time) return "---";
             let [h, m] = time.split(':');
@@ -1905,26 +1912,27 @@
                 updateHeader();
             });
 
-            // SEGURIDAD: Cargar empleado base desde Firestore (colección 'empleado')
+            // CARGA DE EQUIPO: Usa TEAM_ORDER como orden fijo, complementa con datos de Firestore
             onSnapshot(collection(db, "empleado"), (snapshot) => {
-                window.equipoBase = snapshot.docs.map(d => {
+                const firestoreMap = {};
+                snapshot.docs.forEach(d => {
                     const data = d.data();
+                    firestoreMap[d.id] = data;
+                    const code = data.code || data.codigo || d.id;
+                    if (!firestoreMap[code]) firestoreMap[code] = data;
+                });
+
+                window.equipoBase = TEAM_ORDER.map(t => {
+                    const fbData = firestoreMap[t.code] || {};
                     return {
-                        name: data.name || data.nombre || '',
-                        code: data.code || data.codigo || d.id,
+                        name: fbData.name || fbData.nombre || t.name,
+                        code: t.code,
                         active: true,
-                        ficha: data.ficha || '7344',
+                        ficha: fbData.ficha || '7344',
                         isExtra: false,
                         vac: false
                     };
                 });
-                // SOLO 3 MIEMBROS: Limitar equipoBase a exactamente 3 empleados, ignorando duplicados
-                const seenCodes = new Set();
-                window.equipoBase = window.equipoBase.filter(m => {
-                    if (!m.code || seenCodes.has(m.code)) return false;
-                    seenCodes.add(m.code);
-                    return true;
-                }).slice(0, 3);
 
                 // Solo recargar equipo si NO estamos en modo edición
                 if (!window.editingId) {
@@ -2003,9 +2011,9 @@
             });
         };
 
-        // MIGRACIÓN AUTOMÁTICA: Limpiar vestigios de BDIMAO0005 y asegurar 19579 como único ID
+        // MIGRACIÓN AUTOMÁTICA: Limpiar vestigios de BDIMAO0005 y personal en orden correcto
         const runCleanupMigration = async () => {
-            if (localStorage.getItem('migration_v1_done')) return;
+            if (localStorage.getItem('migration_v2_done')) return;
             try {
                 const oldIds = ['BDIMAO0005', 'BDIMAO0005@EDENORTE.COM'];
                 // Limpiar colección usuarios
@@ -2033,25 +2041,36 @@
                     }
                 });
                 await Promise.all(batchDeletes);
-                // Asegurar 19579 en usuarios
+                // Asegurar 19579 en usuarios con el orden correcto del personal
                 const userRef = doc(db, "usuarios", "19579");
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    if (userData.personal && Array.isArray(userData.personal)) {
-                        const unique = [];
-                        const codes = new Set();
-                        userData.personal.forEach(p => {
-                            if (p.code && !codes.has(p.code) && !String(p.code).includes('BDIMAO')) {
-                                codes.add(p.code);
-                                unique.push(p);
-                            }
+                const personalData = TEAM_ORDER.map(t => ({
+                    id: t.code,
+                    nombre: t.name
+                }));
+                await setDoc(userRef, { personal: personalData }, { merge: true });
+                // También actualizar la colección empleado con los nombres correctos
+                for (const t of TEAM_ORDER) {
+                    const empRef = doc(db, "empleado", t.code);
+                    const empSnap = await getDoc(empRef);
+                    if (empSnap.exists()) {
+                        await updateDoc(empRef, {
+                            name: t.name,
+                            nombre: t.name,
+                            code: t.code,
+                            codigo: t.code
                         });
-                        await setDoc(userRef, { personal: unique.slice(0, 3) }, { merge: true });
+                    } else {
+                        await setDoc(empRef, {
+                            name: t.name,
+                            nombre: t.name,
+                            code: t.code,
+                            codigo: t.code,
+                            ficha: '7344'
+                        });
                     }
                 }
-                localStorage.setItem('migration_v1_done', 'true');
-                console.log('Migración completada: BDIMAO0005 eliminado, 19579 asegurado');
+                localStorage.setItem('migration_v2_done', 'true');
+                console.log('Migración completada: BDIMAO0005 eliminado, personal ordenado por antigüedad');
             } catch (e) {
                 console.error('Error en migración:', e);
             }
@@ -2405,8 +2424,8 @@
                 item.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div onclick="${!m.vac ? `toggleActive(${i})` : ''}" class="cursor-pointer">
-                            <p class="font-bold text-[12px] text-white uppercase ${m.vac ? 'line-through opacity-50' : ''}">${escapeHTML(m.name)}</p>
-                            <p class="text-[9px] font-bold text-blue-400 opacity-70 tracking-widest">${escapeHTML(m.code)} ${m.vac ? '• EN VACACIONES' : ''}</p>
+                            <p class="font-bold text-[11px] text-white uppercase ${m.vac ? 'line-through opacity-50' : ''}"><span class="text-blue-400">[${escapeHTML(m.code)}]</span> ${escapeHTML(m.name)}</p>
+                            <p class="text-[8px] font-bold text-slate-500 tracking-widest uppercase">${m.vac ? '• EN VACACIONES' : (m.isExtra ? '• APOYO' : '• PERSONAL BASE')}</p>
                         </div>
                         <div class="flex gap-2 items-center">
                             ${deleteBtn}
@@ -2440,6 +2459,9 @@
             const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
             if (name && code) {
+                if (window.equipo.some(m => m.code === code)) {
+                    return showToast("Este ID ya está en el equipo", "warning");
+                }
                 window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
                 document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
                 renderEquipo(); updateCalculos();
@@ -2929,10 +2951,30 @@
 
         document.getElementById('f-fecha').addEventListener('change', (e) => {
             if (e.target.value) {
-                // document.getElementById('f-semana').value = getISOWeek(e.target.value); // Desactivado automatico
-                document.getElementById('f-ano').value = getISOYear(e.target.value);
-                // Autocompletado inteligente: cargar horas del calendario si existen
+                const week = getISOWeek(e.target.value);
+                const year = getISOYear(e.target.value);
+                document.getElementById('f-semana').value = week;
+                document.getElementById('f-ano').value = year;
+                window.viewingWeek = week;
+                window.viewingYear = year;
+                updateHeader();
+                renderHistorial();
                 autoFillFromMarcaje(e.target.value);
+            }
+        });
+
+        document.getElementById('f-semana').addEventListener('change', (e) => {
+            if (e.target.value) {
+                window.viewingWeek = parseInt(e.target.value);
+                updateHeader();
+                renderHistorial();
+            }
+        });
+        document.getElementById('f-ano').addEventListener('change', (e) => {
+            if (e.target.value) {
+                window.viewingYear = parseInt(e.target.value);
+                updateHeader();
+                renderHistorial();
             }
         });
 
