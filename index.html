@@ -1819,8 +1819,12 @@
         };
 
         // SEGURIDAD: Empleados se cargan dinámicamente desde Firestore (colección 'empleados')
-        window.equipoBase = [];
-        window.equipo = [];
+        window.equipoBase = [
+            { name: "EMPLEADO 1", code: "ID1", active: true, ficha: "7344", isExtra: false, vac: false },
+            { name: "EMPLEADO 2", code: "ID2", active: true, ficha: "7344", isExtra: false, vac: false },
+            { name: "EMPLEADO 3", code: "ID3", active: true, ficha: "7344", isExtra: false, vac: false }
+        ];
+        window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
         window.marcajesData = {}; // Marcajes de tiempo del calendario (Firestore → 'marcajes')
 
         const formatAMPM = (time) => {
@@ -1894,10 +1898,11 @@
                     window.currentYear = realYear;
                 }
 
-                if (!window.editingId) {
+                if (!window.editingId && !window.viewHasBeenManual && window.registros.length === 0) {
                     window.viewingWeek = window.currentWeek;
                     window.viewingYear = window.currentYear;
-                    const semanaInput = document.getElementById('f-semana');
+                }
+                const semanaInput = document.getElementById('f-semana');
                     if (semanaInput) semanaInput.value = window.currentWeek;
                     const anoInput = document.getElementById('f-ano');
                     if (anoInput) anoInput.value = window.currentYear;
@@ -1906,13 +1911,13 @@
             });
 
             // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
-            onSnapshot(collection(db, "empleado"), (snapshot) => {
+            onSnapshot(collection(db, "empleados"), (snapshot) => {
                 window.equipoBase = snapshot.docs.map(d => {
                     const data = d.data();
                     return {
                         name: data.name || data.nombre || '',
                         code: data.code || data.codigo || d.id,
-                        active: data.activo !== undefined ? data.activo : true,
+                        active: true,
                         ficha: data.ficha || '7344',
                         isExtra: false,
                         vac: false
@@ -1938,13 +1943,6 @@
                 });
                 populateYearSelector();
                 window.loadingData = false;
-                // Ir a la semana del ultimo registro automaticamente
-                if (window.registros.length > 0) {
-                    const _ul = window.registros[0];
-                    const _sw = _ul.semana || getWeekNumber(_ul.fecha);
-                    const _sy = _ul.ano || getYearOfWeek(_ul.fecha);
-                    if (_sw) { window.viewingWeek = _sw; window.viewingYear = _sy || window.viewingYear; }
-                }
                 renderHistorial();
                 renderActivos();
             });
@@ -2112,14 +2110,24 @@
 
                     // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
                     if (!foundEmail) {
-                        try { const _q1 = query(collection(db,'usuarios'),where('employeeId','==',idInput)); const _qs1 = await getDocs(_q1); if (!_qs1.empty) foundEmail = _qs1.docs[0].data().email; } catch(e) {}
+                        // Buscar por employeeId guardado en ajustes
+                        const q1 = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
+                        const qs1 = await getDocs(q1);
+                        if (!qs1.empty) foundEmail = qs1.docs[0].data().email;
                     }
+                    // Buscar por ID de documento
                     if (!foundEmail) {
-                        try { const _ds = await getDoc(doc(db,'usuarios',idInput)); if (_ds.exists()) foundEmail = _ds.data().email; } catch(e) {}
+                        const docSnap2 = await getDoc(doc(db, "usuarios", idInput));
+                        if (docSnap2.exists()) foundEmail = docSnap2.data().email;
                     }
+                    // Buscar en coleccion empleados (linkedEmail)
                     if (!foundEmail) {
-                        try { const _qe = query(collection(db,'empleado'),where('codigo','==',idInput)); const _qes = await getDocs(_qe); if (!_qes.empty) { const _ed = _qes.docs[0].data(); foundEmail = _ed.linkedEmail || _ed.email || null; } } catch(e) {}
+                        try {
+                            const empSnap = await getDoc(doc(db, "empleados", idInput));
+                            if (empSnap.exists() && empSnap.data().linkedEmail) foundEmail = empSnap.data().linkedEmail;
+                        } catch(e) {}
                     }
+                    if (!foundEmail) { // placeholder
 
                     if (foundEmail) email = foundEmail;
                     else email = `${input}@edenorte.com`; // Fallback clásico
@@ -2266,12 +2274,17 @@
                         const data = querySnapshot.docs[0].data();
                         window.currentUserName = data.nombre;
 
-                        // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
-                        const _eid = String(data.employeeId || '');
-                        const _did = String(querySnapshot.docs[0].id || '');
-                        if (_eid && /^\d+$/.test(_eid)) window.currentUserId = _eid;
-                        else if (_did && /^\d+$/.test(_did)) window.currentUserId = _did;
-                        else window.currentUserId = _eid || _did;
+                        // Priorizar employeeId numerico (ej: 19579) sobre ID de documento
+                        const empId = data.employeeId || querySnapshot.docs[0].id;
+                        // Si el employeeId guardado es el doc ID tipo BDIMAO, usar el numerico si existe
+                        const docId = querySnapshot.docs[0].id;
+                        if (data.employeeId && /^\d+$/.test(String(data.employeeId))) {
+                            window.currentUserId = data.employeeId;
+                        } else if (/^\d+$/.test(String(docId))) {
+                            window.currentUserId = docId;
+                        } else {
+                            window.currentUserId = empId;
+                        }
 
                         // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
                         if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
@@ -2316,6 +2329,7 @@
         };
 
         window.changeViewWeek = (val) => {
+            window.viewHasBeenManual = true; // Evita que el sistema mueva la semana solo mientras navegas
             window.viewingWeek += val;
             if (window.viewingWeek < 1) window.viewingWeek = 1;
             updateHeader(); renderHistorial();
@@ -2324,7 +2338,7 @@
         window.renderEquipo = () => {
             const list = document.getElementById('equipo-list');
             list.innerHTML = '';
-            window.equipo.filter(m => !String(m.code||'').toUpperCase().startsWith('BDIMAO') && String(m.code||'').toUpperCase() !== 'MEMENTO').forEach((m, i) => {
+            window.equipo.forEach((m, i) => {
                 const item = document.createElement('div');
                 item.className = `p-4 rounded-2xl border transition-all ${m.vac ? 'bg-red-500/10 border-red-500/30' : (m.active ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/5 opacity-40')}`;
                 const deleteBtn = m.isExtra ? `<button onclick="removeExtraMember(${i})" class="text-[7px] font-black px-2 py-1 rounded bg-red-500 text-white uppercase">Eliminar</button>` : '';
@@ -2363,22 +2377,14 @@
         window.toggleActive = (i) => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
         window.updateFicha = (i, val) => { window.equipo[i].ficha = val.toUpperCase(); };
 
-        window.addExtraMember = async () => {
-            const nameInput = document.getElementById('new-name').value.toUpperCase().trim();
+        window.addExtraMember = () => {
+            const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
-            if (!code) return showToast('Ingresa el ID del apoyo', 'error');
-            if (window.equipo.find(m => String(m.code).trim() === String(code).trim())) return showToast('Este ID ya esta en el equipo', 'error');
-            let finalName = nameInput;
-            try {
-                const _qe = query(collection(db,'empleado'),where('codigo','==',code));
-                const _qes = await getDocs(_qe);
-                if (!_qes.empty) { const _ed = _qes.docs[0].data(); finalName = (_ed.nombre||_ed.name||nameInput).toUpperCase().trim(); document.getElementById('new-name').value = finalName; }
-            } catch(e) {}
-            if (!finalName) return showToast('Ingresa el nombre', 'error');
-            window.equipo.push({ name: finalName, code, active: true, ficha: '7344', isExtra: true, vac: false });
-            document.getElementById('new-name').value = '';
-            document.getElementById('new-code').value = '';
-            renderEquipo(); updateCalculos();
+            if (name && code) {
+                window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
+                document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
+                renderEquipo(); updateCalculos();
+            }
         };
 
         // CORRECCIÓN: Lógica de desglose separada
@@ -2416,6 +2422,11 @@
 
             const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
             const fecha = document.getElementById('f-fecha').value;
+            
+            // Seguridad: Evitar duplicados directos por fecha
+            const duplicate = window.registros.find(r => r.fecha === fecha && !window.editingId);
+            if (duplicate && !confirm(`Ya existe un registro para el día ${fecha}. ¿Desea guardarlo de todos modos?`)) return;
+
             const semanaCalculada = parseInt(document.getElementById('f-semana').value) || getISOWeek(fecha);
             const añoSeleccionado = parseInt(document.getElementById('f-ano').value) || getISOYear(fecha);
 
@@ -2580,9 +2591,10 @@
                     const sem = r.semana;
 
                     r.personal.forEach(p => {
-                        const _fc = String(p.code||'').toUpperCase().trim();
-                        const _fn = String(p.name||'').toUpperCase().trim();
-                        if (!p.name||!p.code||_fc==='MEMENTO'||_fn==='EQUIPO'||_fn==='MEMENTO'||_fc==='EQUIPO'||_fc.startsWith('BDIMAO')) return;
+                        // Filtrar entradas fantasma
+                        const _c = String(p.code||"").toUpperCase().trim();
+                        const _n = String(p.name||"").toUpperCase().trim();
+                        if (!p.name||!p.code||_c==="MEMENTO"||_n==="EQUIPO"||_n==="MEMENTO"||_c==="EQUIPO"||_c.startsWith("BDIMAO")) return;
 
                         if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {} };
                         if (!stats[p.code].weeks[sem]) stats[p.code].weeks[sem] = { total: 0, h: [] };
@@ -2719,16 +2731,7 @@
             document.getElementById('btn-save').innerText = "Guardar Cambios"; renderEquipo(); updateCalculos(); showTab('registro');
         };
 
-        window.deleteRecord = async (id) => {
-            if (String(window.currentUserId) !== '19579') return showToast('Solo el administrador puede borrar registros', 'error');
-            if (!confirm('Borrar este registro? Quedara guardado en la papelera.')) return;
-            try {
-                const _rs = await getDoc(doc(db, 'registros', id));
-                if (_rs.exists()) await setDoc(doc(db,'papelera',id), {..._rs.data(), _borradoPor: window.currentUserId, _borradoNombre: window.currentUserName||'', _borradoFecha: new Date().toISOString(), _registroId: id});
-                await deleteDoc(doc(db, 'registros', id));
-                showToast('Registro movido a la papelera', 'success');
-            } catch(e) { showToast('Error: ' + e.message, 'error'); }
-        };
+        window.deleteRecord = async (id) => { if (confirm("¿Seguro que desea eliminar este registro permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
 
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
@@ -3140,14 +3143,20 @@
             if (!user) return;
             document.getElementById('set-name').value = window.currentUserName;
             document.getElementById('set-email').value = user.email;
+            // Mostrar el employeeId real guardado, no el ID del documento
             document.getElementById('set-id').value = window.currentUserId || '';
+            // Intentar cargar el employeeId real desde Firestore
             (async () => {
                 try {
-                    const _u = auth.currentUser;
-                    if (_u) {
-                        const _q = query(collection(db, 'usuarios'), where('uid', '==', _u.uid));
-                        const _qs = await getDocs(_q);
-                        if (!_qs.empty) document.getElementById('set-id').value = _qs.docs[0].data().employeeId || '';
+                    const usr = auth.currentUser;
+                    if (usr) {
+                        const q2 = query(collection(db, 'usuarios'), where('uid', '==', usr.uid));
+                        const qs2 = await getDocs(q2);
+                        if (!qs2.empty) {
+                            const d2 = qs2.docs[0].data();
+                            const realId = d2.employeeId || '';
+                            document.getElementById('set-id').value = realId;
+                        }
                     }
                 } catch(e) {}
             })();
@@ -3193,14 +3202,29 @@
                 const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
-                    const _upd = { nombre: newName, email: newEmail, tema: newTheme };
-                    if (newId) _upd.employeeId = newId;
-                    await updateDoc(querySnapshot.docs[0].ref, _upd);
+                    // Guardar employeeId solo si es numerico (ID real de empleado)
+                    const updateData = { nombre: newName, email: newEmail, tema: newTheme };
+                    if (newId) updateData.employeeId = newId;
+                    await updateDoc(querySnapshot.docs[0].ref, updateData);
+
+                    // Actualizar currentUserId en memoria con el nuevo ID
                     if (newId) {
                         window.currentUserId = newId;
                         window.currentUser = newId;
-                        localStorage.setItem('user_map_' + newId.toUpperCase(), user.email);
+                        // Guardar cache para login futuro por ID
+                        localStorage.setItem("user_map_" + newId.toUpperCase(), user.email);
                         updateHeader();
+                    }
+
+                    // Si el empleado existe en coleccion empleados, vincularlo
+                    if (newId) {
+                        try {
+                            const empRef = doc(db, "empleados", newId);
+                            const empSnap = await getDoc(empRef);
+                            if (empSnap.exists()) {
+                                await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
+                            }
+                        } catch(eLink) { console.log("Empleado no vinculado:", eLink); }
                     }
                 }
 
