@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiador BD - Edenorte</title>
+    <style>
+        body { font-family: monospace; background: #0f172a; color: #e2e8f0; padding: 2rem; max-width: 800px; margin: 0 auto; }
+        h1 { color: #3b82f6; }
+        button { background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; margin: 8px 4px; }
+        button:hover { background: #2563eb; }
+        button.delete { background: #ef4444; }
+        button.delete:hover { background: #dc2626; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        .log { background: #1e293b; padding: 1rem; border-radius: 8px; margin-top: 1rem; max-height: 400px; overflow-y: auto; font-size: 12px; }
+        .log .success { color: #22c55e; }
+        .log .error { color: #ef4444; }
+        .log .info { color: #3b82f6; }
+        .log .warn { color: #f59e0b; }
+        .section { margin: 1.5rem 0; padding: 1rem; border: 1px solid #334155; border-radius: 8px; }
+        .section h2 { color: #94a3b8; font-size: 14px; margin: 0 0 0.5rem 0; }
+        #status { margin-top: 1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Limpiador de Base de Datos - Edenorte</h1>
+    <p>Este script elimina todos los registros con ID incorrecto: <strong style="color:#ef4444">BDIMAO0005</strong></p>
+
+    <div class="section">
+        <h2>Paso 1: Limpiar localStorage (tu navegador)</h2>
+        <button onclick="clearLocalCache()">Limpiar caché local</button>
+        <p><small>Elimina la relación cacheada entre ID incorrecto y tu email</small></p>
+    </div>
+
+    <div class="section">
+        <h2>Paso 2: Limpiar Firestore (requiere Firebase)</h2>
+        <button class="delete" id="btn-clean" onclick="cleanFirestore()">Eliminar registros con BDIMAO0005</button>
+        <button id="btn-reset" onclick="resetAll()" style="background:#7c3aed">Resetear TODOS los registros</button>
+        <p><small>El botón rojo borra solo lo de BDIMAO0005. El morado borra TODO (cuidado).</small></p>
+    </div>
+
+    <div id="log" class="log"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc, query, where, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCP5X8LN3otg7cgSSFwRfd8UhXI5EAn1yY",
+            authDomain: "reporte-de-dieta-edenorte.firebaseapp.com",
+            projectId: "reporte-de-dieta-edenorte",
+            storageBucket: "reporte-de-dieta-edenorte.firebasestorage.app",
+            messagingSenderId: "361080132958",
+            appId: "1:361080132958:web:06c04804cd9a03054a6bcf"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const WRONG_ID = "BDIMAO0005";
+        const CORRECT_ID = "19579";
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            document.getElementById('log').appendChild(div);
+        }
+
+        window.clearLocalCache = () => {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('user_map_')) {
+                    const val = localStorage.getItem(key);
+                    log(`localStorage: ${key} → ${val}`, 'info');
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            log('Caché local eliminado. Recarga la app después de limpiar Firestore.', 'success');
+        };
+
+        window.cleanFirestore = async () => {
+            const btn = document.getElementById('btn-clean');
+            btn.disabled = true;
+            btn.textContent = 'Limpiando...';
+
+            try {
+                // 1. Buscar documentos en 'usuarios' con employeeId incorrecto
+                log('Buscando usuarios con employeeId incorrecto...', 'info');
+                const userQ = query(collection(db, "usuarios"), where("employeeId", "==", WRONG_ID));
+                const userSnap = await getDocs(userQ);
+                log(`Encontrados ${userSnap.size} usuarios con ID incorrecto`, 'warn');
+                userSnap.forEach(async (d) => {
+                    log(`Borrando usuario: ${d.id}`, 'warn');
+                    await deleteDoc(doc(db, "usuarios", d.id));
+                });
+
+                // 2. Buscar y borrar documentos en 'usuarios' con ID de documento incorrecto
+                log('Buscando documento de usuario con ID de documento incorrecto...', 'info');
+                const wrongDoc = await getDoc(doc(db, "usuarios", WRONG_ID));
+                if (wrongDoc.exists()) {
+                    log(`Borrando documento usuarios/${WRONG_ID}`, 'warn');
+                    await deleteDoc(doc(db, "usuarios", WRONG_ID));
+                }
+
+                // 3. Buscar y borrar registros con autor incorrecto
+                log('Buscando registros con autor incorrecto...', 'info');
+                const allRegistros = await getDocs(collection(db, "registros"));
+                let deletedCount = 0;
+                allRegistros.forEach(async (d) => {
+                    const data = d.data();
+                    if (data.autor === WRONG_ID || (data.autor && data.autor.includes(WRONG_ID))) {
+                        log(`Borrando registro ${d.id} (autor: ${data.autor})`, 'warn');
+                        await deleteDoc(doc(db, "registros", d.id));
+                        deletedCount++;
+                    }
+                });
+
+                // 4. Buscar y borrar empleados con ID incorrecto
+                log('Buscando empleados con ID incorrecto...', 'info');
+                const empDoc = await getDoc(doc(db, "empleados", WRONG_ID));
+                if (empDoc.exists()) {
+                    log(`Borrando empleado ${WRONG_ID}`, 'warn');
+                    await deleteDoc(doc(db, "empleados", WRONG_ID));
+                }
+
+                // 5. Buscar y borrar memento_logs con userId incorrecto
+                log('Buscando memento_logs con userId incorrecto...', 'info');
+                const allMemento = await getDocs(collection(db, "memento_logs"));
+                allMemento.forEach(async (d) => {
+                    const data = d.data();
+                    if (data.userId === WRONG_ID || data.userName === WRONG_ID) {
+                        log(`Borrando memento_log ${d.id}`, 'warn');
+                        await deleteDoc(doc(db, "memento_logs", d.id));
+                    }
+                });
+
+                // 6. Buscar y borrar marcajes con autor incorrecto
+                log('Buscando marcajes con autor incorrecto...', 'info');
+                const allMarcajes = await getDocs(collection(db, "marcajes"));
+                allMarcajes.forEach(async (d) => {
+                    const data = d.data();
+                    if (data.autor === WRONG_ID) {
+                        log(`Borrando marcaje ${d.id}`, 'warn');
+                        await deleteDoc(doc(db, "marcajes", d.id));
+                    }
+                });
+
+                log('Limpieza completada! Ya puedes entrar con tu ID 19579.', 'success');
+            } catch (e) {
+                log('Error: ' + e.message, 'error');
+                console.error(e);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Eliminar registros con BDIMAO0005';
+        };
+
+        window.resetAll = async () => {
+            if (!confirm('ESTO BORRARA TODOS LOS REGISTROS. ¿Estás seguro?')) return;
+            if (!confirm('ULTIMA CONFIRMACION: Se borrará TODO. ¿Continuar?')) return;
+
+            const btn = document.getElementById('btn-reset');
+            btn.disabled = true;
+            btn.textContent = 'Borrando todo...';
+
+            try {
+                const collections = ['registros', 'memento_logs', 'marcajes', 'ubicaciones', 'territorios'];
+                for (const colName of collections) {
+                    log(`Borrando colección: ${colName}`, 'warn');
+                    const allDocs = await getDocs(collection(db, colName));
+                    allDocs.forEach(async (d) => {
+                        await deleteDoc(doc(db, colName, d.id));
+                    });
+                    log(`Colección ${colName} borrada (${allDocs.size} documentos)`, 'success');
+                }
+                log('TODO borrado. Ahora abre la app y registra todo de nuevo.', 'success');
+            } catch (e) {
+                log('Error: ' + e.message, 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Resetear TODOS los registros';
+        };
+    </script>
+</body>
+</html>
