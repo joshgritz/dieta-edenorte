@@ -1913,26 +1913,38 @@
                 updateHeader();
             });
 
-            // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
-            onSnapshot(collection(db, "empleados"), (snapshot) => {
-                window.equipoBase = snapshot.docs.map(d => {
-                    const data = d.data();
-                    return {
-                        name: data.name || data.nombre || '',
-                        code: data.code || data.codigo || d.id,
-                        active: true,
-                        ficha: data.ficha || '7344',
-                        isExtra: false,
-                        vac: false
-                    };
+            // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleado' o 'empleados')
+            const loadEquipoFrom = async (colName) => {
+                onSnapshot(collection(db, colName), (snapshot) => {
+                    window.equipoBase = snapshot.docs.map(d => {
+                        const data = d.data();
+                        return {
+                            name: data.name || data.nombre || '',
+                            code: data.code || data.codigo || d.id,
+                            active: true,
+                            ficha: data.ficha || '7344',
+                            isExtra: false,
+                            vac: false
+                        };
+                    });
+                    if (!window.editingId) {
+                        window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
+                        if (typeof renderEquipo === 'function') renderEquipo();
+                        if (typeof updateCalculos === 'function') updateCalculos();
+                    }
                 });
-                // Solo recargar equipo si NO estamos en modo edición
-                if (!window.editingId) {
-                    window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
-                    if (typeof renderEquipo === 'function') renderEquipo();
-                    if (typeof updateCalculos === 'function') updateCalculos();
+            };
+            // Intentar colección correcta ('empleado' o fallback 'empleados')
+            try {
+                const testSnap = await getDocs(collection(db, "empleado"));
+                if (testSnap.empty) {
+                    loadEquipoFrom("empleados");
+                } else {
+                    loadEquipoFrom("empleado");
                 }
-            });
+            } catch (e) {
+                loadEquipoFrom("empleados");
+            }
 
             const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
             onSnapshot(q, (snapshot) => {
@@ -3243,16 +3255,17 @@
                     await updateDoc(querySnapshot.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
                 }
 
-                // Vincular ID de empleado: si ya existe en coleccion 'empleados', asignarlo
+                // Vincular ID de empleado: si ya existe en coleccion 'empleado' o 'empleados', asignarlo
                 if (newId) {
-                    const empRef = doc(db, "empleados", newId);
-                    const empSnap = await getDoc(empRef);
-                    if (empSnap.exists()) {
-                        // Empleado existe - vincular sin sobrescribir datos
-                        await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
-                        showToast("ID " + newId + " vinculado a tu cuenta", "success");
+                    let empRef = doc(db, "empleado", newId);
+                    let empSnap = await getDoc(empRef);
+                    if (!empSnap.exists()) {
+                        empRef = doc(db, "empleados", newId);
+                        empSnap = await getDoc(empRef);
                     }
-                    // Si no existe, no crear - el admin maneja la coleccion empleados
+                    if (empSnap.exists()) {
+                        await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
+                    }
                 }
 
                 // Aplicar Tema
