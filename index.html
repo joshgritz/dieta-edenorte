@@ -1914,37 +1914,24 @@
             });
 
             // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleado' o 'empleados')
-            const loadEquipoFrom = async (colName) => {
-                onSnapshot(collection(db, colName), (snapshot) => {
-                    window.equipoBase = snapshot.docs.map(d => {
-                        const data = d.data();
-                        return {
-                            name: data.name || data.nombre || '',
-                            code: data.code || data.codigo || d.id,
-                            active: true,
-                            ficha: data.ficha || '7344',
-                            isExtra: false,
-                            vac: false
-                        };
-                    });
-                    if (!window.editingId) {
-                        window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
-                        if (typeof renderEquipo === 'function') renderEquipo();
-                        if (typeof updateCalculos === 'function') updateCalculos();
-                    }
+            onSnapshot(collection(db, "empleado"), (snapshot) => {
+                window.equipoBase = snapshot.docs.map(d => {
+                    const data = d.data();
+                    return {
+                        name: data.name || data.nombre || '',
+                        code: data.code || data.codigo || d.id,
+                        active: true,
+                        ficha: data.ficha || '7344',
+                        isExtra: false,
+                        vac: false
+                    };
                 });
-            };
-            // Intentar colección correcta ('empleado' o fallback 'empleados')
-            try {
-                const testSnap = await getDocs(collection(db, "empleado"));
-                if (testSnap.empty) {
-                    loadEquipoFrom("empleados");
-                } else {
-                    loadEquipoFrom("empleado");
+                if (!window.editingId) {
+                    window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
+                    if (typeof renderEquipo === 'function') renderEquipo();
+                    if (typeof updateCalculos === 'function') updateCalculos();
                 }
-            } catch (e) {
-                loadEquipoFrom("empleados");
-            }
+            });
 
             const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
             onSnapshot(q, (snapshot) => {
