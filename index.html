@@ -1197,6 +1197,7 @@
             <button onclick="saveCalendarNote()"
                 class="w-full bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] font-bold py-1.5 rounded transition-colors uppercase">Guardar
                 Nota</button>
+            <div id="cal-action-area" class="mt-1"></div>
         </div>
     </div>
 
@@ -1351,7 +1352,7 @@
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Historial</button>
             <button id="btn-act" onclick="showTab('activos')"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Activos</button>
-            <button id="btn-res" onclick="showTab('resumen')"
+            <button id="btn-res" onclick="showTab('resumen')" style="display:none" style="display:none"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Resumen</button>
         </nav>
 
@@ -1881,15 +1882,13 @@
                 if (snap.exists()) {
                     const dbWeek = snap.data().week;
                     const dbYear = snap.data().year;
-                    // Siempre priorizar la semana real calculada por fecha del dispositivo
-                    // Solo usar la de DB si está dentro de 1 semana de diferencia (para evitar desfases)
-                    if (dbYear === realYear && Math.abs((dbWeek || 0) - realWeek) <= 1) {
-                        window.currentWeek = dbWeek || realWeek;
-                        window.currentYear = dbYear || realYear;
-                    } else {
-                        // La DB está desactualizada, usar la fecha real
+                    // Si la semana en DB es muy vieja (ej. semana 10 en Mayo), priorizar detección por fecha
+                    if (dbYear === realYear && Math.abs(dbWeek - realWeek) > 2) {
                         window.currentWeek = realWeek;
                         window.currentYear = realYear;
+                    } else {
+                        window.currentWeek = dbWeek || realWeek;
+                        window.currentYear = dbYear || realYear;
                     }
                 } else {
                     window.currentWeek = realWeek;
@@ -2568,11 +2567,6 @@
                     const sem = r.semana;
 
                     r.personal.forEach(p => {
-                        // Ignorar entradas fantasma (MEMENTO, EQUIPO, sin nombre real)
-                        const codeStr = (p.code || '').toString().toUpperCase();
-                        const nameStr = (p.name || '').toString().toUpperCase();
-                        if (codeStr === 'MEMENTO' || nameStr === 'EQUIPO' || nameStr === 'MEMENTO' || !p.name) return;
-
                         if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {} };
                         if (!stats[p.code].weeks[sem]) stats[p.code].weeks[sem] = { total: 0, h: [] };
 
@@ -2708,7 +2702,29 @@
             document.getElementById('btn-save').innerText = "Guardar Cambios"; renderEquipo(); updateCalculos(); showTab('registro');
         };
 
-        window.deleteRecord = async (id) => { if (confirm("¿Seguro que desea eliminar este registro permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
+        window.deleteRecord = async (id) => {
+            const ADMIN_IDS = ['19579'];
+            const isAdmin = ADMIN_IDS.includes(String(window.currentUserId)) || localStorage.getItem('isAdmin') === 'true';
+            if (!isAdmin) return showToast("Solo el administrador puede borrar registros", "error");
+            if (!confirm("Eliminar este registro? Quedara en la papelera de auditoria.")) return;
+            try {
+                const regSnap = await getDoc(doc(db, "registros", id));
+                if (regSnap.exists()) {
+                    await setDoc(doc(db, "papelera", id), {
+                        ...regSnap.data(),
+                        _borradoPor: window.currentUserId,
+                        _borradoNombre: window.currentUserName,
+                        _borradoFecha: new Date().toISOString(),
+                        _registroId: id
+                    });
+                }
+                await deleteDoc(doc(db, "registros", id));
+                showToast("Registro movido a la papelera", "success");
+            } catch (e) {
+                console.error(e);
+                showToast("Error al borrar: " + e.message, "error");
+            }
+        };
 
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
@@ -2840,8 +2856,6 @@
         document.getElementById('f-fecha').value = initDate;
         document.getElementById('f-semana').value = ''; // Se llenará automáticamente desde Firestore config/global.week
         document.getElementById('f-ano').value = getISOYear(initDate);
-        // Autocompletar horas del calendario para la fecha de hoy al iniciar
-        setTimeout(() => autoFillFromMarcaje(initDate), 2000);
 
         const savedUser = localStorage.getItem('rememberedUser');
         if (savedUser) {
@@ -2906,6 +2920,34 @@
             } else {
                 timesDisplay.classList.add('hidden');
                 if (timesContent) timesContent.innerHTML = '';
+            }
+
+            // Estado del registro para este dia
+            const calActionArea = document.getElementById('cal-action-area');
+            if (calActionArea) {
+                const registroDelDia = window.registros && window.registros.find(r => r.fecha === isoDate);
+                if (registroDelDia) {
+                    calActionArea.innerHTML = `
+                        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 mb-1">
+                            <p class="text-[8px] font-black text-emerald-400 uppercase mb-1">REGISTRO GUARDADO</p>
+                            <p class="text-[9px] text-white font-bold truncate">${registroDelDia.lugar || 'Sin lugar'}</p>
+                            <p class="text-[8px] text-slate-400">RD$ ${(registroDelDia.total || 0).toLocaleString()}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1">
+                            <button onclick="calEditarRegistro('${registroDelDia.id}')"
+                                class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/40 text-[8px] font-black py-1.5 rounded-lg transition-all uppercase">Editar</button>
+                            <button onclick="showTab('historial')"
+                                class="bg-slate-600/20 hover:bg-slate-600 text-slate-300 hover:text-white border border-slate-600/40 text-[8px] font-black py-1.5 rounded-lg transition-all uppercase">Ver</button>
+                        </div>`;
+                } else if (marcaje && (marcaje.llegadaLugar || marcaje.salida || marcaje.llegadaFinal)) {
+                    calActionArea.innerHTML = `
+                        <button onclick="calCrearRegistro('${isoDate}')"
+                            class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black py-2 rounded-lg transition-all uppercase mt-1">
+                            Guardar como Registro Definitivo
+                        </button>`;
+                } else {
+                    calActionArea.innerHTML = '';
+                }
             }
 
             renderCalendar();
@@ -3166,6 +3208,18 @@
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
                     await updateDoc(querySnapshot.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
+                }
+
+                // Vincular ID de empleado: si ya existe en coleccion 'empleados', asignarlo
+                if (newId) {
+                    const empRef = doc(db, "empleados", newId);
+                    const empSnap = await getDoc(empRef);
+                    if (empSnap.exists()) {
+                        // Empleado existe - vincular sin sobrescribir datos
+                        await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
+                        showToast("ID " + newId + " vinculado a tu cuenta", "success");
+                    }
+                    // Si no existe, no crear - el admin maneja la coleccion empleados
                 }
 
                 // Aplicar Tema
@@ -4243,13 +4297,37 @@ Edenorte Dominicana`;
         renderEquipo();
         populateYearSelector();
         // PWA: Registrar Service Worker
+
+        // Funciones de accion del calendario
+        window.calEditarRegistro = (id) => {
+            toggleCalendar();
+            window.editRecord(id);
+            showTab('registro');
+            showToast("Cargando registro para edicion...", "success");
+        };
+
+        window.calCrearRegistro = (isoDate) => {
+            toggleCalendar();
+            document.getElementById('f-fecha').value = isoDate;
+            document.getElementById('f-ano').value = getISOYear(isoDate);
+            setTimeout(() => autoFillFromMarcaje(isoDate), 300);
+            showTab('registro');
+            showToast("Horas del calendario cargadas al registro", "success");
+        };
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').then(reg => {
-                    console.log('SW registrado correctamente');
-                }).catch(err => {
-                    console.warn('Error registrando SW:', err);
-                });
+                    console.log('SW registrado v4');
+                    reg.addEventListener('updatefound', () => {
+                        const nw = reg.installing;
+                        nw.addEventListener('statechange', () => {
+                            if (nw.state === 'installed' && navigator.serviceWorker.controller)
+                                showToast('Nueva version disponible. Ve a AJUSTES > Actualizar App.', 'success');
+                        });
+                    });
+                }).catch(err => console.warn('Error SW:', err));
+                navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
             });
         }
 
