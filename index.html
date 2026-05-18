@@ -1197,7 +1197,6 @@
             <button onclick="saveCalendarNote()"
                 class="w-full bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] font-bold py-1.5 rounded transition-colors uppercase">Guardar
                 Nota</button>
-            <div id="cal-action-area" class="mt-1"></div>
         </div>
     </div>
 
@@ -1352,7 +1351,7 @@
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Historial</button>
             <button id="btn-act" onclick="showTab('activos')"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Activos</button>
-            <button id="btn-res" onclick="showTab('resumen')" style="display:none" style="display:none"
+            <button id="btn-res" onclick="showTab('resumen')" style="display:none"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Resumen</button>
         </nav>
 
@@ -1874,32 +1873,25 @@
             window.loadingData = true;
             renderHistorial();
 
-            // Calcular semana real INMEDIATAMENTE (no esperar a Firebase)
-            const today = new Date();
-            const realWeek = getWeekNumber(today);
-            const realYear = getYearOfWeek(today);
-            window.currentWeek = realWeek;
-            window.currentYear = realYear;
-            if (!window.editingId) {
-                window.viewingWeek = realWeek;
-                window.viewingYear = realYear;
-                const semanaInput = document.getElementById('f-semana');
-                if (semanaInput) semanaInput.value = realWeek;
-                const anoInput = document.getElementById('f-ano');
-                if (anoInput) anoInput.value = realYear;
-            }
-            updateHeader();
-
             onSnapshot(doc(db, "config", "global"), (snap) => {
+                const today = new Date();
+                const realWeek = getWeekNumber(today);
+                const realYear = getYearOfWeek(today);
+
                 if (snap.exists()) {
                     const dbWeek = snap.data().week;
                     const dbYear = snap.data().year;
-                    // Solo usar semana de DB si coincide con la real (margen de 1 semana)
-                    if (dbYear === realYear && dbWeek && Math.abs(dbWeek - realWeek) <= 1) {
-                        window.currentWeek = dbWeek;
-                        window.currentYear = dbYear;
+                    // Si la semana en DB es muy vieja (ej. semana 10 en Mayo), priorizar detección por fecha
+                    if (dbYear === realYear && Math.abs(dbWeek - realWeek) > 2) {
+                        window.currentWeek = realWeek;
+                        window.currentYear = realYear;
+                    } else {
+                        window.currentWeek = dbWeek || realWeek;
+                        window.currentYear = dbYear || realYear;
                     }
-                    // Si no, mantener la semana real ya calculada
+                } else {
+                    window.currentWeek = realWeek;
+                    window.currentYear = realYear;
                 }
 
                 if (!window.editingId) {
@@ -2113,18 +2105,24 @@
 
                     // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
                     if (!foundEmail) {
-                        const q = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
-                        const querySnapshot = await getDocs(q);
-
-                        if (!querySnapshot.empty) {
-                            foundEmail = querySnapshot.docs[0].data().email;
-                        } else {
-                            // 2. Si no, buscar por ID de documento (Registro original)
-                            const docRef = doc(db, "usuarios", idInput);
-                            const docSnap = await getDoc(docRef);
-                            if (docSnap.exists()) foundEmail = docSnap.data().email;
-                        }
+                        // Buscar por employeeId guardado en ajustes
+                        const q1 = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
+                        const qs1 = await getDocs(q1);
+                        if (!qs1.empty) foundEmail = qs1.docs[0].data().email;
                     }
+                    // Buscar por ID de documento
+                    if (!foundEmail) {
+                        const docSnap2 = await getDoc(doc(db, "usuarios", idInput));
+                        if (docSnap2.exists()) foundEmail = docSnap2.data().email;
+                    }
+                    // Buscar en coleccion empleados (linkedEmail)
+                    if (!foundEmail) {
+                        try {
+                            const empSnap = await getDoc(doc(db, "empleados", idInput));
+                            if (empSnap.exists() && empSnap.data().linkedEmail) foundEmail = empSnap.data().linkedEmail;
+                        } catch(e) {}
+                    }
+                    if (!foundEmail) { // placeholder
 
                     if (foundEmail) email = foundEmail;
                     else email = `${input}@edenorte.com`; // Fallback clásico
@@ -2271,9 +2269,17 @@
                         const data = querySnapshot.docs[0].data();
                         window.currentUserName = data.nombre;
 
-                        // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
-                        if (data.employeeId) window.currentUserId = data.employeeId;
-                        else window.currentUserId = querySnapshot.docs[0].id;
+                        // Priorizar employeeId numerico (ej: 19579) sobre ID de documento
+                        const empId = data.employeeId || querySnapshot.docs[0].id;
+                        // Si el employeeId guardado es el doc ID tipo BDIMAO, usar el numerico si existe
+                        const docId = querySnapshot.docs[0].id;
+                        if (data.employeeId && /^\d+$/.test(String(data.employeeId))) {
+                            window.currentUserId = data.employeeId;
+                        } else if (/^\d+$/.test(String(docId))) {
+                            window.currentUserId = docId;
+                        } else {
+                            window.currentUserId = empId;
+                        }
 
                         // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
                         if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
@@ -2290,24 +2296,7 @@
                             localStorage.setItem('theme', data.tema);
                         }
                     }
-                } catch (e) {
-                    // Si no encontró por uid, buscar por email
-                    try {
-                        const emailQ = query(collection(db, "usuarios"), where("email", "==", user.email));
-                        const emailSnap = await getDocs(emailQ);
-                        if (!emailSnap.empty) {
-                            const data = emailSnap.docs[0].data();
-                            const docId = emailSnap.docs[0].id;
-                            window.currentUserName = data.nombre || window.currentUserName;
-                            if (data.employeeId) {
-                                window.currentUserId = data.employeeId;
-                            } else {
-                                window.currentUserId = docId;
-                            }
-                            if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
-                        }
-                    } catch (e2) { console.log("Perfil no encontrado en DB, usando Auth"); }
-                }
+                } catch (e) { console.log("Perfil no encontrado en DB, usando Auth"); }
 
                 // Actualizar currentUser global para que los registros usen el ID correcto
                 window.currentUser = window.currentUserId;
@@ -2591,6 +2580,11 @@
                     const sem = r.semana;
 
                     r.personal.forEach(p => {
+                        // Filtrar entradas fantasma
+                        const _c = String(p.code||"").toUpperCase().trim();
+                        const _n = String(p.name||"").toUpperCase().trim();
+                        if (!p.name||!p.code||_c==="MEMENTO"||_n==="EQUIPO"||_n==="MEMENTO"||_c==="EQUIPO"||_c.startsWith("BDIMAO")) return;
+
                         if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {} };
                         if (!stats[p.code].weeks[sem]) stats[p.code].weeks[sem] = { total: 0, h: [] };
 
@@ -2726,29 +2720,7 @@
             document.getElementById('btn-save').innerText = "Guardar Cambios"; renderEquipo(); updateCalculos(); showTab('registro');
         };
 
-        window.deleteRecord = async (id) => {
-            const ADMIN_IDS = ['19579'];
-            const isAdmin = ADMIN_IDS.includes(String(window.currentUserId)) || localStorage.getItem('isAdmin') === 'true';
-            if (!isAdmin) return showToast("Solo el administrador puede borrar registros", "error");
-            if (!confirm("Eliminar este registro? Quedara en la papelera de auditoria.")) return;
-            try {
-                const regSnap = await getDoc(doc(db, "registros", id));
-                if (regSnap.exists()) {
-                    await setDoc(doc(db, "papelera", id), {
-                        ...regSnap.data(),
-                        _borradoPor: window.currentUserId,
-                        _borradoNombre: window.currentUserName,
-                        _borradoFecha: new Date().toISOString(),
-                        _registroId: id
-                    });
-                }
-                await deleteDoc(doc(db, "registros", id));
-                showToast("Registro movido a la papelera", "success");
-            } catch (e) {
-                console.error(e);
-                showToast("Error al borrar: " + e.message, "error");
-            }
-        };
+        window.deleteRecord = async (id) => { if (confirm("¿Seguro que desea eliminar este registro permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
 
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
@@ -2944,34 +2916,6 @@
             } else {
                 timesDisplay.classList.add('hidden');
                 if (timesContent) timesContent.innerHTML = '';
-            }
-
-            // Estado del registro para este dia
-            const calActionArea = document.getElementById('cal-action-area');
-            if (calActionArea) {
-                const registroDelDia = window.registros && window.registros.find(r => r.fecha === isoDate);
-                if (registroDelDia) {
-                    calActionArea.innerHTML = `
-                        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 mb-1">
-                            <p class="text-[8px] font-black text-emerald-400 uppercase mb-1">REGISTRO GUARDADO</p>
-                            <p class="text-[9px] text-white font-bold truncate">${registroDelDia.lugar || 'Sin lugar'}</p>
-                            <p class="text-[8px] text-slate-400">RD$ ${(registroDelDia.total || 0).toLocaleString()}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-1">
-                            <button onclick="calEditarRegistro('${registroDelDia.id}')"
-                                class="bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/40 text-[8px] font-black py-1.5 rounded-lg transition-all uppercase">Editar</button>
-                            <button onclick="showTab('historial')"
-                                class="bg-slate-600/20 hover:bg-slate-600 text-slate-300 hover:text-white border border-slate-600/40 text-[8px] font-black py-1.5 rounded-lg transition-all uppercase">Ver</button>
-                        </div>`;
-                } else if (marcaje && (marcaje.llegadaLugar || marcaje.salida || marcaje.llegadaFinal)) {
-                    calActionArea.innerHTML = `
-                        <button onclick="calCrearRegistro('${isoDate}')"
-                            class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black py-2 rounded-lg transition-all uppercase mt-1">
-                            Guardar como Registro Definitivo
-                        </button>`;
-                } else {
-                    calActionArea.innerHTML = '';
-                }
             }
 
             renderCalendar();
@@ -3188,7 +3132,23 @@
             if (!user) return;
             document.getElementById('set-name').value = window.currentUserName;
             document.getElementById('set-email').value = user.email;
-            document.getElementById('set-id').value = window.currentUserId;
+            // Mostrar el employeeId real guardado, no el ID del documento
+            document.getElementById('set-id').value = window.currentUserId || '';
+            // Intentar cargar el employeeId real desde Firestore
+            (async () => {
+                try {
+                    const usr = auth.currentUser;
+                    if (usr) {
+                        const q2 = query(collection(db, 'usuarios'), where('uid', '==', usr.uid));
+                        const qs2 = await getDocs(q2);
+                        if (!qs2.empty) {
+                            const d2 = qs2.docs[0].data();
+                            const realId = d2.employeeId || '';
+                            document.getElementById('set-id').value = realId;
+                        }
+                    }
+                } catch(e) {}
+            })();
             document.getElementById('set-pass').value = '';
             document.getElementById('set-theme').value = document.body.classList.contains('light-mode') ? 'light' : 'dark';
             document.getElementById('set-current-pass').value = '';
@@ -3231,19 +3191,30 @@
                 const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
-                    await updateDoc(querySnapshot.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
-                }
+                    // Guardar employeeId solo si es numerico (ID real de empleado)
+                    const updateData = { nombre: newName, email: newEmail, tema: newTheme };
+                    if (newId) updateData.employeeId = newId;
+                    await updateDoc(querySnapshot.docs[0].ref, updateData);
 
-                // Vincular ID de empleado: si ya existe en coleccion 'empleados', asignarlo
-                if (newId) {
-                    const empRef = doc(db, "empleados", newId);
-                    const empSnap = await getDoc(empRef);
-                    if (empSnap.exists()) {
-                        // Empleado existe - vincular sin sobrescribir datos
-                        await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
-                        showToast("ID " + newId + " vinculado a tu cuenta", "success");
+                    // Actualizar currentUserId en memoria con el nuevo ID
+                    if (newId) {
+                        window.currentUserId = newId;
+                        window.currentUser = newId;
+                        // Guardar cache para login futuro por ID
+                        localStorage.setItem("user_map_" + newId.toUpperCase(), user.email);
+                        updateHeader();
                     }
-                    // Si no existe, no crear - el admin maneja la coleccion empleados
+
+                    // Si el empleado existe en coleccion empleados, vincularlo
+                    if (newId) {
+                        try {
+                            const empRef = doc(db, "empleados", newId);
+                            const empSnap = await getDoc(empRef);
+                            if (empSnap.exists()) {
+                                await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
+                            }
+                        } catch(eLink) { console.log("Empleado no vinculado:", eLink); }
+                    }
                 }
 
                 // Aplicar Tema
@@ -3256,14 +3227,9 @@
                 }
                 localStorage.setItem('theme', newTheme);
 
-                // Actualizar caché de login con el nuevo ID
-                if (newId) {
-                    localStorage.setItem(`user_map_${newId}`, user.email);
-                }
-
                 window.currentUserName = newName;
                 window.currentUserId = newId || window.currentUserId;
-                window.currentUser = window.currentUserId;
+                window.currentUser = window.currentUserId; // Actualizar referencia global
                 updateHeader();
                 closeSettings();
 
@@ -4326,37 +4292,13 @@ Edenorte Dominicana`;
         renderEquipo();
         populateYearSelector();
         // PWA: Registrar Service Worker
-
-        // Funciones de accion del calendario
-        window.calEditarRegistro = (id) => {
-            toggleCalendar();
-            window.editRecord(id);
-            showTab('registro');
-            showToast("Cargando registro para edicion...", "success");
-        };
-
-        window.calCrearRegistro = (isoDate) => {
-            toggleCalendar();
-            document.getElementById('f-fecha').value = isoDate;
-            document.getElementById('f-ano').value = getISOYear(isoDate);
-            setTimeout(() => autoFillFromMarcaje(isoDate), 300);
-            showTab('registro');
-            showToast("Horas del calendario cargadas al registro", "success");
-        };
-
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').then(reg => {
-                    console.log('SW registrado v4');
-                    reg.addEventListener('updatefound', () => {
-                        const nw = reg.installing;
-                        nw.addEventListener('statechange', () => {
-                            if (nw.state === 'installed' && navigator.serviceWorker.controller)
-                                showToast('Nueva version disponible. Ve a AJUSTES > Actualizar App.', 'success');
-                        });
-                    });
-                }).catch(err => console.warn('Error SW:', err));
-                navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+                    console.log('SW registrado correctamente');
+                }).catch(err => {
+                    console.warn('Error registrando SW:', err);
+                });
             });
         }
 
