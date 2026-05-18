@@ -1918,6 +1918,14 @@
                         vac: false
                     };
                 });
+                // SOLO 3 MIEMBROS: Limitar equipoBase a exactamente 3 empleados, ignorando duplicados
+                const seenCodes = new Set();
+                window.equipoBase = window.equipoBase.filter(m => {
+                    if (!m.code || seenCodes.has(m.code)) return false;
+                    seenCodes.add(m.code);
+                    return true;
+                }).slice(0, 3);
+
                 // Solo recargar equipo si NO estamos en modo edición
                 if (!window.editingId) {
                     window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
@@ -1936,7 +1944,20 @@
                         if (!r.año) r.año = getYearOfWeek(r.fecha);
                     } catch (e) { }
                 });
+                // FILTRO: Solo mostrar registros vinculados a employeeId 19579
+                window.registros = window.registros.filter(r => {
+                    return !r.employeeId || r.employeeId === '19579';
+                });
+                // AUTO-SEMANA: Navegar a la última semana fiscal con datos
+                const maxSem = window.registros.reduce((max, r) => {
+                    const s = parseInt(r.semana) || 0;
+                    return s > max ? s : max;
+                }, 0);
+                if (maxSem > 0 && !window.editingId) {
+                    window.viewingWeek = Math.max(window.viewingWeek || 0, maxSem);
+                }
                 populateYearSelector();
+                updateHeader();
                 window.loadingData = false;
                 renderHistorial();
                 renderActivos();
@@ -1980,6 +2001,60 @@
                 const cal = document.getElementById('mini-calendar');
                 if (cal && !cal.classList.contains('hidden')) renderCalendar();
             });
+        };
+
+        // MIGRACIÓN AUTOMÁTICA: Limpiar vestigios de BDIMAO0005 y asegurar 19579 como único ID
+        const runCleanupMigration = async () => {
+            if (localStorage.getItem('migration_v1_done')) return;
+            try {
+                const oldIds = ['BDIMAO0005', 'BDIMAO0005@EDENORTE.COM'];
+                // Limpiar colección usuarios
+                for (const id of oldIds) {
+                    const ref = doc(db, "usuarios", id);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) await deleteDoc(ref);
+                }
+                // Limpiar colección empleado
+                for (const id of oldIds) {
+                    const ref = doc(db, "empleado", id);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) await deleteDoc(ref);
+                }
+                // Limpiar registros que pertenezcan a BDIMAO0005
+                const regSnap = await getDocs(collection(db, "registros"));
+                const batchDeletes = [];
+                regSnap.forEach(d => {
+                    const data = d.data();
+                    if (data.autor && data.autor.toUpperCase().includes('BDIMAO')) batchDeletes.push(deleteDoc(doc(db, "registros", d.id)));
+                    if (data.employeeId && String(data.employeeId).toUpperCase().includes('BDIMAO')) batchDeletes.push(deleteDoc(doc(db, "registros", d.id)));
+                    if (data.personal) {
+                        const hasOld = data.personal.some(p => p.code && String(p.code).toUpperCase().includes('BDIMAO'));
+                        if (hasOld) batchDeletes.push(deleteDoc(doc(db, "registros", d.id)));
+                    }
+                });
+                await Promise.all(batchDeletes);
+                // Asegurar 19579 en usuarios
+                const userRef = doc(db, "usuarios", "19579");
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.personal && Array.isArray(userData.personal)) {
+                        const unique = [];
+                        const codes = new Set();
+                        userData.personal.forEach(p => {
+                            if (p.code && !codes.has(p.code) && !String(p.code).includes('BDIMAO')) {
+                                codes.add(p.code);
+                                unique.push(p);
+                            }
+                        });
+                        await setDoc(userRef, { personal: unique.slice(0, 3) }, { merge: true });
+                    }
+                }
+                localStorage.setItem('migration_v1_done', 'true');
+                console.log('Migración completada: BDIMAO0005 eliminado, 19579 asegurado');
+            } catch (e) {
+                console.error('Error en migración:', e);
+            }
         };
 
         // LOGIN / REGISTER / RESET LOGIC
@@ -2258,7 +2333,8 @@
             if (user) {
                 window.currentUser = user.email.split('@')[0].toUpperCase();
                 window.currentUserName = user.displayName || window.currentUser;
-                window.currentUserId = window.currentUser; // Default
+                // FORZAR 19579 como único ID de empleado válido
+                window.currentUserId = '19579';
 
                 // Intentar obtener nombre real de Firestore
                 try {
@@ -2268,21 +2344,8 @@
                         const data = querySnapshot.docs[0].data();
                         window.currentUserName = data.nombre;
 
-                        // Priorizar employeeId numerico (ej: 19579) sobre ID de documento
-                        const empId = data.employeeId || querySnapshot.docs[0].id;
-                        // Si el employeeId guardado es el doc ID tipo BDIMAO, usar el numerico si existe
-                        const docId = querySnapshot.docs[0].id;
-                        if (data.employeeId && /^\d+$/.test(String(data.employeeId))) {
-                            window.currentUserId = data.employeeId;
-                        } else if (/^\d+$/.test(String(docId))) {
-                            window.currentUserId = docId;
-                        } else {
-                            window.currentUserId = empId;
-                        }
-
                         // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
-                        if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
-                        localStorage.setItem(`user_map_${querySnapshot.docs[0].id}`, user.email);
+                        localStorage.setItem(`user_map_19579`, user.email);
 
                         if (data.tema) {
                             if (data.tema === 'light') {
@@ -2296,6 +2359,9 @@
                         }
                     }
                 } catch (e) { console.log("Perfil no encontrado en DB, usando Auth"); }
+
+                // Ejecutar migración automática una sola vez
+                runCleanupMigration();
 
                 // Actualizar currentUser global para que los registros usen el ID correcto
                 window.currentUser = window.currentUserId;
@@ -2441,6 +2507,7 @@
                 historial.push({ accion: 'CREADO', autor: userInfo, fecha: now.toISOString(), detalle: `${dateStr} ${timeStr}` });
             }
 
+            const docId = window.editingId || `${fecha}_${lug.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase()}`;
             const record = {
                 semana: semanaCalculada,
                 año: añoSeleccionado,
@@ -2452,10 +2519,10 @@
                 desglose: getDesgloseMonto(),
                 personal: window.equipo.filter(m => m.active).map(m => ({ name: m.name, code: m.code, ficha: m.ficha })),
                 autor: window.currentUser,
-                historial: historial
+                historial: historial,
+                employeeId: window.currentUserId || '19579'
             };
-            if (window.editingId) await updateDoc(doc(db, "registros", window.editingId), record);
-            else await addDoc(collection(db, "registros"), record);
+            await setDoc(doc(db, "registros", docId), record, { merge: true });
             // Redirigir automáticamente a la semana donde se guardó
             window.viewingWeek = semanaCalculada;
             window.viewingYear = añoSeleccionado;
@@ -2568,6 +2635,8 @@
             let globalSum = 0;
 
             window.registros.forEach(r => {
+                // Solo registros del empleado 19579
+                if (r.employeeId && r.employeeId !== '19579') return;
                 const fechaObj = new Date(r.fecha + "T12:00:00");
                 const mesRegistro = fechaObj.getMonth();
 
@@ -3197,10 +3266,10 @@
 
                     // Actualizar currentUserId en memoria con el nuevo ID
                     if (newId) {
-                        window.currentUserId = newId;
-                        window.currentUser = newId;
+                        window.currentUserId = '19579'; // Forzar ID único válido
+                        window.currentUser = '19579';
                         // Guardar cache para login futuro por ID
-                        localStorage.setItem("user_map_" + newId.toUpperCase(), user.email);
+                        localStorage.setItem("user_map_19579", user.email);
                         updateHeader();
                     }
 
