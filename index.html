@@ -930,6 +930,9 @@
                     Cambios</button>
 
                 <div class="pt-4 mt-2 border-t border-white/10">
+                    <button onclick="ejecutarLimpiezaTemporal()" type="button"
+                        class="w-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-yellow-500 hover:text-white transition-all mb-3 shadow-lg animate-pulse">🧹
+                        Ejecutar Limpieza Temporal (Eliminar BDIMAO0005 e IA)</button>
                     <button onclick="deleteAccount()"
                         class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-500 hover:text-white transition-all">Eliminar
                         Cuenta Permanentemente</button>
@@ -1352,8 +1355,8 @@
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Historial</button>
             <button id="btn-act" onclick="showTab('activos')"
                 class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Activos</button>
-            <button id="btn-res" onclick="showTab('resumen')" style="display:none" style="display:none"
-                class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Resumen</button>
+            <button id="btn-res" onclick="showTab('resumen')"
+                class="flex-1 py-3 px-4 rounded-xl font-bold text-[11px] text-slate-400 uppercase transition-all">Memento</button>
         </nav>
 
         <main class="p-4 max-w-2xl mx-auto">
@@ -1505,12 +1508,11 @@
                     <div class="flex flex-col items-center gap-4">
                         <div
                             class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <span class="text-4xl">🤖</span>
+                            <span class="text-4xl">⚡</span>
                         </div>
                         <div>
-                            <h3 class="text-xl font-black text-white italic glow-text">ASISTENTE MEMENTO</h3>
-                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Cargar
-                                Reporte (PDF, EXCEL, TXT)</p>
+                            <h3 class="text-xl font-black text-white italic glow-text">PROCESADOR MEMENTO</h3>
+                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mt-1">Cargar Reporte (PDF, EXCEL, TXT, CSV)</p>
                         </div>
                         <input type="file" id="memento-file" class="hidden"
                             accept=".csv, .txt, .xlsx, .xls, text/plain, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -1520,39 +1522,15 @@
 
                 <div id="memento-loading" class="hidden premium-card p-10 text-center animate-pulse">
                     <div class="flex flex-col items-center gap-4">
-                        <div class="loader-ai"></div>
-                        <p class="text-xs font-black text-blue-400 uppercase tracking-widest">Interpretando con Gemini
-                            1.5 Flash...</p>
+                        <div class="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+                        <p class="text-xs font-black text-blue-400 uppercase tracking-widest">Procesando archivo Memento en segundo plano...</p>
                     </div>
                 </div>
 
                 <div id="memento-result" class="hidden flex flex-col gap-4 fade-in">
-                    <!-- Chat History -->
+                    <!-- Sincronizacion / Punteos Summary -->
                     <div id="chat-history"
                         class="premium-card p-6 space-y-4 max-h-[500px] overflow-y-auto bg-slate-900/60 border border-white/5">
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs">🤖
-                            </div>
-                            <div
-                                class="bg-blue-600/10 p-3 rounded-2xl rounded-tl-none border border-blue-500/20 max-w-[80%]">
-                                <p class="text-[11px] text-slate-200">Archivo procesado. ¿En qué más puedo ayudarte con
-                                    este reporte? He extraído los datos clave para tu historial.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Chat Input -->
-                    <div class="premium-card p-3 flex gap-2 border border-blue-500/20 bg-slate-900/80 sticky bottom-2">
-                        <input id="chat-input" type="text" placeholder="Escribe un ajuste o pregunta..."
-                            class="flex-1 bg-transparent border-none outline-none text-xs text-white px-3"
-                            onkeypress="if(event.key === 'Enter') sendUserMessage()">
-                        <button onclick="sendUserMessage()"
-                            class="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-xl transition-all">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
-                        </button>
                     </div>
 
                     <button onclick="window.print()"
@@ -1566,7 +1544,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile, verifyBeforeUpdateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDocs, where, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, setDoc, getDocs, where, getDoc, enableIndexedDbPersistence, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
         const firebaseConfig = {
@@ -1591,47 +1569,47 @@
             }
         });
 
-        // CONFIGURACIÓN SEGURA DE GEMINI AI
-        let geminiAPI = null;
-        const VALID_HOSTS = ['joshgritz.github.io', 'localhost', '127.0.0.1'];
-
-        const initGemini = async () => {
-            if (!VALID_HOSTS.includes(window.location.hostname)) {
-                console.error("Acceso denegado a IA: Dominio no autorizado.");
-                return null;
-            }
-
-            try {
-                console.log("🤖 IA: Verificando autorización para:", window.location.hostname);
-
-                // La llave se protege dinámicamente consultando config/ia
-                const iaSnap = await getDoc(doc(db, "config", "ia"));
-                if (iaSnap.exists() && iaSnap.data().apiKey) {
-                    const apiKey = iaSnap.data().apiKey;
-                    console.log("🔑 IA: API Key cargada correctamente (Longitud:", apiKey.length, ")");
-
-                    const genAI = new GoogleGenerativeAI(apiKey, { apiVersion: 'v1' });
-                    // Actualizado a Gemini 3.1 Flash para máxima velocidad y estabilidad (Mayo 2026)
-                    return genAI.getGenerativeModel({
-                        model: "gemini-3.1-flash",
-                        systemInstruction: "Eres un asistente experto para Edenorte Mao. VELOCIDAD CRÍTICA: Procesa reportes de Memento. Responde con un resumen técnico ultra-breve y UN BLOQUE JSON al final: {\"fecha\": \"YYYY-MM-DD\", \"llegadaLugar\": \"HH:mm\", \"salida\": \"HH:mm\", \"llegadaFinal\": \"HH:mm\", \"lugar\": \"...\", \"labor\": \"...\"}. No uses explicaciones largas."
-                    });
-                } else {
-                    console.error("❌ IA Error: No se encontró apiKey en config/ia");
-                    showToast("Error de configuración de IA", "error");
-                }
-            } catch (e) {
-                console.error("IA Init Error:", e);
-            }
-            return null;
-        };
+        // MIGRACIÓN Y LIMPIEZA: FUNCIONES ROBUSTAS DE MEMENTO Y LIMPIEZA TEMPORAL (SIN IA)
 
         // Configurar PDF.js Worker
         if (typeof pdfjsLib !== 'undefined') {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
         }
 
-        let currentChatSession = null;
+        const parseCSVLine = (text) => {
+            let p = '', entries = [], colStart = 0, inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                let ch = text[i];
+                if (ch === '"') {
+                    inQuotes = !inQuotes;
+                } else if ((ch === ',' || ch === ';') && !inQuotes) {
+                    entries.push(text.substring(colStart, i).replace(/^"|"$/g, '').trim());
+                    colStart = i + 1;
+                }
+            }
+            entries.push(text.substring(colStart).replace(/^"|"$/g, '').trim());
+            return entries;
+        };
+
+        const nisParseDate = (str) => {
+            if (!str) return null;
+            let s = str.trim();
+            // DD/MM/YYYY or DD-MM-YYYY
+            let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if (m) {
+                let d = String(m[1]).padStart(2, '0');
+                let mo = String(m[2]).padStart(2, '0');
+                return `${m[3]}-${mo}-${d}`;
+            }
+            // YYYY-MM-DD
+            m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+            if (m) {
+                let mo = String(m[2]).padStart(2, '0');
+                let d = String(m[3]).padStart(2, '0');
+                return `${m[1]}-${mo}-${d}`;
+            }
+            return null;
+        };
 
         window.processMementoFile = async (event) => {
             const file = event.target.files[0];
@@ -1643,7 +1621,7 @@
 
             loading.classList.remove('hidden');
             result.classList.add('hidden');
-            history.innerHTML = ''; // Limpiar chat previo
+            history.innerHTML = ''; // Limpiar historial previo
 
             try {
                 let text = "";
@@ -1679,18 +1657,105 @@
 
                 if (!text) throw new Error("No se pudo extraer texto del archivo.");
 
-                const model = await initGemini();
-                if (!model) throw new Error("Acceso a IA no configurado o no autorizado.");
+                // Split text into lines
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                if (lines.length === 0) throw new Error("El archivo está vacío");
 
-                currentChatSession = model.startChat({ history: [] });
+                // Detect headers
+                const headers = parseCSVLine(lines[0]);
+                
+                // Flexible regex column mapping
+                let dateIdx = -1, arrLugarIdx = -1, salIdx = -1, arrFinalIdx = -1, lugarIdx = -1, laborIdx = -1;
+                headers.forEach((h, i) => {
+                    const cleanH = h.toLowerCase();
+                    if (/fecha|date/i.test(cleanH)) dateIdx = i;
+                    else if (/llegada.*lugar|llegada.*lug|arr.*lug/i.test(cleanH)) arrLugarIdx = i;
+                    else if (/salida|dep/i.test(cleanH)) salIdx = i;
+                    else if (/llegada.*final|llegada.*mao|arr.*fin/i.test(cleanH)) arrFinalIdx = i;
+                    else if (/lugar|sector|localidad|loc/i.test(cleanH)) lugarIdx = i;
+                    else if (/labor|trabajo|actividad|act/i.test(cleanH)) laborIdx = i;
+                });
 
-                const responseText = await sendToGemini(`Procesa este archivo de Memento:\n\n${text}`);
+                // Fallback index detection if headers don't match regex exactly (common in raw CSV exports)
+                if (dateIdx === -1) dateIdx = 0;
+                if (arrLugarIdx === -1) arrLugarIdx = 1;
+                if (salIdx === -1) salIdx = 2;
+                if (arrFinalIdx === -1) arrFinalIdx = 3;
+                if (lugarIdx === -1) lugarIdx = 4;
+                if (laborIdx === -1) laborIdx = 5;
+
+                // Non-Blocking Synchronization (Background Promises)
+                const syncPromises = [];
+                let countSynced = 0;
+                const authorId = window.currentUser || "19579";
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = parseCSVLine(lines[i]);
+                    if (cols.length < 3) continue;
+
+                    const rawDate = cols[dateIdx];
+                    const fecha = nisParseDate(rawDate) || rawDate;
+                    if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) continue;
+
+                    const llegadaLugar = cols[arrLugarIdx] || '';
+                    const salida = cols[salIdx] || '';
+                    const llegadaFinal = cols[arrFinalIdx] || '';
+                    const lugar = cols[lugarIdx] ? cols[lugarIdx].toUpperCase() : '';
+                    const labor = cols[laborIdx] ? cols[laborIdx].toUpperCase() : '';
+
+                    const marcajeData = {
+                        fecha,
+                        llegadaLugar,
+                        salida,
+                        llegadaFinal,
+                        lugar,
+                        labor,
+                        autor: authorId,
+                        updatedAt: new Date().toISOString()
+                    };
+
+                    syncPromises.push(
+                        setDoc(doc(db, "marcajes", fecha), marcajeData, { merge: true })
+                            .then(() => { countSynced++; })
+                            .catch(e => console.warn("Error syncing row", e))
+                    );
+                }
 
                 loading.classList.add('hidden');
                 result.classList.remove('hidden');
 
-                // Guardar log inicial
-                await saveMementoLog(fileName, responseText);
+                history.innerHTML = `
+                    <div class="premium-card p-6 bg-slate-900/60 border border-white/5 space-y-3">
+                        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xl">✓</div>
+                            <div>
+                                <h4 class="text-sm font-black text-white uppercase tracking-wider">Reporte Memento Procesado</h4>
+                                <p class="text-[10px] text-slate-400 font-bold">Estructura Limpia (Mapa de Punteos)</p>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-300 space-y-1 py-1 font-semibold">
+                            <p class="text-blue-400">📊 Filas detectadas: <span class="text-white font-bold">${syncPromises.length}</span></p>
+                            <p id="sync-progress-text" class="text-emerald-400 animate-pulse">⚡ Sincronizando punteos en segundo plano...</p>
+                        </div>
+                    </div>
+                `;
+
+                Promise.all(syncPromises).then(async () => {
+                    const progText = document.getElementById('sync-progress-text');
+                    if (progText) {
+                        progText.className = "text-emerald-400 font-bold";
+                        progText.innerText = `✓ ${countSynced} punteos sincronizados exitosamente en Firestore.`;
+                    }
+                    showToast(`🎯 ${countSynced} punteos sincronizados correctamente`, "success");
+                    
+                    // Guardar log de procesamiento
+                    await saveMementoLog(fileName, `Procesado directo de ${countSynced} punteos bajo ID ${authorId}`);
+
+                    const currentFormDate = document.getElementById('f-fecha').value;
+                    if (currentFormDate) {
+                        if (typeof window.autoFillFromMarcaje === 'function') window.autoFillFromMarcaje(currentFormDate);
+                    }
+                });
 
             } catch (e) {
                 console.error(e);
@@ -1698,87 +1763,6 @@
                 loading.classList.add('hidden');
             }
             event.target.value = '';
-        };
-
-        const sendToGemini = async (msg) => {
-            if (!currentChatSession) return;
-
-            const result = await currentChatSession.sendMessage(msg);
-            const response = await result.response;
-            const text = response.text();
-
-            // Sincronización Automática de Datos
-            extractAndSyncData(text);
-
-            // Renderizar en el chat
-            addChatMessage('bot', text);
-            return text;
-        };
-
-        window.sendUserMessage = async () => {
-            const input = document.getElementById('chat-input');
-            const msg = input.value.trim();
-            if (!msg || !currentChatSession) return;
-
-            addChatMessage('user', msg);
-            input.value = '';
-
-            try {
-                await sendToGemini(msg);
-            } catch (e) {
-                showToast("Error en chat IA", "error");
-            }
-        };
-
-        const addChatMessage = (role, text) => {
-            const history = document.getElementById('chat-history');
-            const div = document.createElement('div');
-            div.className = "flex gap-3 " + (role === 'user' ? 'justify-end' : '');
-
-            // Limpiar JSON de la visualización del usuario para que se vea limpio
-            const cleanText = text.replace(/\{[\s\S]*?\}/g, '').trim();
-
-            div.innerHTML = `
-                ${role === 'bot' ? '<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] shrink-0">🤖</div>' : ''}
-                <div class="${role === 'user' ? 'bg-blue-600' : 'bg-blue-600/10 border border-blue-500/20'} p-3 rounded-2xl ${role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} max-w-[85%]">
-                    <div class="text-[11px] text-white leading-relaxed memento-report-style">${formatAIResponse(cleanText)}</div>
-                </div>
-                ${role === 'user' ? '<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] shrink-0">👤</div>' : ''}
-            `;
-            history.appendChild(div);
-            history.scrollTop = history.scrollHeight;
-        };
-
-        const extractAndSyncData = async (text) => {
-            const jsonMatch = text.match(/\{[\s\S]*?\}/);
-            if (jsonMatch) {
-                try {
-                    const data = JSON.parse(jsonMatch[0]);
-                    if (data.fecha) {
-                        await setDoc(doc(db, "marcajes", data.fecha), {
-                            ...data,
-                            autor: window.currentUser || 'AI_SYNC',
-                            updatedAt: new Date().toISOString()
-                        }, { merge: true });
-                        showToast("🎯 Datos sincronizados automáticamente", "success");
-                        // Si estamos en la misma fecha, disparar autofill
-                        const currentFormDate = document.getElementById('f-fecha').value;
-                        if (currentFormDate === data.fecha) {
-                            autoFillFromMarcaje(data.fecha);
-                        }
-                    }
-                } catch (e) { console.warn("JSON Sync Error", e); }
-            }
-        };
-
-        const formatAIResponse = (text) => {
-            return text
-                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-400">$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em class="text-slate-400">$1</em>')
-                .replace(/### (.*)/g, '<h3 class="text-xs font-black text-white mt-2 mb-1 uppercase">$1</h3>')
-                .replace(/## (.*)/g, '<h2 class="text-sm font-black text-blue-500 mt-4 mb-2 uppercase">$1</h2>')
-                .replace(/- (.*)/g, '<div class="flex gap-1 mb-0.5"><span class="text-blue-500">•</span><span>$1</span></div>')
-                .replace(/\n/g, '<br>');
         };
 
         const saveMementoLog = async (fileName, interpretation) => {
@@ -1794,6 +1778,91 @@
                 });
             } catch (e) {
                 console.error("Error saving memento log:", e);
+            }
+        };
+
+        window.ejecutarLimpiezaTemporal = async () => {
+            const confirmacion = confirm("⚠️ ATENCIÓN: Esta función temporal buscará y eliminará todos los registros con autor 'BDIMAO0005' o procesados por la IA anterior. También eliminará a 'BDIMAO0005' de usuarios y empleados, y configurará el ID 19579. ¿Desea proceder?");
+            if (!confirmacion) return;
+
+            showToast("🧹 Iniciando limpieza temporal en Firestore...", "warning");
+            try {
+                const batch = writeBatch(db);
+                let countBorrados = 0;
+
+                // 1. Buscar en registros
+                const regSnap = await getDocs(collection(db, "registros"));
+                regSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const isOldAuthor = data.autor === 'BDIMAO0005';
+                    const isAI = data.autor === 'AI_SYNC' || data.autor === 'AI' || 
+                        (data.historial && data.historial.some(h => h.autor === 'BDIMAO0005' || h.autor === 'AI_SYNC' || h.autor === 'AI')) ||
+                        data._borradoPor === 'BDIMAO0005';
+
+                    if (isOldAuthor || isAI) {
+                        batch.delete(docSnap.ref);
+                        countBorrados++;
+                    }
+                });
+
+                // 2. Buscar en marcajes
+                const marSnap = await getDocs(collection(db, "marcajes"));
+                marSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.autor === 'BDIMAO0005' || data.autor === 'AI_SYNC' || data.autor === 'AI') {
+                        batch.delete(docSnap.ref);
+                        countBorrados++;
+                    }
+                });
+
+                // 3. Buscar en memento_logs
+                const logSnap = await getDocs(collection(db, "memento_logs"));
+                logSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.userId === 'BDIMAO0005' || data.userName === 'BDIMAO0005' || data.interpretation) {
+                        batch.delete(docSnap.ref);
+                        countBorrados++;
+                    }
+                });
+
+                // 4. Eliminar BDIMAO0005 de usuarios y empleados
+                batch.delete(doc(db, "usuarios", "BDIMAO0005"));
+                batch.delete(doc(db, "empleados", "BDIMAO0005"));
+
+                // 5. Asegurar creación/actualización de 19579 en empleados y usuarios
+                const emp19579Ref = doc(db, "empleados", "19579");
+                batch.set(emp19579Ref, {
+                    name: "JOSE ALFREDO VENTURA",
+                    code: "19579",
+                    ficha: "7344"
+                }, { merge: true });
+
+                const user19579Ref = doc(db, "usuarios", "19579");
+                batch.set(user19579Ref, {
+                    nombre: "JOSE ALFREDO VENTURA",
+                    email: auth.currentUser ? auth.currentUser.email : "19579@edenorte.com",
+                    employeeId: "19579",
+                    empleadoCode: "19579",
+                    rol: "usuario",
+                    fechaRegistro: new Date().toISOString()
+                }, { merge: true });
+
+                await batch.commit();
+
+                window.currentUser = '19579';
+                window.currentUserId = '19579';
+                window.currentUserName = 'JOSE ALFREDO VENTURA';
+                if (auth.currentUser) {
+                    localStorage.setItem('user_map_19579', auth.currentUser.email);
+                }
+
+                showToast(`✅ Limpieza completada: ${countBorrados} documentos eliminados. ID 19579 configurado exitosamente.`, "success");
+                updateHeader();
+                closeSettings();
+                setTimeout(() => location.reload(), 2000);
+            } catch (e) {
+                console.error("Error en limpieza temporal:", e);
+                showToast("❌ Error durante la limpieza: " + e.message, "error");
             }
         };
 
@@ -2313,6 +2382,13 @@
 
                 // Actualizar currentUser global para que los registros usen el ID correcto
                 window.currentUser = window.currentUserId;
+
+                // SEGURIDAD Y MIGRACIÓN: Asegurar que si el ID sigue siendo BDIMAO0005, se fuerce a 19579
+                if (window.currentUser === 'BDIMAO0005' || window.currentUserId === 'BDIMAO0005') {
+                    window.currentUser = '19579';
+                    window.currentUserId = '19579';
+                    window.currentUserName = 'JOSE ALFREDO VENTURA';
+                }
 
                 // SEGURIDAD: Las correcciones de identidad se manejan desde Firestore (colección 'usuarios')
                 // Ya no hay correcciones hardcodeadas en el código
