@@ -934,13 +934,6 @@
                         class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-500 hover:text-white transition-all">Eliminar
                         Cuenta Permanentemente</button>
                 </div>
-                <div class="pt-2">
-                    <button onclick="nisForceUpdate()"
-                        class="w-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 py-3 rounded-xl font-black uppercase text-xs hover:bg-emerald-500 hover:text-white transition-all">🔄
-                        Actualizar App (Limpiar Caché)</button>
-                    <p class="text-[8px] text-slate-500 text-center mt-1">Usa esto si la app no carga los cambios más
-                        recientes</p>
-                </div>
             </div>
         </div>
     </div>
@@ -4250,26 +4243,14 @@ Edenorte Dominicana`;
         renderEquipo();
         populateYearSelector();
         // PWA: Registrar Service Worker
-        // ─── ACTUALIZAR APP (limpiar caché service worker) ───────────────────────
-        window.nisForceUpdate = async () => {
-            showToast('🔄 Limpiando caché...', 'success');
-            if ('serviceWorker' in navigator) {
-                const regs = await navigator.serviceWorker.getRegistrations();
-                for (const reg of regs) await reg.unregister();
-            }
-            if ('caches' in window) {
-                const keys = await caches.keys();
-                for (const key of keys) await caches.delete(key);
-            }
-            setTimeout(() => window.location.reload(true), 500);
-        };
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                console.log('SW registrado correctamente');
-            }).catch(err => {
-                console.warn('Error registrando SW:', err);
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    console.log('SW registrado correctamente');
+                }).catch(err => {
+                    console.warn('Error registrando SW:', err);
+                });
             });
-        });
         }
 
         // Gestión de Estado de Conexión (UI)
