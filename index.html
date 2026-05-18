@@ -1818,13 +1818,9 @@
                 }[tag]));
         };
 
-        // SEGURIDAD: Empleados se cargan dinámicamente desde Firestore (colección 'empleados')
-        window.equipoBase = [
-            { name: "EMPLEADO 1", code: "ID1", active: true, ficha: "7344", isExtra: false, vac: false },
-            { name: "EMPLEADO 2", code: "ID2", active: true, ficha: "7344", isExtra: false, vac: false },
-            { name: "EMPLEADO 3", code: "ID3", active: true, ficha: "7344", isExtra: false, vac: false }
-        ];
-        window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
+        // SEGURIDAD: Empleados se cargan dinámicamente desde Firestore (colección 'empleado')
+        window.equipoBase = [];
+        window.equipo = [];
         window.marcajesData = {}; // Marcajes de tiempo del calendario (Firestore → 'marcajes')
 
         const formatAMPM = (time) => {
@@ -1898,11 +1894,10 @@
                     window.currentYear = realYear;
                 }
 
-                if (!window.editingId && !window.viewHasBeenManual && window.registros.length === 0) {
+                if (!window.editingId) {
                     window.viewingWeek = window.currentWeek;
                     window.viewingYear = window.currentYear;
-                }
-                const semanaInput = document.getElementById('f-semana');
+                    const semanaInput = document.getElementById('f-semana');
                     if (semanaInput) semanaInput.value = window.currentWeek;
                     const anoInput = document.getElementById('f-ano');
                     if (anoInput) anoInput.value = window.currentYear;
@@ -1910,8 +1905,8 @@
                 updateHeader();
             });
 
-            // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
-            onSnapshot(collection(db, "empleados"), (snapshot) => {
+            // SEGURIDAD: Cargar empleado base desde Firestore (colección 'empleado')
+            onSnapshot(collection(db, "empleado"), (snapshot) => {
                 window.equipoBase = snapshot.docs.map(d => {
                     const data = d.data();
                     return {
@@ -2049,7 +2044,7 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         };
 
-        // Auto-fill Name Logic (desde Firestore empleados)
+        // Auto-fill Name Logic (desde Firestore empleado)
         window.checkId = () => {
             const id = document.getElementById('register-id').value.trim();
             const member = window.equipoBase.find(m => m.code === id);
@@ -2120,14 +2115,13 @@
                         const docSnap2 = await getDoc(doc(db, "usuarios", idInput));
                         if (docSnap2.exists()) foundEmail = docSnap2.data().email;
                     }
-                    // Buscar en coleccion empleados (linkedEmail)
+                    // Buscar en coleccion empleado (linkedEmail)
                     if (!foundEmail) {
                         try {
-                            const empSnap = await getDoc(doc(db, "empleados", idInput));
+                            const empSnap = await getDoc(doc(db, "empleado", idInput));
                             if (empSnap.exists() && empSnap.data().linkedEmail) foundEmail = empSnap.data().linkedEmail;
                         } catch(e) {}
                     }
-                    if (!foundEmail) { // placeholder
 
                     if (foundEmail) email = foundEmail;
                     else email = `${input}@edenorte.com`; // Fallback clásico
@@ -2329,7 +2323,6 @@
         };
 
         window.changeViewWeek = (val) => {
-            window.viewHasBeenManual = true; // Evita que el sistema mueva la semana solo mientras navegas
             window.viewingWeek += val;
             if (window.viewingWeek < 1) window.viewingWeek = 1;
             updateHeader(); renderHistorial();
@@ -2422,11 +2415,6 @@
 
             const lug = document.getElementById('f-lugar').value.toUpperCase().trim();
             const fecha = document.getElementById('f-fecha').value;
-            
-            // Seguridad: Evitar duplicados directos por fecha
-            const duplicate = window.registros.find(r => r.fecha === fecha && !window.editingId);
-            if (duplicate && !confirm(`Ya existe un registro para el día ${fecha}. ¿Desea guardarlo de todos modos?`)) return;
-
             const semanaCalculada = parseInt(document.getElementById('f-semana').value) || getISOWeek(fecha);
             const añoSeleccionado = parseInt(document.getElementById('f-ano').value) || getISOYear(fecha);
 
@@ -3216,10 +3204,10 @@
                         updateHeader();
                     }
 
-                    // Si el empleado existe en coleccion empleados, vincularlo
+                    // Si el empleado existe en coleccion empleado, vincularlo
                     if (newId) {
                         try {
-                            const empRef = doc(db, "empleados", newId);
+                            const empRef = doc(db, "empleado", newId);
                             const empSnap = await getDoc(empRef);
                             if (empSnap.exists()) {
                                 await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
