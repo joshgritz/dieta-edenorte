@@ -1914,7 +1914,6 @@
                         code: data.code || data.codigo || d.id,
                         active: data.activo !== undefined ? data.activo : true,
                         ficha: data.ficha || '7344',
-                        ficha: data.ficha || '7344',
                         isExtra: false,
                         vac: false
                     };
@@ -1943,7 +1942,7 @@
                 if (window.registros.length > 0) {
                     const _ul = window.registros[0];
                     const _sw = _ul.semana || getWeekNumber(_ul.fecha);
-                    const _sy = _ul.ano || _ul['áño'] || getYearOfWeek(_ul.fecha);
+                    const _sy = _ul.ano || getYearOfWeek(_ul.fecha);
                     if (_sw) { window.viewingWeek = _sw; window.viewingYear = _sy || window.viewingYear; }
                 }
                 renderHistorial();
@@ -2112,32 +2111,14 @@
                     if (cachedEmail) foundEmail = cachedEmail;
 
                     // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
-                    // 1. Buscar email por employeeId en usuarios
                     if (!foundEmail) {
-                        try {
-                            const _q1 = query(collection(db, 'usuarios'), where('employeeId', '==', idInput));
-                            const _qs1 = await getDocs(_q1);
-                            if (!_qs1.empty) foundEmail = _qs1.docs[0].data().email;
-                        } catch(e) {}
+                        try { const _q1 = query(collection(db,'usuarios'),where('employeeId','==',idInput)); const _qs1 = await getDocs(_q1); if (!_qs1.empty) foundEmail = _qs1.docs[0].data().email; } catch(e) {}
                     }
-                    // 2. Buscar por ID de documento en usuarios
                     if (!foundEmail) {
-                        try {
-                            const _ds = await getDoc(doc(db, 'usuarios', idInput));
-                            if (_ds.exists()) foundEmail = _ds.data().email;
-                        } catch(e) {}
+                        try { const _ds = await getDoc(doc(db,'usuarios',idInput)); if (_ds.exists()) foundEmail = _ds.data().email; } catch(e) {}
                     }
-                    // 3. Buscar en coleccion 'empleado' por campo 'codigo'
                     if (!foundEmail) {
-                        try {
-                            const _qe = query(collection(db, 'empleado'), where('codigo', '==', idInput));
-                            const _qes = await getDocs(_qe);
-                            if (!_qes.empty) {
-                                const _ed = _qes.docs[0].data();
-                                // Si tiene linkedEmail, usarlo; si no, construir con codigo
-                                foundEmail = _ed.linkedEmail || _ed.email || null;
-                            }
-                        } catch(e) {}
+                        try { const _qe = query(collection(db,'empleado'),where('codigo','==',idInput)); const _qes = await getDocs(_qe); if (!_qes.empty) { const _ed = _qes.docs[0].data(); foundEmail = _ed.linkedEmail || _ed.email || null; } } catch(e) {}
                     }
 
                     if (foundEmail) email = foundEmail;
@@ -2288,7 +2269,6 @@
                         // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
                         const _eid = String(data.employeeId || '');
                         const _did = String(querySnapshot.docs[0].id || '');
-                        // Priorizar el employeeId si es numerico (19579), no un doc ID tipo BDIMAO
                         if (_eid && /^\d+$/.test(_eid)) window.currentUserId = _eid;
                         else if (_did && /^\d+$/.test(_did)) window.currentUserId = _did;
                         else window.currentUserId = _eid || _did;
@@ -2387,24 +2367,13 @@
             const nameInput = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
             if (!code) return showToast('Ingresa el ID del apoyo', 'error');
-
-            // Anti-duplicado
-            if (window.equipo.find(m => String(m.code).trim() === String(code).trim())) {
-                return showToast('Este ID ya esta en el equipo', 'error');
-            }
-
-            // Buscar nombre en Firebase automaticamente
+            if (window.equipo.find(m => String(m.code).trim() === String(code).trim())) return showToast('Este ID ya esta en el equipo', 'error');
             let finalName = nameInput;
             try {
-                const _qe = query(collection(db, 'empleado'), where('codigo', '==', code));
+                const _qe = query(collection(db,'empleado'),where('codigo','==',code));
                 const _qes = await getDocs(_qe);
-                if (!_qes.empty) {
-                    const _ed = _qes.docs[0].data();
-                    finalName = (_ed.nombre || _ed.name || nameInput).toUpperCase().trim();
-                    document.getElementById('new-name').value = finalName;
-                }
+                if (!_qes.empty) { const _ed = _qes.docs[0].data(); finalName = (_ed.nombre||_ed.name||nameInput).toUpperCase().trim(); document.getElementById('new-name').value = finalName; }
             } catch(e) {}
-
             if (!finalName) return showToast('Ingresa el nombre', 'error');
             window.equipo.push({ name: finalName, code, active: true, ficha: '7344', isExtra: true, vac: false });
             document.getElementById('new-name').value = '';
@@ -2613,7 +2582,7 @@
                     r.personal.forEach(p => {
                         const _fc = String(p.code||'').toUpperCase().trim();
                         const _fn = String(p.name||'').toUpperCase().trim();
-                        if (!p.name || !p.code || _fc === 'MEMENTO' || _fn === 'EQUIPO' || _fn === 'MEMENTO' || _fc === 'EQUIPO' || _fc.startsWith('BDIMAO')) return;
+                        if (!p.name||!p.code||_fc==='MEMENTO'||_fn==='EQUIPO'||_fn==='MEMENTO'||_fc==='EQUIPO'||_fc.startsWith('BDIMAO')) return;
 
                         if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {} };
                         if (!stats[p.code].weeks[sem]) stats[p.code].weeks[sem] = { total: 0, h: [] };
@@ -2755,15 +2724,7 @@
             if (!confirm('Borrar este registro? Quedara guardado en la papelera.')) return;
             try {
                 const _rs = await getDoc(doc(db, 'registros', id));
-                if (_rs.exists()) {
-                    await setDoc(doc(db, 'papelera', id), {
-                        ..._rs.data(),
-                        _borradoPor: window.currentUserId,
-                        _borradoNombre: window.currentUserName || '',
-                        _borradoFecha: new Date().toISOString(),
-                        _registroId: id
-                    });
-                }
+                if (_rs.exists()) await setDoc(doc(db,'papelera',id), {..._rs.data(), _borradoPor: window.currentUserId, _borradoNombre: window.currentUserName||'', _borradoFecha: new Date().toISOString(), _registroId: id});
                 await deleteDoc(doc(db, 'registros', id));
                 showToast('Registro movido a la papelera', 'success');
             } catch(e) { showToast('Error: ' + e.message, 'error'); }
@@ -3180,7 +3141,6 @@
             document.getElementById('set-name').value = window.currentUserName;
             document.getElementById('set-email').value = user.email;
             document.getElementById('set-id').value = window.currentUserId || '';
-            // Cargar employeeId real desde Firestore
             (async () => {
                 try {
                     const _u = auth.currentUser;
