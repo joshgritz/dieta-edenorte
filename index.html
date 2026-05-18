@@ -1939,6 +1939,13 @@
                 });
                 populateYearSelector();
                 window.loadingData = false;
+                // Ir a la semana del ultimo registro automaticamente
+                if (window.registros.length > 0) {
+                    const _ul = window.registros[0];
+                    const _sw = _ul.semana || getWeekNumber(_ul.fecha);
+                    const _sy = _ul.ano || _ul['áño'] || getYearOfWeek(_ul.fecha);
+                    if (_sw) { window.viewingWeek = _sw; window.viewingYear = _sy || window.viewingYear; }
+                }
                 renderHistorial();
                 renderActivos();
             });
@@ -2376,14 +2383,33 @@
         window.toggleActive = (i) => { window.equipo[i].active = !window.equipo[i].active; renderEquipo(); updateCalculos(); };
         window.updateFicha = (i, val) => { window.equipo[i].ficha = val.toUpperCase(); };
 
-        window.addExtraMember = () => {
-            const name = document.getElementById('new-name').value.toUpperCase().trim();
+        window.addExtraMember = async () => {
+            const nameInput = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
-            if (name && code) {
-                window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
-                document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
-                renderEquipo(); updateCalculos();
+            if (!code) return showToast('Ingresa el ID del apoyo', 'error');
+
+            // Anti-duplicado
+            if (window.equipo.find(m => String(m.code).trim() === String(code).trim())) {
+                return showToast('Este ID ya esta en el equipo', 'error');
             }
+
+            // Buscar nombre en Firebase automaticamente
+            let finalName = nameInput;
+            try {
+                const _qe = query(collection(db, 'empleado'), where('codigo', '==', code));
+                const _qes = await getDocs(_qe);
+                if (!_qes.empty) {
+                    const _ed = _qes.docs[0].data();
+                    finalName = (_ed.nombre || _ed.name || nameInput).toUpperCase().trim();
+                    document.getElementById('new-name').value = finalName;
+                }
+            } catch(e) {}
+
+            if (!finalName) return showToast('Ingresa el nombre', 'error');
+            window.equipo.push({ name: finalName, code, active: true, ficha: '7344', isExtra: true, vac: false });
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-code').value = '';
+            renderEquipo(); updateCalculos();
         };
 
         // CORRECCIÓN: Lógica de desglose separada
