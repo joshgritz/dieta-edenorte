@@ -1874,7 +1874,7 @@
             window.loadingData = true;
             renderHistorial();
 
-            // Calcular la semana real inmediatamente antes de que Firebase responda
+            // Calcular la semana real INMEDIATAMENTE (no esperar a Firebase)
             const today = new Date();
             const realWeek = getWeekNumber(today);
             const realYear = getYearOfWeek(today);
@@ -1894,18 +1894,12 @@
                 if (snap.exists()) {
                     const dbWeek = snap.data().week;
                     const dbYear = snap.data().year;
-                    // Solo usar semana de la DB si está dentro de 1 semana de la real
+                    // Solo usar semana de DB si coincide con la real (margen de 1 semana)
                     if (dbYear === realYear && dbWeek && Math.abs(dbWeek - realWeek) <= 1) {
                         window.currentWeek = dbWeek;
                         window.currentYear = dbYear;
-                    } else {
-                        // Priorizar semana real calculada por fecha
-                        window.currentWeek = realWeek;
-                        window.currentYear = realYear;
                     }
-                } else {
-                    window.currentWeek = realWeek;
-                    window.currentYear = realYear;
+                    // Si no, mantener la semana real ya calculada
                 }
 
                 if (!window.editingId) {
@@ -1921,7 +1915,7 @@
 
             // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
             onSnapshot(collection(db, "empleados"), (snapshot) => {
-                const newEquipoBase = snapshot.docs.map(d => {
+                window.equipoBase = snapshot.docs.map(d => {
                     const data = d.data();
                     return {
                         name: data.name || data.nombre || '',
@@ -1932,19 +1926,9 @@
                         vac: false
                     };
                 });
-                window.equipoBase = newEquipoBase;
                 // Solo recargar equipo si NO estamos en modo edición
                 if (!window.editingId) {
-                    // Preservar extras agregados por el usuario (no duplicar)
-                    const currentExtras = window.equipo ? window.equipo.filter(m => m.isExtra) : [];
                     window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
-                    // Re-agregar extras que no estén ya en equipoBase
-                    currentExtras.forEach(extra => {
-                        const exists = window.equipo.some(m => m.code === extra.code);
-                        if (!exists) {
-                            window.equipo.push(JSON.parse(JSON.stringify(extra)));
-                        }
-                    });
                     if (typeof renderEquipo === 'function') renderEquipo();
                     if (typeof updateCalculos === 'function') updateCalculos();
                 }
@@ -2127,55 +2111,26 @@
                     const cachedEmail = localStorage.getItem(`user_map_${idInput}`);
                     if (cachedEmail) foundEmail = cachedEmail;
 
-                    // 1. Si no está en caché, buscar en Firestore por employeeId
+                    // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
                     if (!foundEmail) {
                         const q = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
                         const querySnapshot = await getDocs(q);
 
                         if (!querySnapshot.empty) {
                             foundEmail = querySnapshot.docs[0].data().email;
-                            // Cache para futuros logins
-                            localStorage.setItem(`user_map_${idInput}`, foundEmail);
                         } else {
-                            // 2. Buscar por ID de documento (Registro original)
+                            // 2. Si no, buscar por ID de documento (Registro original)
                             const docRef = doc(db, "usuarios", idInput);
                             const docSnap = await getDoc(docRef);
-                            if (docSnap.exists()) {
-                                foundEmail = docSnap.data().email;
-                                localStorage.setItem(`user_map_${idInput}`, foundEmail);
-                            }
+                            if (docSnap.exists()) foundEmail = docSnap.data().email;
                         }
                     }
 
-                    // 3. Búsqueda de respaldo: buscar por nombre en todos los documentos
-                    if (!foundEmail) {
-                        const allUsersSnap = await getDocs(collection(db, "usuarios"));
-                        for (const userDoc of allUsersSnap.docs) {
-                            const data = userDoc.data();
-                            // Buscar por employeeId, nombre del documento, o nombre
-                            if (data.employeeId === idInput ||
-                                userDoc.id === idInput ||
-                                (data.nombre && data.nombre.replace(/\s/g, '') === idInput)) {
-                                foundEmail = data.email;
-                                localStorage.setItem(`user_map_${idInput}`, foundEmail);
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!foundEmail) {
-                        // No se encontró email - NO usar fallback, mostrar error claro
-                        showToast(`ID "${idInput}" no encontrado. Ingrese su correo electrónico.`, "error");
-                        toggleLoading(false);
-                        return;
-                    }
-
-                    email = foundEmail;
+                    if (foundEmail) email = foundEmail;
+                    else email = `${input}@edenorte.com`; // Fallback clásico
                 } catch (e) {
-                    console.error("Error buscando ID:", e);
-                    showToast(`Error buscando ID. Intente con su correo.`, "error");
-                    toggleLoading(false);
-                    return;
+                    console.error(e);
+                    email = `${input}@edenorte.com`; // Fallback
                 }
             }
 
@@ -2320,8 +2275,7 @@
                         // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
                         if (data.employeeId) {
                             window.currentUserId = data.employeeId;
-                        } else if (docId) {
-                            // El ID del documento es el ID de empleado
+                        } else {
                             window.currentUserId = docId;
                         }
 
@@ -2434,19 +2388,9 @@
             const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
             if (name && code) {
-                // Verificar que no exista ya un miembro con ese código
-                const existing = window.equipo.find(m => m.code === code);
-                if (existing) {
-                    existing.active = true;
-                    existing.name = name;
-                    showToast(`"${name}" ya está en el equipo, activado`, "warning");
-                } else {
-                    window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
-                }
-                document.getElementById('new-name').value = '';
-                document.getElementById('new-code').value = '';
-                renderEquipo();
-                updateCalculos();
+                window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
+                document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
+                renderEquipo(); updateCalculos();
             }
         };
 
@@ -2586,12 +2530,12 @@
                     <div class="flex justify-between items-start mb-4">
                         <span class="text-[10px] font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">${r.fecha}</span>
                         <div class="flex gap-4">
-                            <button onclick="openMap('${escapeHTML(r.lugar || 'MAO')}')" class="text-green-400 font-bold text-[10px] uppercase flex items-center gap-1">🗺️ Mapa</button>
+                            <button onclick="openMap('${escapeHTML(r.lugar)}')" class="text-green-400 font-bold text-[10px] uppercase flex items-center gap-1">🗺️ Mapa</button>
                             <button onclick="editRecord('${r.id}')" class="text-blue-400 font-bold text-[10px] uppercase">Editar</button>
                             <button onclick="deleteRecord('${r.id}')" class="text-red-400 font-bold text-[10px] uppercase">Borrar</button>
                         </div>
                     </div>
-                    <h4 class="text-sm font-black uppercase text-white mb-1 tracking-tight">${escapeHTML(r.lugar || 'SIN ESPECIFICAR')}</h4>
+                    <h4 class="text-sm font-black uppercase text-white mb-1 tracking-tight">${escapeHTML(r.lugar)}</h4>
                     <p class="text-[10px] text-blue-300 font-bold uppercase italic mb-1">${detalleComidas.join(" + ")}</p>
                     <p class="text-[10px] text-slate-400 font-bold uppercase mb-4">Misión: ${formatAMPM(r.horas.sm)} - ${formatAMPM(r.horas.rm)}</p>
                     <div class="space-y-2 border-t border-white/5 pt-4">
@@ -2649,7 +2593,7 @@
                     const sem = r.semana;
 
                     r.personal.forEach(p => {
-                        if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {}, allCodes: new Set([p.code]) };
+                        if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {} };
                         if (!stats[p.code].weeks[sem]) stats[p.code].weeks[sem] = { total: 0, h: [] };
 
                         stats[p.code].total += montoIndiv;
@@ -2657,51 +2601,9 @@
                         stats[p.code].h.push({ f: r.fecha, l: r.lugar, m: montoIndiv });
                         stats[p.code].weeks[sem].total += montoIndiv;
                         stats[p.code].weeks[sem].h.push({ f: r.fecha, l: r.lugar, m: montoIndiv });
-                        stats[p.code].allCodes.add(p.code);
                         globalSum += montoIndiv;
                     });
                 }
-            });
-
-            // CRÍTICO: Fusionar entradas con el mismo nombre pero diferente código (ID cambiado)
-            const nameToPrimaryCode = {};
-            const codesToMerge = []; // [codeToMerge, primaryCode]
-
-            Object.entries(stats).forEach(([code, data]) => {
-                const normalizedName = data.name.trim().toUpperCase();
-                if (nameToPrimaryCode[normalizedName]) {
-                    // Ya existe una entrada con este nombre - fusionar
-                    const primaryCode = nameToPrimaryCode[normalizedName];
-                    codesToMerge.push([code, primaryCode]);
-                } else {
-                    nameToPrimaryCode[normalizedName] = code;
-                }
-            });
-
-            // Ejecutar fusiones
-            codesToMerge.forEach([codeToMerge, primaryCode]) => {
-                const mergeData = stats[codeToMerge];
-                if (!mergeData || !stats[primaryCode]) return;
-
-                // Combinar totales
-                stats[primaryCode].total += mergeData.total;
-                stats[primaryCode].dias += mergeData.dias;
-                stats[primaryCode].h.push(...mergeData.h);
-
-                // Fusionar códigos conocidos
-                mergeData.allCodes.forEach(c => stats[primaryCode].allCodes.add(c));
-
-                // Fusionar semanas
-                Object.entries(mergeData.weeks).forEach(([sem, semData]) => {
-                    if (!stats[primaryCode].weeks[sem]) {
-                        stats[primaryCode].weeks[sem] = { total: 0, h: [] };
-                    }
-                    stats[primaryCode].weeks[sem].total += semData.total;
-                    stats[primaryCode].weeks[sem].h.push(...semData.h);
-                });
-
-                // Eliminar la entrada duplicada
-                delete stats[codeToMerge];
             });
 
             totalGen.innerText = `RD$ ${globalSum.toLocaleString()}`;
@@ -2736,16 +2638,11 @@
                     `;
                 }).join('');
 
-                // Mostrar todos los códigos conocidos si hay más de uno (ID cambiado)
-                const allCodesDisplay = data.allCodes.size > 1
-                    ? `IDs: ${Array.from(data.allCodes).sort().join(', ')} • ${data.dias} JORNADAS`
-                    : `ID: ${escapeHTML(code)} • ${data.dias} JORNADAS`;
-
                 card.innerHTML = `
                     <div onclick="this.parentElement.classList.toggle('accordion-open')" class="p-6 flex justify-between items-center cursor-pointer">
                         <div>
                             <h4 class="font-black text-white text-sm uppercase">${data.name}</h4>
-                            <p class="text-[9px] font-bold text-blue-400 mt-1 uppercase tracking-widest">${allCodesDisplay}</p>
+                            <p class="text-[9px] font-bold text-blue-400 mt-1 uppercase tracking-widest">ID: ${escapeHTML(code)} • ${data.dias} JORNADAS</p>
                         </div>
                         <div class="text-right flex items-center gap-5">
                             <div>
@@ -3316,18 +3213,6 @@
             if (!currentPass) return showToast("Ingrese su contraseña actual para confirmar", "warning");
             if (!/^[A-ZÁÉÍÓÚÑ\s]+$/.test(newName)) return showToast("El nombre solo puede contener letras", "warning");
 
-            // Verificar que el nuevo ID no esté ya en uso por otro usuario
-            if (newId && newId !== window.currentUserId) {
-                const existingQ = query(collection(db, "usuarios"), where("employeeId", "==", newId));
-                const existingSnap = await getDocs(existingQ);
-                if (!existingSnap.empty) {
-                    const existingDoc = existingSnap.docs[0];
-                    if (existingDoc.data().uid !== user.uid) {
-                        return showToast("Ese ID ya está vinculado a otra cuenta", "error");
-                    }
-                }
-            }
-
             try {
                 // Re-autenticación por seguridad
                 const credential = EmailAuthProvider.credential(user.email, currentPass);
@@ -3344,30 +3229,11 @@
 
                 if (newPass) await updatePassword(user, newPass);
 
-                // Actualizar Firestore (Buscar documento por UID, fallback por email)
+                // Actualizar Firestore (Buscar documento por UID)
                 const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
                     await updateDoc(querySnapshot.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
-                } else {
-                    // Fallback: buscar por email
-                    const emailQ = query(collection(db, "usuarios"), where("email", "==", user.email));
-                    const emailSnap = await getDocs(emailQ);
-                    if (!emailSnap.empty) {
-                        await updateDoc(emailSnap.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
-                    } else {
-                        // Si no existe documento, crear uno
-                        const userId = newId || user.email.split('@')[0].toUpperCase();
-                        await setDoc(doc(db, "usuarios", userId), {
-                            uid: user.uid,
-                            email: newEmail || user.email,
-                            nombre: newName,
-                            employeeId: newId,
-                            tema: newTheme,
-                            fechaRegistro: new Date().toISOString(),
-                            rol: "usuario"
-                        });
-                    }
                 }
 
                 // Vincular ID de empleado: si ya existe en coleccion 'empleados', asignarlo
@@ -3377,23 +3243,9 @@
                     if (empSnap.exists()) {
                         // Empleado existe - vincular sin sobrescribir datos
                         await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
+                        showToast("ID " + newId + " vinculado a tu cuenta", "success");
                     }
-                }
-
-                // CRÍTICO: Actualizar caché de login inmediatamente
-                // Borrar todas las entradas de caché antiguas de este usuario
-                const allKeys = Object.keys(localStorage);
-                allKeys.forEach(key => {
-                    if (key.startsWith('user_map_')) {
-                        const cachedEmail = localStorage.getItem(key);
-                        if (cachedEmail === user.email) {
-                            localStorage.removeItem(key);
-                        }
-                    }
-                });
-                // Crear la nueva entrada de caché con el nuevo ID
-                if (newId) {
-                    localStorage.setItem(`user_map_${newId}`, user.email);
+                    // Si no existe, no crear - el admin maneja la coleccion empleados
                 }
 
                 // Aplicar Tema
@@ -3406,9 +3258,14 @@
                 }
                 localStorage.setItem('theme', newTheme);
 
+                // CRÍTICO: Actualizar caché de login con el nuevo ID
+                if (newId) {
+                    localStorage.setItem(`user_map_${newId}`, user.email);
+                }
+
                 window.currentUserName = newName;
                 window.currentUserId = newId || window.currentUserId;
-                window.currentUser = window.currentUserId; // Actualizar referencia global
+                window.currentUser = window.currentUserId;
                 updateHeader();
                 closeSettings();
 
