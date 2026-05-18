@@ -2424,7 +2424,7 @@
                 item.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div onclick="${!m.vac ? `toggleActive(${i})` : ''}" class="cursor-pointer">
-                            <p class="font-bold text-[11px] text-white uppercase ${m.vac ? 'line-through opacity-50' : ''}"><span class="text-blue-400">[${escapeHTML(m.code)}]</span> ${escapeHTML(m.name)}</p>
+                            <p class="font-bold text-[11px] text-white uppercase ${m.vac ? 'line-through opacity-50' : ''}"><span class="text-blue-400">${escapeHTML(m.code)}</span> ${escapeHTML(m.name)}</p>
                             <p class="text-[8px] font-bold text-slate-500 tracking-widest uppercase">${m.vac ? '• EN VACACIONES' : (m.isExtra ? '• APOYO' : '• PERSONAL BASE')}</p>
                         </div>
                         <div class="flex gap-2 items-center">
