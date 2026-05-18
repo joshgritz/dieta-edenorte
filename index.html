@@ -2122,8 +2122,6 @@
                             if (empSnap.exists() && empSnap.data().linkedEmail) foundEmail = empSnap.data().linkedEmail;
                         } catch(e) {}
                     }
-                    if (!foundEmail) { // placeholder
-
                     if (foundEmail) email = foundEmail;
                     else email = `${input}@edenorte.com`; // Fallback clásico
                 } catch (e) {
