@@ -1906,13 +1906,14 @@
             });
 
             // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
-            onSnapshot(collection(db, "empleados"), (snapshot) => {
+            onSnapshot(collection(db, "empleado"), (snapshot) => {
                 window.equipoBase = snapshot.docs.map(d => {
                     const data = d.data();
                     return {
                         name: data.name || data.nombre || '',
                         code: data.code || data.codigo || d.id,
-                        active: true,
+                        active: data.activo !== undefined ? data.activo : true,
+                        ficha: data.ficha || '7344',
                         ficha: data.ficha || '7344',
                         isExtra: false,
                         vac: false
@@ -2104,24 +2105,34 @@
                     if (cachedEmail) foundEmail = cachedEmail;
 
                     // 1. Si no está en caché, buscar en Firestore (Puede fallar si no hay permisos)
-                    if (!foundEmail) {
-                        // Buscar por employeeId guardado en ajustes
-                        const q1 = query(collection(db, "usuarios"), where("employeeId", "==", idInput));
-                        const qs1 = await getDocs(q1);
-                        if (!qs1.empty) foundEmail = qs1.docs[0].data().email;
-                    }
-                    // Buscar por ID de documento
-                    if (!foundEmail) {
-                        const docSnap2 = await getDoc(doc(db, "usuarios", idInput));
-                        if (docSnap2.exists()) foundEmail = docSnap2.data().email;
-                    }
-                    // Buscar en coleccion empleados (linkedEmail)
+                    // 1. Buscar email por employeeId en usuarios
                     if (!foundEmail) {
                         try {
-                            const empSnap = await getDoc(doc(db, "empleados", idInput));
-                            if (empSnap.exists() && empSnap.data().linkedEmail) foundEmail = empSnap.data().linkedEmail;
+                            const _q1 = query(collection(db, 'usuarios'), where('employeeId', '==', idInput));
+                            const _qs1 = await getDocs(_q1);
+                            if (!_qs1.empty) foundEmail = _qs1.docs[0].data().email;
                         } catch(e) {}
                     }
+                    // 2. Buscar por ID de documento en usuarios
+                    if (!foundEmail) {
+                        try {
+                            const _ds = await getDoc(doc(db, 'usuarios', idInput));
+                            if (_ds.exists()) foundEmail = _ds.data().email;
+                        } catch(e) {}
+                    }
+                    // 3. Buscar en coleccion 'empleado' por campo 'codigo'
+                    if (!foundEmail) {
+                        try {
+                            const _qe = query(collection(db, 'empleado'), where('codigo', '==', idInput));
+                            const _qes = await getDocs(_qe);
+                            if (!_qes.empty) {
+                                const _ed = _qes.docs[0].data();
+                                // Si tiene linkedEmail, usarlo; si no, construir con codigo
+                                foundEmail = _ed.linkedEmail || _ed.email || null;
+                            }
+                        } catch(e) {}
+                    }
+
                     if (foundEmail) email = foundEmail;
                     else email = `${input}@edenorte.com`; // Fallback clásico
                 } catch (e) {
@@ -2267,17 +2278,13 @@
                         const data = querySnapshot.docs[0].data();
                         window.currentUserName = data.nombre;
 
-                        // Priorizar employeeId numerico (ej: 19579) sobre ID de documento
-                        const empId = data.employeeId || querySnapshot.docs[0].id;
-                        // Si el employeeId guardado es el doc ID tipo BDIMAO, usar el numerico si existe
-                        const docId = querySnapshot.docs[0].id;
-                        if (data.employeeId && /^\d+$/.test(String(data.employeeId))) {
-                            window.currentUserId = data.employeeId;
-                        } else if (/^\d+$/.test(String(docId))) {
-                            window.currentUserId = docId;
-                        } else {
-                            window.currentUserId = empId;
-                        }
+                        // Si tiene un ID de empleado vinculado (campo employeeId o el ID del documento)
+                        const _eid = String(data.employeeId || '');
+                        const _did = String(querySnapshot.docs[0].id || '');
+                        // Priorizar el employeeId si es numerico (19579), no un doc ID tipo BDIMAO
+                        if (_eid && /^\d+$/.test(_eid)) window.currentUserId = _eid;
+                        else if (_did && /^\d+$/.test(_did)) window.currentUserId = _did;
+                        else window.currentUserId = _eid || _did;
 
                         // CACHÉ INTELIGENTE: Guardar relación ID -> Email para futuros logins
                         if (window.currentUserId) localStorage.setItem(`user_map_${window.currentUserId}`, user.email);
@@ -2330,7 +2337,7 @@
         window.renderEquipo = () => {
             const list = document.getElementById('equipo-list');
             list.innerHTML = '';
-            window.equipo.forEach((m, i) => {
+            window.equipo.filter(m => !String(m.code||'').toUpperCase().startsWith('BDIMAO') && String(m.code||'').toUpperCase() !== 'MEMENTO').forEach((m, i) => {
                 const item = document.createElement('div');
                 item.className = `p-4 rounded-2xl border transition-all ${m.vac ? 'bg-red-500/10 border-red-500/30' : (m.active ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/5 opacity-40')}`;
                 const deleteBtn = m.isExtra ? `<button onclick="removeExtraMember(${i})" class="text-[7px] font-black px-2 py-1 rounded bg-red-500 text-white uppercase">Eliminar</button>` : '';
@@ -2578,10 +2585,9 @@
                     const sem = r.semana;
 
                     r.personal.forEach(p => {
-                        // Filtrar entradas fantasma
-                        const _c = String(p.code||"").toUpperCase().trim();
-                        const _n = String(p.name||"").toUpperCase().trim();
-                        if (!p.name||!p.code||_c==="MEMENTO"||_n==="EQUIPO"||_n==="MEMENTO"||_c==="EQUIPO"||_c.startsWith("BDIMAO")) return;
+                        const _fc = String(p.code||'').toUpperCase().trim();
+                        const _fn = String(p.name||'').toUpperCase().trim();
+                        if (!p.name || !p.code || _fc === 'MEMENTO' || _fn === 'EQUIPO' || _fn === 'MEMENTO' || _fc === 'EQUIPO' || _fc.startsWith('BDIMAO')) return;
 
                         if (!stats[p.code]) stats[p.code] = { name: p.name, total: 0, dias: 0, h: [], weeks: {} };
                         if (!stats[p.code].weeks[sem]) stats[p.code].weeks[sem] = { total: 0, h: [] };
@@ -2718,7 +2724,24 @@
             document.getElementById('btn-save').innerText = "Guardar Cambios"; renderEquipo(); updateCalculos(); showTab('registro');
         };
 
-        window.deleteRecord = async (id) => { if (confirm("¿Seguro que desea eliminar este registro permanentemente?")) await deleteDoc(doc(db, "registros", id)); };
+        window.deleteRecord = async (id) => {
+            if (String(window.currentUserId) !== '19579') return showToast('Solo el administrador puede borrar registros', 'error');
+            if (!confirm('Borrar este registro? Quedara guardado en la papelera.')) return;
+            try {
+                const _rs = await getDoc(doc(db, 'registros', id));
+                if (_rs.exists()) {
+                    await setDoc(doc(db, 'papelera', id), {
+                        ..._rs.data(),
+                        _borradoPor: window.currentUserId,
+                        _borradoNombre: window.currentUserName || '',
+                        _borradoFecha: new Date().toISOString(),
+                        _registroId: id
+                    });
+                }
+                await deleteDoc(doc(db, 'registros', id));
+                showToast('Registro movido a la papelera', 'success');
+            } catch(e) { showToast('Error: ' + e.message, 'error'); }
+        };
 
         window.cancelEdit = () => {
             window.editingId = null; document.getElementById('f-lugar').value = ''; document.getElementById('f-trabajo').value = '';
@@ -3130,20 +3153,15 @@
             if (!user) return;
             document.getElementById('set-name').value = window.currentUserName;
             document.getElementById('set-email').value = user.email;
-            // Mostrar el employeeId real guardado, no el ID del documento
             document.getElementById('set-id').value = window.currentUserId || '';
-            // Intentar cargar el employeeId real desde Firestore
+            // Cargar employeeId real desde Firestore
             (async () => {
                 try {
-                    const usr = auth.currentUser;
-                    if (usr) {
-                        const q2 = query(collection(db, 'usuarios'), where('uid', '==', usr.uid));
-                        const qs2 = await getDocs(q2);
-                        if (!qs2.empty) {
-                            const d2 = qs2.docs[0].data();
-                            const realId = d2.employeeId || '';
-                            document.getElementById('set-id').value = realId;
-                        }
+                    const _u = auth.currentUser;
+                    if (_u) {
+                        const _q = query(collection(db, 'usuarios'), where('uid', '==', _u.uid));
+                        const _qs = await getDocs(_q);
+                        if (!_qs.empty) document.getElementById('set-id').value = _qs.docs[0].data().employeeId || '';
                     }
                 } catch(e) {}
             })();
@@ -3189,29 +3207,14 @@
                 const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
-                    // Guardar employeeId solo si es numerico (ID real de empleado)
-                    const updateData = { nombre: newName, email: newEmail, tema: newTheme };
-                    if (newId) updateData.employeeId = newId;
-                    await updateDoc(querySnapshot.docs[0].ref, updateData);
-
-                    // Actualizar currentUserId en memoria con el nuevo ID
+                    const _upd = { nombre: newName, email: newEmail, tema: newTheme };
+                    if (newId) _upd.employeeId = newId;
+                    await updateDoc(querySnapshot.docs[0].ref, _upd);
                     if (newId) {
                         window.currentUserId = newId;
                         window.currentUser = newId;
-                        // Guardar cache para login futuro por ID
-                        localStorage.setItem("user_map_" + newId.toUpperCase(), user.email);
+                        localStorage.setItem('user_map_' + newId.toUpperCase(), user.email);
                         updateHeader();
-                    }
-
-                    // Si el empleado existe en coleccion empleados, vincularlo
-                    if (newId) {
-                        try {
-                            const empRef = doc(db, "empleados", newId);
-                            const empSnap = await getDoc(empRef);
-                            if (empSnap.exists()) {
-                                await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
-                            }
-                        } catch(eLink) { console.log("Empleado no vinculado:", eLink); }
                     }
                 }
 
