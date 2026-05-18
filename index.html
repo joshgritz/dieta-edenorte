@@ -1913,8 +1913,8 @@
                 updateHeader();
             });
 
-            // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleado' o 'empleados')
-            onSnapshot(collection(db, "empleado"), (snapshot) => {
+            // SEGURIDAD: Cargar empleados base desde Firestore (colección 'empleados')
+            onSnapshot(collection(db, "empleados"), (snapshot) => {
                 window.equipoBase = snapshot.docs.map(d => {
                     const data = d.data();
                     return {
@@ -1926,6 +1926,7 @@
                         vac: false
                     };
                 });
+                // Solo recargar equipo si NO estamos en modo edición
                 if (!window.editingId) {
                     window.equipo = JSON.parse(JSON.stringify(window.equipoBase));
                     if (typeof renderEquipo === 'function') renderEquipo();
@@ -2385,18 +2386,9 @@
             const name = document.getElementById('new-name').value.toUpperCase().trim();
             const code = document.getElementById('new-code').value.trim();
             if (name && code) {
-                const existing = window.equipo.find(m => m.code === code);
-                if (existing) {
-                    existing.active = true;
-                    existing.name = name;
-                    showToast(`"${name}" ya está en el equipo, activado`, "warning");
-                } else {
-                    window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
-                }
-                document.getElementById('new-name').value = '';
-                document.getElementById('new-code').value = '';
-                renderEquipo();
-                updateCalculos();
+                window.equipo.push({ name, code, active: true, ficha: '7344', isExtra: true, vac: false });
+                document.getElementById('new-name').value = ''; document.getElementById('new-code').value = '';
+                renderEquipo(); updateCalculos();
             }
         };
 
@@ -3242,17 +3234,16 @@
                     await updateDoc(querySnapshot.docs[0].ref, { nombre: newName, email: newEmail, tema: newTheme, employeeId: newId });
                 }
 
-                // Vincular ID de empleado: si ya existe en coleccion 'empleado' o 'empleados', asignarlo
+                // Vincular ID de empleado: si ya existe en coleccion 'empleados', asignarlo
                 if (newId) {
-                    let empRef = doc(db, "empleado", newId);
-                    let empSnap = await getDoc(empRef);
-                    if (!empSnap.exists()) {
-                        empRef = doc(db, "empleados", newId);
-                        empSnap = await getDoc(empRef);
-                    }
+                    const empRef = doc(db, "empleados", newId);
+                    const empSnap = await getDoc(empRef);
                     if (empSnap.exists()) {
+                        // Empleado existe - vincular sin sobrescribir datos
                         await updateDoc(empRef, { linkedUid: user.uid, linkedEmail: user.email });
+                        showToast("ID " + newId + " vinculado a tu cuenta", "success");
                     }
+                    // Si no existe, no crear - el admin maneja la coleccion empleados
                 }
 
                 // Aplicar Tema
